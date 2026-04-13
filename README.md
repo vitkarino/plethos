@@ -1,75 +1,82 @@
-# Nuxt Minimal Starter
+# Pulso (Nuxt + PostgreSQL)
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+This project now includes a Nuxt server backend in `server/` with:
 
-## Setup
+- PostgreSQL CRUD for `users`, `projects`, `project_users`, `recordings`
+- API v1 envelope responses (`data` + `meta`)
+- WebSocket stream endpoint: `/ws/recordings/:id/stream`
+- Mock Python signal provider (default) + HTTP provider scaffold for future FastAPI integration
 
-Make sure to install dependencies:
+## Backend documentation
+
+- [Full backend guide](docs/backend-v1.md)
+
+## Requirements
+
+- Node.js 20+
+- PostgreSQL 16+ (local or external)
+
+## Local database
+
+Start local PostgreSQL with Docker:
 
 ```bash
-# npm
+docker compose up -d
+```
+
+Copy env example and adjust if needed:
+
+```bash
+cp .env.example .env
+```
+
+Default local Postgres mapping is `127.0.0.1:55432 -> container:5432` to avoid conflicts with host Postgres on `5432`.
+
+## Database workflow
+
+Generate migrations:
+
+```bash
+npm run db:generate
+```
+
+Apply migrations:
+
+```bash
+npm run db:migrate
+```
+
+Seed test/mock data:
+
+```bash
+npm run db:seed
+```
+
+## Run app
+
+```bash
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+Nuxt app: `http://localhost:3000`
 
-Build the application for production:
+## Tests
+
+Integration tests (API + WS smoke):
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+npm run test:integration
 ```
 
-Locally preview production build:
+By default tests use `TEST_DATABASE_URL` (fallback to `DATABASE_URL`).
 
-```bash
-# npm
-npm run preview
+## Environment variables
 
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- `DATABASE_URL` - main database URL
+- `TEST_DATABASE_URL` - database URL for integration tests
+- `PYTHON_PROVIDER_MODE` - `mock` (default) or `http`
+- `PYTHON_BASE_URL` - base URL for Python/FastAPI provider
+- `PYTHON_TIMEOUT_MS` - timeout for Python HTTP calls
+- `AUTH_ENABLED` - auth scaffold flag (currently does not enforce auth)
+- `AUTH_BEARER_TOKEN` - reserved for future auth checks
