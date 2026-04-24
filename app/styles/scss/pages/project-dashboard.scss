@@ -1,0 +1,193 @@
+@use "../core/variables" as *;
+
+.ProjectDashboardPage {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	width: min(100%, 68em);
+	height: 100%;
+	color: $color-text-primary;
+}
+
+.ProjectDashboardPage__header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1em;
+}
+
+.ProjectDashboardPage__header p,
+.ProjectDashboardPage__blockTitle p {
+	margin: 0 0 0.35em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.ProjectDashboardPage__header h1 {
+	margin: 0;
+	color: $color-text-primary;
+	font-size: 22pt;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: 0;
+}
+
+.ProjectDashboardPage__back {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.375em;
+	padding: 0 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+	font-size: 11pt;
+	font-weight: 700;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.ProjectDashboardPage__back:hover,
+.ProjectDashboardPage__back:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.ProjectDashboardPage__layout {
+	display: grid;
+	grid-template-columns: 1.35fr 1fr;
+	gap: 1em;
+	min-height: 0;
+}
+
+.ProjectDashboardPage__summary,
+.ProjectDashboardPage__users {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25em;
+}
+
+.ProjectDashboardPage__summary > p {
+	margin: 0;
+	color: $color-text-secondary;
+	font-size: 12pt;
+	line-height: 1.45;
+}
+
+.ProjectDashboardPage__summary dl {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.75em;
+	margin: auto 0 0;
+}
+
+.ProjectDashboardPage__summary dl div {
+	padding: 0.875em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+}
+
+.ProjectDashboardPage__summary dt {
+	margin: 0 0 0.35em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	line-height: 1;
+}
+
+.ProjectDashboardPage__summary dd {
+	margin: 0;
+	color: $color-text-primary;
+	font-family: $font-data;
+	font-size: 11pt;
+	line-height: 1.2;
+}
+
+.ProjectDashboardPage__blockTitle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1em;
+}
+
+.ProjectDashboardPage__blockTitle p {
+	margin: 0;
+}
+
+.ProjectDashboardPage__blockTitle span {
+	color: $color-selected;
+	font-family: $font-data;
+	font-size: 13pt;
+	line-height: 1;
+}
+
+.ProjectDashboardPage__user {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1em;
+	padding: 0.875em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+}
+
+.ProjectDashboardPage__user strong,
+.ProjectDashboardPage__user small {
+	display: block;
+}
+
+.ProjectDashboardPage__user strong {
+	color: $color-text-primary;
+	font-size: 12pt;
+	font-weight: 400;
+	line-height: 1.2;
+}
+
+.ProjectDashboardPage__user small {
+	margin-top: 0.3em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	line-height: 1.25;
+}
+
+.ProjectDashboardPage__user > span {
+	color: $color-text-secondary;
+	font-family: $font-data;
+	font-size: 10pt;
+	white-space: nowrap;
+}
+
+@media (max-width: 64em) {
+	.ProjectDashboardPage {
+		height: auto;
+	}
+
+	.ProjectDashboardPage__layout,
+	.ProjectDashboardPage__summary dl {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 42em) {
+	.ProjectDashboardPage__header,
+	.ProjectDashboardPage__user {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.ProjectDashboardPage__back {
+		align-self: flex-start;
+	}
+}

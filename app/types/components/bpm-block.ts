@@ -1,7 +1,6 @@
-// types/BPMBlock.ts
 export type BPMBlockStatus = 'idle' | 'recording' | 'ready' | 'failed'
 
-export interface BPMChartDataset {
+export type BPMChartDataset = {
 	label: string
 	data: number[]
 	yAxisID?: string
@@ -13,12 +12,12 @@ export interface BPMChartDataset {
 	showLine?: boolean
 }
 
-export interface BPMChartData {
+export type BPMChartData = {
 	labels: number[]
 	datasets: BPMChartDataset[]
 }
 
-export interface BPMMeasurement {
+export type BPMMeasurement = {
 	id: string
 	tstmp?: string
 	fname?: string
@@ -28,7 +27,7 @@ export interface BPMMeasurement {
 	p_to?: string
 }
 
-export interface BPMNowMeasurement {
+export type BPMNowMeasurement = {
 	id: string
 	part: string | number
 	parts: string | number
@@ -36,7 +35,13 @@ export interface BPMNowMeasurement {
 	t_finish?: string
 }
 
-export interface BPMBlockState {
+export type LegacyPulseChartResponse = {
+	labels: number[]
+	datasets: Array<Record<string, unknown> & { label: string; data: number[] }>
+	bpm?: number
+}
+
+export type BPMBlockState = {
 	status: BPMBlockStatus
 	progress: number
 	measurementId: string | null

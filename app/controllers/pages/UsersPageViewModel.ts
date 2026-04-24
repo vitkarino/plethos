@@ -1,0 +1,172 @@
+import { reactive } from 'vue'
+import type { UsersPageState } from '~/types/pages/users'
+import type { ApiResponse } from '~/types/shared/api'
+import type { Project, ProjectUser, User } from '~/types/shared/entities'
+import { formatDateValue, getRequestErrorMessage, getSexLabel } from '~/utils/shared'
+
+export class UsersPageViewModel {
+	public readonly state = reactive<UsersPageState>({
+		users: [],
+		projects: [],
+		projectUsers: [],
+		userForm: {
+			name: '',
+			age: '',
+			sex: 'male',
+		},
+		editingUserId: null,
+		isUserModalOpen: false,
+		isUserSaving: false,
+		userFormError: '',
+		pageError: '',
+	})
+
+	public initialize() {
+		return Promise.all([
+			this.refreshUsers(),
+			this.loadProjects(),
+			this.refreshProjectUsers(),
+		]).then(() => undefined).catch((error) => {
+			this.state.pageError = getRequestErrorMessage(error, 'Users data was not loaded')
+		})
+	}
+
+	public refreshUsers() {
+		return $fetch<User[]>('/api/users')
+			.then((users) => {
+				this.state.users = users
+				return users
+			})
+	}
+
+	public loadProjects() {
+		return $fetch<Project[]>('/api/projects')
+			.then((projects) => {
+				this.state.projects = projects
+				return projects
+			})
+	}
+
+	public refreshProjectUsers() {
+		return $fetch<ProjectUser[]>('/api/project_users')
+			.then((projectUsers) => {
+				this.state.projectUsers = projectUsers
+				return projectUsers
+			})
+	}
+
+	public sexLabel(sex: User['sex']) {
+		return getSexLabel(sex)
+	}
+
+	public userProjectTitles(userId: number) {
+		const projectIds = this.state.projectUsers
+			.filter((projectUser) => projectUser.user_id === userId)
+			.map((projectUser) => projectUser.project_id)
+
+		const titles = this.state.projects
+			.filter((project) => projectIds.includes(project.id))
+			.map((project) => project.title)
+
+		return titles.length > 0 ? titles.join(', ') : 'No projects'
+	}
+
+	public openCreateUserModal() {
+		this.resetUserForm()
+		this.state.isUserModalOpen = true
+	}
+
+	public openEditUserModal(user: User) {
+		this.state.editingUserId = user.id
+		this.state.userForm.name = user.name
+		this.state.userForm.age = user.age
+		this.state.userForm.sex = user.sex
+		this.state.userFormError = ''
+		this.state.pageError = ''
+		this.state.isUserModalOpen = true
+	}
+
+	public closeUserModal() {
+		this.state.isUserModalOpen = false
+		this.resetUserForm()
+	}
+
+	public saveUser() {
+		const age = Number(this.state.userForm.age)
+
+		if (!Number.isFinite(age)) {
+			this.state.userFormError = 'Invalid age'
+			return Promise.resolve()
+		}
+
+		const body = {
+			name: this.state.userForm.name,
+			age,
+			sex: this.state.userForm.sex,
+		}
+
+		this.state.isUserSaving = true
+		this.state.userFormError = ''
+		this.state.pageError = ''
+
+		const request = this.state.editingUserId
+			? $fetch(`/api/users/${this.state.editingUserId}`, {
+				method: 'PUT',
+				body,
+			}).then(() => undefined)
+			: $fetch<ApiResponse<User>>('/api/users', {
+				method: 'POST',
+				body,
+			}).then((response) => {
+				if (response.$meta.status !== 'success') {
+					return Promise.reject(new Error(response.$meta.message ?? 'User was not created'))
+				}
+
+				return undefined
+			})
+
+		return request
+			.then(() => {
+				this.closeUserModal()
+				return this.refreshUsers()
+			})
+			.then(() => undefined)
+			.catch((error) => {
+				this.state.userFormError = getRequestErrorMessage(error, 'User was not saved')
+			})
+			.finally(() => {
+				this.state.isUserSaving = false
+			})
+	}
+
+	public deleteUser(userId: number) {
+		this.state.pageError = ''
+
+		return $fetch(`/api/users/${userId}`, {
+			method: 'DELETE',
+		}).then(() => {
+			if (this.state.editingUserId === userId) {
+				this.resetUserForm()
+			}
+
+			return Promise.all([
+				this.refreshUsers(),
+				this.refreshProjectUsers(),
+			])
+		}).then(() => undefined).catch((error) => {
+			this.state.pageError = getRequestErrorMessage(error, 'User was not deleted')
+		})
+	}
+
+	public formatDate(value: string) {
+		return formatDateValue(value)
+	}
+
+	private resetUserForm() {
+		this.state.editingUserId = null
+		this.state.userForm.name = ''
+		this.state.userForm.age = ''
+		this.state.userForm.sex = 'male'
+		this.state.userFormError = ''
+	}
+}

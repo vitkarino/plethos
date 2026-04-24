@@ -1,0 +1,353 @@
+@use "../core/variables" as *;
+
+.ProjectsPage {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	width: min(100%, 72em);
+	height: 100%;
+	color: $color-text-primary;
+}
+
+.ProjectsPage__header,
+.ProjectsPage__headerActions,
+.ProjectsPage__projectHeader,
+.ProjectsPage__modalHeader,
+.ProjectsPage__modalActions,
+.ProjectsPage__projectActions,
+.ProjectsPage__assignForm {
+	display: flex;
+	gap: 1em;
+}
+
+.ProjectsPage__header,
+.ProjectsPage__projectHeader,
+.ProjectsPage__modalHeader {
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.ProjectsPage__headerActions,
+.ProjectsPage__modalActions,
+.ProjectsPage__projectActions,
+.ProjectsPage__assignForm {
+	align-items: center;
+}
+
+.ProjectsPage__header h1,
+.ProjectsPage__modalHeader h2,
+.ProjectsPage__projectHeader h2 {
+	margin: 0;
+	color: $color-text-primary;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: 0;
+}
+
+.ProjectsPage__header h1 {
+	font-size: 22pt;
+}
+
+.ProjectsPage__modalHeader h2 {
+	font-size: 16pt;
+}
+
+.ProjectsPage__projectHeader h2 {
+	font-size: 15pt;
+}
+
+.ProjectsPage__projectHeader p,
+.ProjectsPage__sectionTitle span,
+.ProjectsPage__modal label span {
+	margin: 0 0 0.35em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.ProjectsPage__counter,
+.ProjectsPage__projectHeader > span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.375em;
+	padding: 0 0.875em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-selected;
+	font-family: $font-data;
+	font-size: 11pt;
+	white-space: nowrap;
+}
+
+.ProjectsPage__modalOverlay {
+	position: fixed;
+	inset: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.25em;
+	background: rgba(0, 0, 0, 0.62);
+}
+
+.ProjectsPage__modal {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	width: min(100%, 34em);
+	padding: 1.25em;
+	border: $border-default;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+	color: $color-text-primary;
+	box-shadow: 0 1em 2.5em rgba(0, 0, 0, 0.38);
+}
+
+.ProjectsPage__modal label {
+	display: flex;
+	flex-direction: column;
+}
+
+.ProjectsPage__modal input,
+.ProjectsPage__modal textarea,
+.ProjectsPage__assignForm select {
+	width: 100%;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	outline: none;
+	transition:
+		border-color 160ms ease,
+		background-color 160ms ease;
+}
+
+.ProjectsPage__modal input,
+.ProjectsPage__assignForm select {
+	min-height: 2.5em;
+	padding: 0 0.75em;
+}
+
+.ProjectsPage__modal textarea {
+	min-height: 7em;
+	padding: 0.625em 0.75em;
+	resize: vertical;
+}
+
+.ProjectsPage__modal input:focus,
+.ProjectsPage__modal textarea:focus,
+.ProjectsPage__assignForm select:focus {
+	border-color: $color-selected;
+	background: $color-button-bg;
+}
+
+.ProjectsPage__formError {
+	margin: 0;
+	color: $color-selected;
+	font-size: 11pt;
+	line-height: 1.35;
+}
+
+.ProjectsPage__modalActions {
+	justify-content: flex-end;
+	gap: 0.5em;
+}
+
+.ProjectsPage__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.5em;
+	padding: 0 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	font-weight: 700;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.ProjectsPage__button:hover,
+.ProjectsPage__button:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.ProjectsPage__button:disabled {
+	cursor: not-allowed;
+	opacity: 0.48;
+}
+
+.ProjectsPage__button--primary {
+	background: $color-page-bg;
+}
+
+.ProjectsPage__button--ghost {
+	background: transparent;
+}
+
+.ProjectsPage__button--danger:hover,
+.ProjectsPage__button--danger:focus-visible {
+	color: $color-selected;
+}
+
+.ProjectsPage__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1em;
+	min-height: 0;
+}
+
+.ProjectsPage__project {
+	display: flex;
+	flex-direction: column;
+	gap: 1.125em;
+	min-height: 20em;
+}
+
+.ProjectsPage__description,
+.ProjectsPage__empty {
+	margin: 0;
+	color: $color-text-secondary;
+	font-size: 12pt;
+	line-height: 1.45;
+}
+
+.ProjectsPage__assignments {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75em;
+}
+
+.ProjectsPage__sectionTitle span {
+	display: block;
+	margin: 0;
+}
+
+.ProjectsPage__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+}
+
+.ProjectsPage__chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	min-height: 2.25em;
+	padding: 0 0.75em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 10pt;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.ProjectsPage__chip small {
+	color: $color-text-secondary;
+	font-family: $font-data;
+	font-size: 9pt;
+}
+
+.ProjectsPage__chip:hover,
+.ProjectsPage__chip:focus-visible {
+	border-color: $color-selected;
+	color: $color-selected;
+	outline: none;
+}
+
+.ProjectsPage__assignForm {
+	gap: 0.5em;
+}
+
+.ProjectsPage__assignForm select {
+	min-width: 0;
+}
+
+.ProjectsPage__meta {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75em;
+	margin: auto 0 0;
+}
+
+.ProjectsPage__meta div {
+	padding: 0.875em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+}
+
+.ProjectsPage__meta dt {
+	margin: 0 0 0.35em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	line-height: 1;
+}
+
+.ProjectsPage__meta dd {
+	margin: 0;
+	color: $color-text-primary;
+	font-family: $font-data;
+	font-size: 11pt;
+	line-height: 1.2;
+}
+
+.ProjectsPage__projectActions {
+	flex-wrap: wrap;
+	gap: 0.5em;
+}
+
+@media (max-width: 72em) {
+	.ProjectsPage__grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 46em) {
+	.ProjectsPage {
+		height: auto;
+	}
+
+	.ProjectsPage__header,
+	.ProjectsPage__headerActions,
+	.ProjectsPage__projectHeader,
+	.ProjectsPage__modalActions,
+	.ProjectsPage__assignForm {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.ProjectsPage__counter,
+	.ProjectsPage__header > .ProjectsPage__button,
+	.ProjectsPage__headerActions > .ProjectsPage__button {
+		align-self: flex-start;
+	}
+
+	.ProjectsPage__meta {
+		grid-template-columns: 1fr;
+	}
+}

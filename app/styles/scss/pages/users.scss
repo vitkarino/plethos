@@ -1,0 +1,267 @@
+@use "../core/variables" as *;
+
+.UsersPage {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	width: min(100%, 76em);
+	height: 100%;
+	color: $color-text-primary;
+}
+
+.UsersPage__header,
+.UsersPage__headerActions,
+.UsersPage__modalHeader,
+.UsersPage__modalActions,
+.UsersPage__actions {
+	display: flex;
+	gap: 1em;
+}
+
+.UsersPage__header,
+.UsersPage__modalHeader {
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.UsersPage__headerActions,
+.UsersPage__modalActions,
+.UsersPage__actions {
+	align-items: center;
+}
+
+.UsersPage__header h1,
+.UsersPage__modalHeader h2 {
+	margin: 0;
+	color: $color-text-primary;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: 0;
+}
+
+.UsersPage__header h1 {
+	font-size: 22pt;
+}
+
+.UsersPage__modalHeader h2 {
+	font-size: 16pt;
+}
+
+.UsersPage__counter {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.375em;
+	padding: 0 0.875em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-surface-bg;
+	color: $color-selected;
+	font-family: $font-data;
+	font-size: 11pt;
+	white-space: nowrap;
+}
+
+.UsersPage__modalOverlay {
+	position: fixed;
+	inset: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.25em;
+	background: rgba(0, 0, 0, 0.62);
+}
+
+.UsersPage__modal {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	width: min(100%, 30em);
+	padding: 1.25em;
+	border: $border-default;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+	color: $color-text-primary;
+	box-shadow: 0 1em 2.5em rgba(0, 0, 0, 0.38);
+}
+
+.UsersPage__modal label {
+	display: flex;
+	flex-direction: column;
+}
+
+.UsersPage__modal label span {
+	margin: 0 0 0.35em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.UsersPage__modal input,
+.UsersPage__modal select {
+	width: 100%;
+	min-height: 2.5em;
+	padding: 0 0.75em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	outline: none;
+	transition:
+		border-color 160ms ease,
+		background-color 160ms ease;
+}
+
+.UsersPage__modal input:focus,
+.UsersPage__modal select:focus {
+	border-color: $color-selected;
+	background: $color-button-bg;
+}
+
+.UsersPage__formError {
+	margin: 0;
+	color: $color-selected;
+	font-size: 11pt;
+	line-height: 1.35;
+}
+
+.UsersPage__modalActions {
+	justify-content: flex-end;
+	gap: 0.5em;
+}
+
+.UsersPage__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.5em;
+	padding: 0 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	font-weight: 700;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.UsersPage__button:hover,
+.UsersPage__button:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.UsersPage__button:disabled {
+	cursor: not-allowed;
+	opacity: 0.48;
+}
+
+.UsersPage__button--primary {
+	background: $color-page-bg;
+}
+
+.UsersPage__button--ghost {
+	background: transparent;
+}
+
+.UsersPage__button--danger:hover,
+.UsersPage__button--danger:focus-visible {
+	color: $color-selected;
+}
+
+.UsersPage__table {
+	overflow: auto;
+	padding: 0;
+}
+
+.UsersPage__row {
+	display: grid;
+	grid-template-columns: minmax(14em, 1.3fr) 5em 6.5em minmax(14em, 1fr) 8em 11em;
+	gap: 1em;
+	align-items: center;
+	min-width: 66em;
+	padding: 1em 1.25em;
+	border-top: $border-default;
+	color: $color-text-secondary;
+	font-size: 11pt;
+}
+
+.UsersPage__row:first-child {
+	border-top: 0;
+}
+
+.UsersPage__row--head {
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.UsersPage__row strong,
+.UsersPage__row small {
+	display: block;
+}
+
+.UsersPage__row strong {
+	color: $color-text-primary;
+	font-size: 12pt;
+	font-weight: 400;
+	line-height: 1.2;
+}
+
+.UsersPage__row small {
+	margin-top: 0.3em;
+	color: $color-text-secondary;
+	font-family: $font-data;
+	font-size: 9pt;
+	line-height: 1.25;
+}
+
+.UsersPage__row span:not(:first-child):not(.UsersPage__actions) {
+	font-family: $font-data;
+}
+
+.UsersPage__actions {
+	gap: 0.5em;
+}
+
+.UsersPage__actions .UsersPage__button {
+	min-height: 2.25em;
+	padding: 0 0.75em;
+	font-size: 10pt;
+}
+
+@media (max-width: 46em) {
+	.UsersPage {
+		height: auto;
+	}
+
+	.UsersPage__header,
+	.UsersPage__headerActions,
+	.UsersPage__modalActions,
+	.UsersPage__actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.UsersPage__counter,
+	.UsersPage__headerActions > .UsersPage__button {
+		align-self: flex-start;
+	}
+}

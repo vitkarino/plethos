@@ -6,9 +6,9 @@
 			</template>
 
 			<template #nav>
-				<NuxtLink class="AppLayout__link" to="/">Головна</NuxtLink>
-				<a class="AppLayout__link" href="#">Проєкти</a>
-				<a class="AppLayout__link" href="#">Користувачі</a>
+				<NuxtLink class="AppLayout__link" to="/dashboard">Головна</NuxtLink>
+				<NuxtLink class="AppLayout__link" to="/projects">Проєкти</NuxtLink>
+				<NuxtLink class="AppLayout__link" to="/users">Користувачі</NuxtLink>
 				<NuxtLink class="AppLayout__link" to="/ai">ШІ Чат</NuxtLink>
 				<a class="AppLayout__link" href="#">Редактор сигналів</a>
 			</template>

@@ -22,27 +22,27 @@
 						<button
 							class="AIPage__modelButton"
 							type="button"
-							:aria-expanded="isModelMenuOpen"
-							@click="isModelMenuOpen = !isModelMenuOpen"
+							:aria-expanded="viewModel.state.isModelMenuOpen"
+							@click="viewModel.toggleModelMenu()"
 						>
-							<span>{{ selectedModel.name }}</span>
+							<span>{{ viewModel.state.selectedModel.name }}</span>
 							<span class="AIPage__modelChevron" aria-hidden="true"></span>
 						</button>
 
-						<div v-if="isModelMenuOpen" class="AIPage__modelMenu">
+						<div v-if="viewModel.state.isModelMenuOpen" class="AIPage__modelMenu">
 							<button
-								v-for="model in models"
+								v-for="model in viewModel.state.models"
 								:key="model.name"
 								class="AIPage__modelOption"
 								type="button"
-								:class="{ 'AIPage__modelOption--selected': model.name === selectedModel.name }"
-								@click="selectModel(model)"
+								:class="{ 'AIPage__modelOption--selected': model.name === viewModel.state.selectedModel.name }"
+								@click="viewModel.selectModel(model)"
 							>
 								<span>
 									<strong>{{ model.name }}</strong>
 									<small>{{ model.description }}</small>
 								</span>
-								<span v-if="model.name === selectedModel.name" class="AIPage__modelCheck" aria-hidden="true"></span>
+								<span v-if="model.name === viewModel.state.selectedModel.name" class="AIPage__modelCheck" aria-hidden="true"></span>
 							</button>
 
 							<div class="AIPage__thinking">
@@ -52,7 +52,7 @@
 								</span>
 
 								<label class="AIPage__switch">
-									<input v-model="adaptiveThinking" type="checkbox" />
+									<input v-model="viewModel.state.adaptiveThinking" type="checkbox" />
 									<span></span>
 								</label>
 							</div>
@@ -68,34 +68,9 @@
 </template>
 
 <script setup lang="ts">
-type ModelOption = {
-	name: string;
-	description: string;
-};
+import { AIPageViewModel } from '~/controllers/pages/AIPageViewModel';
 
-const models: ModelOption[] = [
-	{
-		name: 'GPT-5.5',
-		description: 'Most capable for ambitious work',
-	},
-	{
-		name: 'Claude Opus 4.7',
-		description: 'Most efficient for everyday tasks',
-	},
-	{
-		name: 'Gemini 3 Flash',
-		description: 'Fastest for short answers',
-	},
-];
-
-const selectedModel = ref<ModelOption>(models[1]);
-const isModelMenuOpen = ref(false);
-const adaptiveThinking = ref(false);
-
-function selectModel(model: ModelOption) {
-	selectedModel.value = model;
-	isModelMenuOpen.value = false;
-}
+const viewModel = new AIPageViewModel();
 </script>
 
 <style scoped lang="scss">
