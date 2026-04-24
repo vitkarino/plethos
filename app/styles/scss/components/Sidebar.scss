@@ -7,9 +7,9 @@
 	width: $sidebar-width;
 	min-width: $sidebar-width;
 	height: 100vh;
-	padding: 1.5em 1em;
-	border-right: $border-default;
-	background: $color-surface-bg;
+	padding: 1.5em 0 1.5em 1em;
+	border-right: 1px solid $color-reflector-border;
+	background: $color-reflector-surface-bg;
 	color: $color-text-secondary;
 }
 
@@ -22,7 +22,7 @@
 .Sidebar__nav {
 	display: flex;
 	flex-direction: column;
-	gap: 0.375em;
+	// gap: 0.375em;
 	flex: 1;
 	margin: 2em 0;
 	min-height: 0;

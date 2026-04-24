@@ -1,7 +1,13 @@
 import { reactive } from 'vue'
 import type { ProjectDashboardPageState } from '~/types/pages/project-dashboard'
 import type { AssignedUser, Project, ProjectUser, User } from '~/types/shared/entities'
-import { formatDateValue, getRequestErrorMessage, getSexLabel, toProjectSlug } from '~/utils/shared'
+import {
+	findProjectByRouteName,
+	formatDateValue,
+	getRequestErrorMessage,
+	getSexLabel,
+	setSelectedProjectId,
+} from '~/utils/shared'
 
 export class ProjectDashboardPageViewModel {
 	public readonly state = reactive<ProjectDashboardPageState>({
@@ -69,15 +75,15 @@ export class ProjectDashboardPageViewModel {
 	}
 
 	private syncProjectState() {
-		this.state.project = this.state.projects.find(
-			(item) => toProjectSlug(item.title) === this.state.projectName,
-		) ?? null
+		this.state.project = findProjectByRouteName(this.state.projects, this.state.projectName)
 
 		if (!this.state.project) {
 			this.state.assignedUsers = []
 			this.state.pageError = 'Project not found'
 			return
 		}
+
+		setSelectedProjectId(this.state.project.id)
 
 		this.state.assignedUsers = this.state.projectUsers
 			.filter((assignment) => assignment.project_id === this.state.project?.id)

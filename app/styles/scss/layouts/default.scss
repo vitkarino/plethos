@@ -11,11 +11,13 @@ $icon-users: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 $icon-chat: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M12 8V4H8'/%3E%3Crect width='16' height='12' x='4' y='8' rx='2'/%3E%3Cpath d='M2 14h2m16 0h2m-7-1v2m-6-2v2'/%3E%3C/g%3E%3C/svg%3E";
 $icon-signals: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2'/%3E%3C/svg%3E";
 $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/g%3E%3C/svg%3E";
+$icon-edit: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/%3E%3Cpath d='M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z'/%3E%3C/g%3E%3C/svg%3E";
+$icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'/%3E%3Cpath d='M10 11v6m4-6v6'/%3E%3C/g%3E%3C/svg%3E";
 
 .AppLayout {
 	display: flex;
 	min-height: 100vh;
-	background: $color-page-bg;
+	background: transparent;
 	color: $color-text-primary;
 }
 
@@ -26,7 +28,7 @@ $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' view
 	align-items: center;
 	min-width: 0;
 	padding: 1.25em;
-	background: $color-page-bg;
+	background: transparent;
 }
 
 .AppLayout__logo {
@@ -35,6 +37,19 @@ $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' view
 	font-weight: 700;
 	line-height: 1;
 	letter-spacing: 0;
+}
+
+.AppLayout__navItem {
+	position: relative;
+}
+
+.AppLayout__navItem--preview::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 100%;
+	width: 0.75em;
+	height: 100%;
 }
 
 .AppLayout__link {
@@ -48,9 +63,27 @@ $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' view
 	font-size: 12pt;
 	line-height: 1.2;
 	text-decoration: none;
+	white-space: nowrap;
 	transition:
 		background-color 160ms ease,
 		color 160ms ease;
+}
+
+.AppLayout__link span {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.AppLayout__linkMeta {
+	min-width: 0;
+	margin-left: auto;
+	overflow: hidden;
+	color: $color-selected;
+	font-family: $font-data;
+	font-size: 8.5pt;
+	line-height: 1.2;
+	text-overflow: ellipsis;
 }
 
 .AppLayout__link:hover,
@@ -59,6 +92,9 @@ $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' view
 	background: rgba($color-selected, 0.1);
 	color: $color-selected;
 	outline: none;
+	border-right: 1px solid $color-selected;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
 }
 
 .AppLayout__link:focus-visible {
@@ -74,26 +110,371 @@ $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' view
 	background: currentColor;
 }
 
-.AppLayout :deep(.Sidebar__nav) .AppLayout__link:nth-of-type(1)::before {
+.AppLayout__link--home::before {
 	@include icon-mask($icon-home);
 }
 
-.AppLayout :deep(.Sidebar__nav) .AppLayout__link:nth-of-type(2)::before {
+.AppLayout__link--projects::before {
 	@include icon-mask($icon-projects);
 }
 
-.AppLayout :deep(.Sidebar__nav) .AppLayout__link:nth-of-type(3)::before {
+.AppLayout__link--users::before {
 	@include icon-mask($icon-users);
 }
 
-.AppLayout :deep(.Sidebar__nav) .AppLayout__link:nth-of-type(4)::before {
+.AppLayout__link--chat::before {
 	@include icon-mask($icon-chat);
 }
 
-.AppLayout :deep(.Sidebar__nav) .AppLayout__link:nth-of-type(5)::before {
+.AppLayout__link--signals::before {
 	@include icon-mask($icon-signals);
 }
 
-.AppLayout :deep(.Sidebar__bottom) .AppLayout__link::before {
+.AppLayout__link--author::before {
 	@include icon-mask($icon-author);
+}
+
+.AppLayout__preview {
+	position: absolute;
+	top: 0;
+	left: calc(100% + 0.75em);
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75em;
+	width: 23em;
+	max-height: min(32em, calc(100vh - 2.5em));
+	padding: 0.875em;
+	border: $border-default;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+	box-shadow: 0 1em 2.5em rgba(0, 0, 0, 0.38);
+	opacity: 0;
+	pointer-events: none;
+	transform: translateX(-0.35em);
+	transition:
+		opacity 160ms ease,
+		transform 160ms ease;
+}
+
+.AppLayout__navItem--preview:hover .AppLayout__preview,
+.AppLayout__navItem--preview:focus-within .AppLayout__preview {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateX(0);
+}
+
+.AppLayout__previewHeader,
+.AppLayout__previewItem,
+.AppLayout__previewActions,
+.AppLayout__modalHeader,
+.AppLayout__modalActions {
+	display: flex;
+	gap: 0.75em;
+}
+
+.AppLayout__previewHeader,
+.AppLayout__previewItem,
+.AppLayout__modalHeader {
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.AppLayout__previewActions,
+.AppLayout__modalActions {
+	align-items: center;
+}
+
+.AppLayout__previewHeader strong,
+.AppLayout__modalHeader h2 {
+	margin: 0;
+	color: $color-text-primary;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: 0;
+}
+
+.AppLayout__previewHeader strong {
+	font-size: 13pt;
+}
+
+.AppLayout__modalHeader h2 {
+	font-size: 16pt;
+}
+
+.AppLayout__previewHeader span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2em;
+	min-width: 2em;
+	padding: 0 0.625em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-selected;
+	font-family: $font-data;
+	font-size: 10pt;
+}
+
+.AppLayout__previewList {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5em;
+	overflow: auto;
+	padding-right: 0.125em;
+}
+
+.AppLayout__previewItem {
+	gap: 0.5em;
+	padding: 0.625em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+}
+
+.AppLayout__previewItem--selected {
+	border-color: $color-selected;
+	background: rgba($color-selected, 0.1);
+}
+
+.AppLayout__previewItem--selected .AppLayout__previewMain strong {
+	color: $color-selected;
+}
+
+.AppLayout__previewMain {
+	min-width: 0;
+	color: $color-text-secondary;
+	text-decoration: none;
+}
+
+.AppLayout__previewMain:hover,
+.AppLayout__previewMain:focus-visible {
+	color: $color-selected;
+	outline: none;
+}
+
+.AppLayout__previewMain strong,
+.AppLayout__previewMain small {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.AppLayout__previewMain strong {
+	color: $color-text-primary;
+	font-size: 11pt;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.AppLayout__previewMain small {
+	margin-top: 0.3em;
+	color: currentColor;
+	font-family: $font-data;
+	font-size: 9pt;
+	line-height: 1.25;
+}
+
+.AppLayout__previewActions {
+	flex: 0 0 auto;
+	gap: 0.35em;
+}
+
+.AppLayout__iconButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2em;
+	height: 2em;
+	padding: 0;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-secondary;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.AppLayout__iconButton::before {
+	content: "";
+	display: block;
+	width: 1em;
+	height: 1em;
+	background: currentColor;
+}
+
+.AppLayout__iconButton--edit::before {
+	@include icon-mask($icon-edit);
+}
+
+.AppLayout__iconButton--delete::before {
+	@include icon-mask($icon-trash);
+}
+
+.AppLayout__iconButton:hover,
+.AppLayout__iconButton:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.AppLayout__previewEmpty,
+.AppLayout__previewError,
+.AppLayout__formError {
+	margin: 0;
+	font-size: 11pt;
+	line-height: 1.35;
+}
+
+.AppLayout__previewEmpty {
+	color: $color-text-secondary;
+}
+
+.AppLayout__previewError,
+.AppLayout__formError {
+	color: $color-selected;
+}
+
+.AppLayout__modalOverlay {
+	position: fixed;
+	inset: 0;
+	z-index: 30;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.25em;
+	background: rgba(0, 0, 0, 0.62);
+}
+
+.AppLayout__modal {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	width: min(100%, 34em);
+	padding: 1.25em;
+	border: $border-default;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+	color: $color-text-primary;
+	box-shadow: 0 1em 2.5em rgba(0, 0, 0, 0.38);
+}
+
+.AppLayout__modal label {
+	display: flex;
+	flex-direction: column;
+}
+
+.AppLayout__modal label span {
+	margin: 0 0 0.35em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.AppLayout__modal input,
+.AppLayout__modal select,
+.AppLayout__modal textarea {
+	width: 100%;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	outline: none;
+	transition:
+		border-color 160ms ease,
+		background-color 160ms ease;
+}
+
+.AppLayout__modal input,
+.AppLayout__modal select {
+	min-height: 2.5em;
+	padding: 0 0.75em;
+}
+
+.AppLayout__modal textarea {
+	min-height: 7em;
+	padding: 0.625em 0.75em;
+	resize: vertical;
+}
+
+.AppLayout__modal input:focus,
+.AppLayout__modal select:focus,
+.AppLayout__modal textarea:focus {
+	border-color: $color-selected;
+	background: $color-button-bg;
+}
+
+.AppLayout__modalActions {
+	justify-content: flex-end;
+	gap: 0.5em;
+}
+
+.AppLayout__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.5em;
+	padding: 0 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	font-weight: 700;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.AppLayout__button:hover,
+.AppLayout__button:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.AppLayout__button:disabled {
+	cursor: not-allowed;
+	opacity: 0.48;
+}
+
+.AppLayout__button--primary {
+	background: $color-page-bg;
+}
+
+.AppLayout__button--ghost {
+	background: transparent;
+}
+
+@media (max-width: 58em) {
+	.AppLayout__preview {
+		top: calc(100% + 0.5em);
+		left: 0;
+		width: min(23em, calc(100vw - 2.5em));
+	}
+}
+
+@media (max-width: 46em) {
+	.AppLayout__modalHeader,
+	.AppLayout__modalActions {
+		align-items: stretch;
+		flex-direction: column;
+	}
 }

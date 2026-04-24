@@ -1,11 +1,16 @@
 <template>
 	<section class="ProjectsPage">
 		<header class="ProjectsPage__header">
-			<h1>Активні проєкти</h1>
+			<h1>{{ viewModel.state.projects.length ? 'Активні проєкти' : 'Створіть перший проєкт' }}</h1>
 
 			<div class="ProjectsPage__headerActions">
 				<span class="ProjectsPage__counter">{{ viewModel.state.projects.length }}</span>
-				<button class="ProjectsPage__button" type="button" @click="viewModel.openCreateProjectModal()">
+				<button
+					v-if="viewModel.state.projects.length"
+					class="ProjectsPage__button"
+					type="button"
+					@click="viewModel.openCreateProjectModal()"
+				>
 					New project
 				</button>
 			</div>
@@ -15,11 +20,34 @@
 			{{ viewModel.state.pageError }}
 		</p>
 
-		<div class="ProjectsPage__grid">
+		<Block v-if="!viewModel.state.projects.length" class="ProjectsPage__emptyCreate">
+			<form class="ProjectsPage__createForm" @submit.prevent="viewModel.saveProject()">
+				<label>
+					<span>Title</span>
+					<input v-model.trim="viewModel.state.projectForm.title" type="text" required />
+				</label>
+
+				<label>
+					<span>Description</span>
+					<textarea v-model.trim="viewModel.state.projectForm.description" rows="5" required></textarea>
+				</label>
+
+				<button
+					class="ProjectsPage__button ProjectsPage__button--primary"
+					type="submit"
+					:disabled="viewModel.state.isProjectSaving"
+				>
+					Create project
+				</button>
+			</form>
+		</Block>
+
+		<div v-else class="ProjectsPage__grid">
 			<Block
 				v-for="project in viewModel.state.projects"
 				:key="project.id"
 				class="ProjectsPage__project"
+				:class="{ 'ProjectsPage__project--selected': viewModel.isProjectSelected(project) }"
 			>
 				<div class="ProjectsPage__projectHeader">
 					<div>
@@ -27,7 +55,9 @@
 						<h2>{{ project.title }}</h2>
 					</div>
 
-					<span>{{ viewModel.projectUserCount(project.id) }} users</span>
+					<span :class="{ 'ProjectsPage__selectedBadge': viewModel.isProjectSelected(project) }">
+						{{ viewModel.isProjectSelected(project) ? 'Selected · ' : '' }}{{ viewModel.projectUserCount(project.id) }} users
+					</span>
 				</div>
 
 				<p class="ProjectsPage__description">{{ project.description }}</p>
@@ -38,16 +68,29 @@
 					</div>
 
 					<div v-if="viewModel.assignedUsers(project.id).length" class="ProjectsPage__chips">
-						<button
+						<div
 							v-for="assignment in viewModel.assignedUsers(project.id)"
 							:key="assignment.user.id"
 							class="ProjectsPage__chip"
-							type="button"
-							@click="viewModel.unassignUser(project.id, assignment.user.id)"
 						>
 							<span>{{ assignment.user.name }}</span>
-							<small>Remove</small>
-						</button>
+							<div class="ProjectsPage__chipActions">
+								<button
+									class="ProjectsPage__iconButton ProjectsPage__iconButton--edit"
+									type="button"
+									title="Edit user"
+									aria-label="Edit user"
+									@click="viewModel.openEditUserModal(assignment.user)"
+								></button>
+								<button
+									class="ProjectsPage__iconButton ProjectsPage__iconButton--delete"
+									type="button"
+									title="Remove user from project"
+									aria-label="Remove user from project"
+									@click="viewModel.unassignUser(project.id, assignment.user.id)"
+								></button>
+							</div>
+						</div>
 					</div>
 
 					<p v-else class="ProjectsPage__empty">No assigned users</p>
@@ -93,9 +136,10 @@
 				<div class="ProjectsPage__projectActions">
 					<NuxtLink
 						class="ProjectsPage__button ProjectsPage__button--primary"
-						:to="`/project/${viewModel.projectSlug(project.title)}/dashboard`"
+						:to="viewModel.projectDashboardPath(project)"
+						@click="viewModel.selectProject(project)"
 					>
-						Open
+						{{ viewModel.isProjectSelected(project) ? 'Open' : 'Select and open' }}
 					</NuxtLink>
 					<button class="ProjectsPage__button" type="button" @click="viewModel.openEditProjectModal(project)">
 						Edit
@@ -103,7 +147,7 @@
 					<button
 						class="ProjectsPage__button ProjectsPage__button--danger"
 						type="button"
-						@click="viewModel.deleteProject(project.id)"
+						@click="viewModel.deleteProject(project)"
 					>
 						Remove
 					</button>
@@ -158,6 +202,67 @@
 							:disabled="viewModel.state.isProjectSaving"
 						>
 							{{ viewModel.state.editingProjectId ? 'Save changes' : 'Create project' }}
+						</button>
+					</div>
+				</form>
+			</div>
+		</Teleport>
+
+		<Teleport to="body">
+			<div
+				v-if="viewModel.state.isUserModalOpen"
+				class="ProjectsPage__modalOverlay"
+				@click.self="viewModel.closeUserModal()"
+			>
+				<form class="ProjectsPage__modal" @submit.prevent="viewModel.saveUser()">
+					<div class="ProjectsPage__modalHeader">
+						<h2>Edit user</h2>
+
+						<button
+							class="ProjectsPage__button ProjectsPage__button--ghost"
+							type="button"
+							@click="viewModel.closeUserModal()"
+						>
+							Close
+						</button>
+					</div>
+
+					<label>
+						<span>Name</span>
+						<input v-model.trim="viewModel.state.userForm.name" type="text" required />
+					</label>
+
+					<label>
+						<span>Age</span>
+						<input v-model.number="viewModel.state.userForm.age" min="0" type="number" required />
+					</label>
+
+					<label>
+						<span>Sex</span>
+						<select v-model="viewModel.state.userForm.sex">
+							<option value="male">Male</option>
+							<option value="female">Female</option>
+						</select>
+					</label>
+
+					<p v-if="viewModel.state.userFormError" class="ProjectsPage__formError">
+						{{ viewModel.state.userFormError }}
+					</p>
+
+					<div class="ProjectsPage__modalActions">
+						<button
+							class="ProjectsPage__button ProjectsPage__button--ghost"
+							type="button"
+							@click="viewModel.closeUserModal()"
+						>
+							Cancel
+						</button>
+						<button
+							class="ProjectsPage__button ProjectsPage__button--primary"
+							type="submit"
+							:disabled="viewModel.state.isUserSaving"
+						>
+							Save changes
 						</button>
 					</div>
 				</form>

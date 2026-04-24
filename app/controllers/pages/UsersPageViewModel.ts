@@ -139,7 +139,16 @@ export class UsersPageViewModel {
 			})
 	}
 
-	public deleteUser(userId: number) {
+	public deleteUser(user: User | number) {
+		const userId = typeof user === 'number' ? user : user.id
+		const name = typeof user === 'number'
+			? this.state.users.find((item) => item.id === userId)?.name
+			: user.name
+
+		if (!this.confirmDelete(name ? `Delete user "${name}"?` : 'Delete this user?')) {
+			return Promise.resolve()
+		}
+
 		this.state.pageError = ''
 
 		return $fetch(`/api/users/${userId}`, {
@@ -168,5 +177,9 @@ export class UsersPageViewModel {
 		this.state.userForm.age = ''
 		this.state.userForm.sex = 'male'
 		this.state.userFormError = ''
+	}
+
+	private confirmDelete(message: string) {
+		return typeof window === 'undefined' || window.confirm(message)
 	}
 }

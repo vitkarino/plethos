@@ -2,21 +2,39 @@ import { reactive } from 'vue'
 import type { ProjectsPageState } from '~/types/pages/projects'
 import type { ApiResponse } from '~/types/shared/api'
 import type { AssignedUser, Project, ProjectUser, User } from '~/types/shared/entities'
-import { formatDateValue, getRequestErrorMessage, toProjectSlug } from '~/utils/shared'
+import {
+	clearSelectedProjectId,
+	formatDateValue,
+	getProjectRoutePath,
+	getRequestErrorMessage,
+	readSelectedProjectId,
+	setSelectedProjectId,
+	toProjectSlug,
+} from '~/utils/shared'
 
 export class ProjectsPageViewModel {
 	public readonly state = reactive<ProjectsPageState>({
 		projects: [],
+		selectedProject: null,
 		users: [],
 		projectUsers: [],
 		projectForm: {
 			title: '',
 			description: '',
 		},
+		userForm: {
+			name: '',
+			age: '',
+			sex: 'male',
+		},
 		editingProjectId: null,
+		editingUserId: null,
 		isProjectModalOpen: false,
+		isUserModalOpen: false,
 		isProjectSaving: false,
+		isUserSaving: false,
 		projectFormError: '',
+		userFormError: '',
 		assignmentForms: {},
 		pageError: '',
 	})
@@ -26,7 +44,9 @@ export class ProjectsPageViewModel {
 			this.refreshProjects(),
 			this.loadUsers(),
 			this.refreshProjectUsers(),
-		]).then(() => undefined).catch((error) => {
+		]).then(() => {
+			this.syncSelectedProject()
+		}).catch((error) => {
 			this.state.pageError = getRequestErrorMessage(error, 'Projects data was not loaded')
 		})
 	}
@@ -35,6 +55,7 @@ export class ProjectsPageViewModel {
 		return $fetch<Project[]>('/api/projects')
 			.then((projects) => {
 				this.state.projects = projects
+				this.syncSelectedProject()
 				return projects
 			})
 	}
@@ -85,6 +106,19 @@ export class ProjectsPageViewModel {
 		return this.state.users.filter((user) => !assignedUserIds.has(user.id))
 	}
 
+	public selectProject(project: Project) {
+		this.state.selectedProject = project
+		setSelectedProjectId(project.id)
+	}
+
+	public isProjectSelected(project: Project) {
+		return this.state.selectedProject?.id === project.id
+	}
+
+	public projectDashboardPath(project: Project) {
+		return getProjectRoutePath(project, '/dashboard')
+	}
+
 	public openCreateProjectModal() {
 		this.resetProjectForm()
 		this.state.isProjectModalOpen = true
@@ -118,22 +152,34 @@ export class ProjectsPageViewModel {
 			? $fetch(`/api/projects/${this.state.editingProjectId}`, {
 				method: 'PUT',
 				body,
-			}).then(() => undefined)
+			}).then(() => null)
 			: $fetch<ApiResponse<Project>>('/api/projects', {
 				method: 'POST',
 				body,
 			}).then((response) => {
-				if (response.$meta.status !== 'success') {
+				if (response.$meta.status !== 'success' || !response.data) {
 					return Promise.reject(new Error(response.$meta.message ?? 'Project was not created'))
 				}
 
-				return undefined
+				return response.data
 			})
 
 		return request
-			.then(() => {
+			.then((createdProject) => {
 				this.closeProjectModal()
-				return this.refreshProjects()
+
+				return this.refreshProjects().then(() => createdProject)
+			})
+			.then((createdProject) => {
+				if (!createdProject) {
+					return undefined
+				}
+
+				const project = this.state.projects.find((item) => item.id === createdProject.id) ?? createdProject
+
+				this.selectProject(project)
+
+				return navigateTo(this.projectDashboardPath(project))
 			})
 			.then(() => undefined)
 			.catch((error) => {
@@ -144,7 +190,16 @@ export class ProjectsPageViewModel {
 			})
 	}
 
-	public deleteProject(projectId: number) {
+	public deleteProject(project: Project | number) {
+		const projectId = typeof project === 'number' ? project : project.id
+		const title = typeof project === 'number'
+			? this.state.projects.find((item) => item.id === projectId)?.title
+			: project.title
+
+		if (!this.confirmDelete(title ? `Delete project "${title}"?` : 'Delete this project?')) {
+			return Promise.resolve()
+		}
+
 		this.state.pageError = ''
 
 		return $fetch(`/api/projects/${projectId}`, {
@@ -154,12 +209,65 @@ export class ProjectsPageViewModel {
 				this.resetProjectForm()
 			}
 
+			if (this.state.selectedProject?.id === projectId) {
+				this.state.selectedProject = null
+				clearSelectedProjectId()
+			}
+
 			return Promise.all([
 				this.refreshProjects(),
 				this.refreshProjectUsers(),
 			])
 		}).then(() => undefined).catch((error) => {
 			this.state.pageError = getRequestErrorMessage(error, 'Project was not deleted')
+		})
+	}
+
+	public openEditUserModal(user: User) {
+		this.state.editingUserId = user.id
+		this.state.userForm.name = user.name
+		this.state.userForm.age = user.age
+		this.state.userForm.sex = user.sex
+		this.state.userFormError = ''
+		this.state.pageError = ''
+		this.state.isUserModalOpen = true
+	}
+
+	public closeUserModal() {
+		this.state.isUserModalOpen = false
+		this.resetUserForm()
+	}
+
+	public saveUser() {
+		if (!this.state.editingUserId) {
+			return Promise.resolve()
+		}
+
+		const age = Number(this.state.userForm.age)
+
+		if (!Number.isFinite(age)) {
+			this.state.userFormError = 'Invalid age'
+			return Promise.resolve()
+		}
+
+		this.state.isUserSaving = true
+		this.state.userFormError = ''
+		this.state.pageError = ''
+
+		return $fetch(`/api/users/${this.state.editingUserId}`, {
+			method: 'PUT',
+			body: {
+				name: this.state.userForm.name,
+				age,
+				sex: this.state.userForm.sex,
+			},
+		}).then(() => {
+			this.closeUserModal()
+			return this.loadUsers()
+		}).then(() => undefined).catch((error) => {
+			this.state.userFormError = getRequestErrorMessage(error, 'User was not saved')
+		}).finally(() => {
+			this.state.isUserSaving = false
 		})
 	}
 
@@ -228,5 +336,28 @@ export class ProjectsPageViewModel {
 		this.state.projectForm.title = ''
 		this.state.projectForm.description = ''
 		this.state.projectFormError = ''
+	}
+
+	private resetUserForm() {
+		this.state.editingUserId = null
+		this.state.userForm.name = ''
+		this.state.userForm.age = ''
+		this.state.userForm.sex = 'male'
+		this.state.userFormError = ''
+	}
+
+	private syncSelectedProject() {
+		const selectedProjectId = readSelectedProjectId()
+		const selectedProject = this.state.projects.find((project) => project.id === selectedProjectId) ?? null
+
+		this.state.selectedProject = selectedProject
+
+		if (!selectedProject && selectedProjectId) {
+			clearSelectedProjectId()
+		}
+	}
+
+	private confirmDelete(message: string) {
+		return typeof window === 'undefined' || window.confirm(message)
 	}
 }

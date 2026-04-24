@@ -4,9 +4,9 @@
 	width: 100%;
 	height: 100%;
 	padding: 1.5em;
-	border: $border-default;
+	border: 1px solid $color-reflector-border;
 	border-radius: $radius-block;
-	background: $color-surface-bg;
+	background: $color-reflector-surface-bg;
 	color: $color-text-primary;
 	box-sizing: border-box;
 }

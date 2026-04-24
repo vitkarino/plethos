@@ -17,7 +17,8 @@ body {
 	min-width: 0;
 	min-height: 100vh;
 	margin: 0;
-	background: $color-page-bg;
+	background: $color-reflector-bg;
+	background-attachment: fixed;
 	color: $color-text-primary;
 	font-family: $font-text;
 	line-height: 1.45;

@@ -45,7 +45,7 @@
 					<button
 						class="UsersPage__button UsersPage__button--danger"
 						type="button"
-						@click="viewModel.deleteUser(user.id)"
+						@click="viewModel.deleteUser(user)"
 					>
 						Remove
 					</button>
