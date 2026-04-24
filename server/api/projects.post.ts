@@ -1,4 +1,5 @@
 import { createTimestamp, getNextId, mockProjects } from '../data/mock';
+import { createApiErrorResponse, createApiSuccessResponse } from '../utils/api-response';
 
 export default defineEventHandler((event) => {
 	return readBody<{
@@ -11,13 +12,7 @@ export default defineEventHandler((event) => {
 		if (!title || !description) {
 			setResponseStatus(event, 400);
 
-			return {
-				$meta: {
-					status: 'error',
-					message: 'Invalid project data',
-				},
-				data: null,
-			};
+			return createApiErrorResponse('INVALID_PROJECT_DATA', 'Invalid project data');
 		}
 
 		const createdAt = createTimestamp();
@@ -31,11 +26,6 @@ export default defineEventHandler((event) => {
 
 		mockProjects.push(project);
 
-		return {
-			$meta: {
-				status: 'success',
-			},
-			data: project,
-		};
+		return createApiSuccessResponse(project);
 	});
 });

@@ -1,3 +1,4 @@
 import { mockUsers } from '../data/mock';
+import { createApiSuccessResponse } from '../utils/api-response';
 
-export default defineEventHandler(() => mockUsers);
+export default defineEventHandler(() => createApiSuccessResponse(mockUsers));

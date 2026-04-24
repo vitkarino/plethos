@@ -1,14 +1,14 @@
 <template>
-	<aside class="Sidebar">
-		<div class="Sidebar__top">
+	<aside class="sidebar">
+		<div class="sidebar__top">
 			<slot name="top" />
 		</div>
 
-		<nav class="Sidebar__nav">
+		<nav class="sidebar__nav">
 			<slot name="nav" />
 		</nav>
 
-		<div class="Sidebar__bottom">
+		<div class="sidebar__bottom">
 			<slot name="bottom" />
 		</div>
 	</aside>

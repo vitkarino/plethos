@@ -1,16 +1,16 @@
 <template>
-	<div class="AppLayout">
+	<div class="app-layout">
 		<Sidebar>
 			<template #top>
-				<div class="AppLayout__logo">
+				<div class="app-layout__logo">
 					<img :src="pulsoLogo" alt="Pulso" />
 				</div>
 			</template>
 
 			<template #nav>
-				<div class="AppLayout__navItem">
+				<div class="app-layout__nav-item">
 					<NuxtLink
-						class="AppLayout__link AppLayout__link--home"
+						class="app-layout__link app-layout__link_home"
 						data-shortcut="Ctrl + 1"
 						:to="viewModel.workPath('/dashboard')"
 					>
@@ -18,33 +18,33 @@
 					</NuxtLink>
 				</div>
 
-				<div class="AppLayout__navItem AppLayout__navItem--preview">
-					<NuxtLink class="AppLayout__link AppLayout__link--projects" data-shortcut="Ctrl + 2" to="/projects">
+				<div class="app-layout__nav-item app-layout__nav-item_preview">
+					<NuxtLink class="app-layout__link app-layout__link_projects" data-shortcut="Ctrl + 2" to="/projects">
 						<span>Проєкти</span>
-						<small v-if="viewModel.state.selectedProject" class="AppLayout__linkMeta">
+						<small v-if="viewModel.state.selectedProject" class="app-layout__link-meta">
 							{{ viewModel.selectedProjectLabel() }}
 						</small>
 					</NuxtLink>
 
-					<div class="AppLayout__preview">
-						<div class="AppLayout__previewHeader">
+					<div class="app-layout__preview">
+						<div class="app-layout__preview-header">
 							<strong>Проєкти</strong>
 							<span>{{ viewModel.state.projects.length }}</span>
 						</div>
 
-						<p v-if="viewModel.state.pageError" class="AppLayout__previewError">
+						<p v-if="viewModel.state.pageError" class="app-layout__preview-error">
 							{{ viewModel.state.pageError }}
 						</p>
 
-						<div v-if="viewModel.state.projects.length" class="AppLayout__previewList">
+						<div v-if="viewModel.state.projects.length" class="app-layout__preview-list">
 							<div
 								v-for="project in viewModel.state.projects"
 								:key="project.id"
-								class="AppLayout__previewItem"
-								:class="{ 'AppLayout__previewItem--selected': viewModel.isProjectSelected(project) }"
+								class="app-layout__preview-item"
+								:class="{ 'app-layout__preview-item_selected': viewModel.isProjectSelected(project) }"
 							>
 								<NuxtLink
-									class="AppLayout__previewMain"
+									class="app-layout__preview-main"
 									:to="viewModel.projectDashboardPath(project)"
 									@click="viewModel.selectProject(project)"
 								>
@@ -52,16 +52,16 @@
 									<small>{{ viewModel.projectUserCount(project.id) }} users · {{ viewModel.formatDate(project.updated_at) }}</small>
 								</NuxtLink>
 
-								<div class="AppLayout__previewActions">
+								<div class="app-layout__preview-actions">
 									<button
-										class="AppLayout__iconButton AppLayout__iconButton--edit"
+										class="app-layout__icon-button app-layout__icon-button_edit"
 										type="button"
 										title="Edit project"
 										aria-label="Edit project"
 										@click="viewModel.openEditProjectModal(project)"
 									></button>
 									<button
-										class="AppLayout__iconButton AppLayout__iconButton--delete"
+										class="app-layout__icon-button app-layout__icon-button_delete"
 										type="button"
 										title="Delete project"
 										aria-label="Delete project"
@@ -71,50 +71,50 @@
 							</div>
 						</div>
 
-						<p v-else class="AppLayout__previewEmpty">No projects</p>
+						<p v-else class="app-layout__preview-empty">No projects</p>
 					</div>
 				</div>
 
-				<div class="AppLayout__navItem AppLayout__navItem--preview">
+				<div class="app-layout__nav-item app-layout__nav-item_preview">
 					<NuxtLink
-						class="AppLayout__link AppLayout__link--users"
+						class="app-layout__link app-layout__link_users"
 						data-shortcut="Ctrl + 3"
 						:to="viewModel.workPath('/users')"
 					>
 						Користувачі
 					</NuxtLink>
 
-					<div class="AppLayout__preview">
-						<div class="AppLayout__previewHeader">
+					<div class="app-layout__preview">
+						<div class="app-layout__preview-header">
 							<strong>Користувачі</strong>
 							<span>{{ viewModel.state.users.length }}</span>
 						</div>
 
-						<p v-if="viewModel.state.pageError" class="AppLayout__previewError">
+						<p v-if="viewModel.state.pageError" class="app-layout__preview-error">
 							{{ viewModel.state.pageError }}
 						</p>
 
-						<div v-if="viewModel.state.users.length" class="AppLayout__previewList">
+						<div v-if="viewModel.state.users.length" class="app-layout__preview-list">
 							<div
 								v-for="user in viewModel.state.users"
 								:key="user.id"
-								class="AppLayout__previewItem"
+								class="app-layout__preview-item"
 							>
-								<NuxtLink class="AppLayout__previewMain" :to="viewModel.workPath('/users')">
+								<NuxtLink class="app-layout__preview-main" :to="viewModel.workPath('/users')">
 									<strong>{{ user.name }}</strong>
 									<small>{{ viewModel.sexLabel(user.sex) }}, {{ user.age }} · {{ viewModel.userProjectTitles(user.id) }}</small>
 								</NuxtLink>
 
-								<div class="AppLayout__previewActions">
+								<div class="app-layout__preview-actions">
 									<button
-										class="AppLayout__iconButton AppLayout__iconButton--edit"
+										class="app-layout__icon-button app-layout__icon-button_edit"
 										type="button"
 										title="Edit user"
 										aria-label="Edit user"
 										@click="viewModel.openEditUserModal(user)"
 									></button>
 									<button
-										class="AppLayout__iconButton AppLayout__iconButton--delete"
+										class="app-layout__icon-button app-layout__icon-button_delete"
 										type="button"
 										title="Delete user"
 										aria-label="Delete user"
@@ -124,13 +124,13 @@
 							</div>
 						</div>
 
-						<p v-else class="AppLayout__previewEmpty">No users</p>
+						<p v-else class="app-layout__preview-empty">No users</p>
 					</div>
 				</div>
 
-				<div class="AppLayout__navItem">
+				<div class="app-layout__nav-item">
 					<NuxtLink
-						class="AppLayout__link AppLayout__link--chat"
+						class="app-layout__link app-layout__link_chat"
 						data-shortcut="Ctrl + 4"
 						:to="viewModel.workPath('/ai')"
 					>
@@ -138,17 +138,17 @@
 					</NuxtLink>
 				</div>
 
-				<div class="AppLayout__navItem">
-					<a class="AppLayout__link AppLayout__link--signals" data-shortcut="Ctrl + 5" href="#">Редактор сигналів</a>
+				<div class="app-layout__nav-item">
+					<a class="app-layout__link app-layout__link_signals" data-shortcut="Ctrl + 5" href="#">Редактор сигналів</a>
 				</div>
 			</template>
 
 			<template #bottom>
-				<a class="AppLayout__link AppLayout__link--author" href="https://github.com/vitkarino/pulso.git" target="_blank">GitHub</a>
+				<a class="app-layout__link app-layout__link_author" href="https://github.com/vitkarino/pulso.git" target="_blank">GitHub</a>
 			</template>
 		</Sidebar>
 
-		<main class="AppLayout__content">
+		<main class="app-layout__content">
 			<slot />
 		</main>
 
@@ -170,7 +170,7 @@
 				<textarea v-model.trim="viewModel.state.projectForm.description" rows="4" required></textarea>
 			</label>
 
-			<p v-if="viewModel.state.projectFormError" class="AppLayout__formError">
+			<p v-if="viewModel.state.projectFormError" class="app-layout__form-error">
 				{{ viewModel.state.projectFormError }}
 			</p>
 		</Modal>
@@ -201,7 +201,7 @@
 				</select>
 			</label>
 
-			<p v-if="viewModel.state.userFormError" class="AppLayout__formError">
+			<p v-if="viewModel.state.userFormError" class="app-layout__form-error">
 				{{ viewModel.state.userFormError }}
 			</p>
 		</Modal>
@@ -217,54 +217,20 @@ import { DefaultLayoutViewModel } from '~/controllers/layouts/DefaultLayoutViewM
 const viewModel = new DefaultLayoutViewModel();
 const route = useRoute();
 
-viewModel.initialize(getRouteProjectName(route.params.name));
+viewModel.initialize(route.params.name);
 
 watch(
 	() => route.params.name,
-	(value) => viewModel.syncSelectedProject(getRouteProjectName(value)),
+	(value) => viewModel.syncSelectedProjectByRouteParam(value),
 );
 
 onMounted(() => {
-	window.addEventListener('keydown', handleShortcutKey);
+	viewModel.mountShortcutListeners();
 });
 
 onBeforeUnmount(() => {
-	window.removeEventListener('keydown', handleShortcutKey);
+	viewModel.destroyShortcutListeners();
 });
-
-function handleShortcutKey(event: KeyboardEvent) {
-	if (!event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || !/^[1-5]$/.test(event.key)) {
-		return;
-	}
-
-	const target = event.target;
-
-	if (
-		target instanceof HTMLInputElement ||
-		target instanceof HTMLTextAreaElement ||
-		target instanceof HTMLSelectElement ||
-		target instanceof HTMLElement && target.isContentEditable
-	) {
-		return;
-	}
-
-	const link = document.querySelector<HTMLAnchorElement>(`.AppLayout__link[data-shortcut="Ctrl + ${event.key}"]`);
-
-	if (!link) {
-		return;
-	}
-
-	event.preventDefault();
-	link.click();
-}
-
-function getRouteProjectName(value: unknown) {
-	if (Array.isArray(value)) {
-		return value[0] ?? '';
-	}
-
-	return typeof value === 'string' ? value : '';
-}
 </script>
 
 <style scoped lang="scss">

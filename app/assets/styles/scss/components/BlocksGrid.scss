@@ -1,4 +1,4 @@
-.BlocksGrid {
+.blocks-grid {
 	display: grid;
 	width: 100%;
 	height: 100%;
@@ -10,20 +10,20 @@
 	gap: 1em;
 }
 
-.BlocksGrid__topLeft {
+.blocks-grid__top-left {
 	grid-area: topLeft;
 }
 
-.BlocksGrid__bottomLeft {
+.blocks-grid__bottom-left {
 	grid-area: bottomLeft;
 }
 
-.BlocksGrid__right {
+.blocks-grid__right {
 	grid-area: right;
 }
 
-.BlocksGrid__topLeft,
-.BlocksGrid__bottomLeft,
-.BlocksGrid__right {
+.blocks-grid__top-left,
+.blocks-grid__bottom-left,
+.blocks-grid__right {
 	min-width: 0;
 }

@@ -1,3 +1,4 @@
+import type { ApiResponse } from '~/types/shared/api'
 import type { Project, Sex } from '~/types/shared/entities'
 
 export const SELECTED_PROJECT_STORAGE_KEY = 'pulso.selectedProjectId'
@@ -36,9 +37,7 @@ export function getProjectRoutePath(project: Pick<Project, 'id' | 'title'>, sect
 }
 
 export function findProjectByRouteName(projects: Project[], projectName: string) {
-	const normalizedProjectName = decodeRouteParam(projectName)
-
-	return projects.find((project) => getProjectSlug(project) === normalizedProjectName) ?? null
+	return projects.find((project) => getProjectSlug(project) === projectName) ?? null
 }
 
 export function readSelectedProjectId() {
@@ -74,11 +73,16 @@ export function getRequestErrorMessage(error: unknown, fallback: string) {
 			data?: {
 				statusMessage?: string
 				message?: string
-				$meta?: { message?: string }
+				$meta?: {
+					message?: string
+					error?: {
+						message?: string
+					}
+				}
 			}
 		}).data
 
-		return data?.$meta?.message ?? data?.statusMessage ?? data?.message ?? fallback
+		return data?.$meta?.error?.message ?? data?.$meta?.message ?? data?.statusMessage ?? data?.message ?? fallback
 	}
 
 	if (error instanceof Error) {
@@ -88,10 +92,14 @@ export function getRequestErrorMessage(error: unknown, fallback: string) {
 	return fallback
 }
 
-function decodeRouteParam(value: string) {
-	try {
-		return decodeURIComponent(value)
-	} catch {
-		return value
+export function readApiResponseData<T>(response: ApiResponse<T>, fallback: string) {
+	if (response.$meta.status === 'success' && response.data !== null) {
+		return response.data
 	}
+
+	const message = response.$meta.status === 'error'
+		? response.$meta.error.message
+		: fallback
+
+	return Promise.reject(new Error(message))
 }

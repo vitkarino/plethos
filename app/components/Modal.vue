@@ -2,35 +2,35 @@
 	<Teleport to="body">
 		<div
 			v-if="isOpen"
-			class="ModalOverlay"
+			class="modal-overlay"
 			:style="modalStyle"
 			@click.self="emit('close')"
 		>
 			<form
-				class="Modal"
+				class="modal"
 				role="dialog"
 				aria-modal="true"
 				:aria-label="title"
 				@submit.prevent="emit('submit')"
 			>
-				<div class="Modal__header">
+				<div class="modal__header">
 					<h2>{{ title }}</h2>
 
-					<button class="Modal__button Modal__button--ghost" type="button" @click="emit('close')">
+					<button class="modal__button modal__button_ghost" type="button" @click="emit('close')">
 						{{ closeLabel }}
 					</button>
 				</div>
 
-				<div class="Modal__body">
+				<div class="modal__body">
 					<slot />
 				</div>
 
-				<div v-if="$slots.actions || submitLabel" class="Modal__actions">
+				<div v-if="$slots.actions || submitLabel" class="modal__actions">
 					<slot name="actions">
-						<button class="Modal__button Modal__button--ghost" type="button" @click="emit('close')">
+						<button class="modal__button modal__button_ghost" type="button" @click="emit('close')">
 							{{ cancelLabel }}
 						</button>
-						<button class="Modal__button Modal__button--primary" type="submit" :disabled="submitDisabled">
+						<button class="modal__button modal__button_primary" type="submit" :disabled="submitDisabled">
 							{{ submitLabel }}
 						</button>
 					</slot>

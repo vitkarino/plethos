@@ -1,14 +1,14 @@
 <template>
-	<Block class="BPMBlock">
-		<div class="BPMBlock__header">
-			<div class="BPMBlock__title">Сигнал</div>
-			<button class="BPMBlock__title" @click="viewModel.startMeasurement()">Start</button>
-			<div class="BPMBlock__value">
+	<Block class="bpm-block">
+		<div class="bpm-block__header">
+			<div class="bpm-block__title">Сигнал</div>
+			<button class="bpm-block__title" @click="viewModel.startMeasurement()">Start</button>
+			<div class="bpm-block__value">
 				{{ viewModel.state.bpm !== null ? Math.round(viewModel.state.bpm) : '--' }}
 			</div>
 		</div>
 
-		<div class="BPMBlock__status">
+		<div class="bpm-block__status">
 			<span v-if="viewModel.state.status === 'recording'">
 				Recording {{ Math.round(viewModel.state.progress) }}%
 			</span>
@@ -23,7 +23,7 @@
 			</span>
 		</div>
 
-		<div class="BPMBlock__chart">
+		<div class="bpm-block__chart">
 			<pre v-if="viewModel.state.chartData">{{ viewModel.state.chartData }}</pre>
 			<p v-else>No chart data yet</p>
 		</div>

@@ -1,4 +1,5 @@
 import { createTimestamp, getNextId, mockUsers } from '../data/mock';
+import { createApiErrorResponse, createApiSuccessResponse } from '../utils/api-response';
 
 export default defineEventHandler((event) => {
 	return readBody<{
@@ -13,13 +14,7 @@ export default defineEventHandler((event) => {
 		if (!name || !Number.isFinite(age) || age < 0 || (sex !== 'male' && sex !== 'female')) {
 			setResponseStatus(event, 400);
 
-			return {
-				$meta: {
-					status: 'error',
-					message: 'Invalid user data',
-				},
-				data: null,
-			};
+			return createApiErrorResponse('INVALID_USER_DATA', 'Invalid user data');
 		}
 
 		const createdAt = createTimestamp();
@@ -34,11 +29,6 @@ export default defineEventHandler((event) => {
 
 		mockUsers.push(user);
 
-		return {
-			$meta: {
-				status: 'success',
-			},
-			data: user,
-		};
+		return createApiSuccessResponse(user);
 	});
 });

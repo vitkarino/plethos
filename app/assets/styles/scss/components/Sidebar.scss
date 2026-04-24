@@ -1,6 +1,6 @@
 @use "../core/variables" as *;
 
-.Sidebar {
+.sidebar {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
@@ -13,13 +13,13 @@
 	color: $color-text-secondary;
 }
 
-.Sidebar__top {
+.sidebar__top {
 	display: flex;
 	flex-direction: column;
 	gap: 1.25em;
 }
 
-.Sidebar__nav {
+.sidebar__nav {
 	display: flex;
 	flex-direction: column;
 	// gap: 0.375em;
@@ -28,7 +28,7 @@
 	min-height: 0;
 }
 
-.Sidebar__bottom {
+.sidebar__bottom {
 	display: flex;
 	flex-direction: column;
 	gap: 0.375em;

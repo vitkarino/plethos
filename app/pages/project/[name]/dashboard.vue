@@ -1,18 +1,18 @@
 <template>
-	<section v-if="viewModel.state.project" class="ProjectDashboardPage">
-		<header class="ProjectDashboardPage__header">
+	<section v-if="viewModel.state.project" class="project-dashboard-page">
+		<header class="project-dashboard-page__header">
 			<div>
 				<p>Project dashboard</p>
 				<h1>{{ viewModel.state.project.title }}</h1>
 			</div>
 
-			<NuxtLink class="ProjectDashboardPage__back" to="/projects">
+			<NuxtLink class="project-dashboard-page__back" to="/projects">
 				All projects
 			</NuxtLink>
 		</header>
 
-		<div class="ProjectDashboardPage__layout">
-			<Block class="ProjectDashboardPage__summary">
+		<div class="project-dashboard-page__layout">
+			<Block class="project-dashboard-page__summary">
 				<p>{{ viewModel.state.project.description }}</p>
 
 				<dl>
@@ -31,8 +31,8 @@
 				</dl>
 			</Block>
 
-			<Block class="ProjectDashboardPage__users">
-				<div class="ProjectDashboardPage__blockTitle">
+			<Block class="project-dashboard-page__users">
+				<div class="project-dashboard-page__block-title">
 					<p>Team</p>
 					<span>{{ viewModel.state.assignedUsers.length }}</span>
 				</div>
@@ -40,7 +40,7 @@
 				<div
 					v-for="assignment in viewModel.state.assignedUsers"
 					:key="assignment.user.id"
-					class="ProjectDashboardPage__user"
+					class="project-dashboard-page__user"
 				>
 					<div>
 						<strong>{{ assignment.user.name }}</strong>
@@ -53,14 +53,14 @@
 		</div>
 	</section>
 
-	<section v-else-if="!viewModel.state.isLoading" class="ProjectDashboardPage">
-		<header class="ProjectDashboardPage__header">
+	<section v-else-if="!viewModel.state.isLoading" class="project-dashboard-page">
+		<header class="project-dashboard-page__header">
 			<div>
 				<p>Project dashboard</p>
 				<h1>{{ viewModel.state.pageError }}</h1>
 			</div>
 
-			<NuxtLink class="ProjectDashboardPage__back" to="/projects">
+			<NuxtLink class="project-dashboard-page__back" to="/projects">
 				All projects
 			</NuxtLink>
 		</header>

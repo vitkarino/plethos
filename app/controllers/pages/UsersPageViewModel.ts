@@ -1,10 +1,12 @@
 import { reactive } from 'vue'
+import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { UsersPageState } from '~/types/pages/users'
-import type { ApiResponse } from '~/types/shared/api'
-import type { Project, ProjectUser, User } from '~/types/shared/entities'
+import type { User } from '~/types/shared/entities'
 import { formatDateValue, getRequestErrorMessage, getSexLabel } from '~/utils/shared'
 
 export class UsersPageViewModel {
+	private readonly api = new PulsoApiModel()
+
 	public readonly state = reactive<UsersPageState>({
 		users: [],
 		projects: [],
@@ -32,7 +34,7 @@ export class UsersPageViewModel {
 	}
 
 	public refreshUsers() {
-		return $fetch<User[]>('/api/users')
+		return this.api.fetchUsers()
 			.then((users) => {
 				this.state.users = users
 				return users
@@ -40,7 +42,7 @@ export class UsersPageViewModel {
 	}
 
 	public loadProjects() {
-		return $fetch<Project[]>('/api/projects')
+		return this.api.fetchProjects()
 			.then((projects) => {
 				this.state.projects = projects
 				return projects
@@ -48,7 +50,7 @@ export class UsersPageViewModel {
 	}
 
 	public refreshProjectUsers() {
-		return $fetch<ProjectUser[]>('/api/project_users')
+		return this.api.fetchProjectUsers()
 			.then((projectUsers) => {
 				this.state.projectUsers = projectUsers
 				return projectUsers
@@ -110,20 +112,8 @@ export class UsersPageViewModel {
 		this.state.pageError = ''
 
 		const request = this.state.editingUserId
-			? $fetch(`/api/users/${this.state.editingUserId}`, {
-				method: 'PUT',
-				body,
-			}).then(() => undefined)
-			: $fetch<ApiResponse<User>>('/api/users', {
-				method: 'POST',
-				body,
-			}).then((response) => {
-				if (response.$meta.status !== 'success') {
-					return Promise.reject(new Error(response.$meta.message ?? 'User was not created'))
-				}
-
-				return undefined
-			})
+			? this.api.updateUser(this.state.editingUserId, body).then(() => undefined)
+			: this.api.createUser(body).then(() => undefined)
 
 		return request
 			.then(() => {
@@ -151,9 +141,7 @@ export class UsersPageViewModel {
 
 		this.state.pageError = ''
 
-		return $fetch(`/api/users/${userId}`, {
-			method: 'DELETE',
-		}).then(() => {
+		return this.api.deleteUser(userId).then(() => {
 			if (this.state.editingUserId === userId) {
 				this.resetUserForm()
 			}

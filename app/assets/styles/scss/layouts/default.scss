@@ -14,14 +14,14 @@ $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' view
 $icon-edit: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/%3E%3Cpath d='M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z'/%3E%3C/g%3E%3C/svg%3E";
 $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'/%3E%3Cpath d='M10 11v6m4-6v6'/%3E%3C/g%3E%3C/svg%3E";
 
-.AppLayout {
+.app-layout {
 	display: flex;
 	min-height: 100vh;
 	background: transparent;
 	color: $color-text-primary;
 }
 
-.AppLayout__content {
+.app-layout__content {
 	flex: 1;
 	display: flex;
 	justify-content: center;
@@ -31,24 +31,24 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	background: transparent;
 }
 
-.AppLayout__logo {
+.app-layout__logo {
 	display: flex;
 	align-items: center;
 	min-height: 2em;
 	padding-right: 1em;
 }
 
-.AppLayout__logo img {
+.app-layout__logo img {
 	display: block;
 	width: min(100%, 6.875em);
 	height: auto;
 }
 
-.AppLayout__navItem {
+.app-layout__nav-item {
 	position: relative;
 }
 
-.AppLayout__navItem--preview::after {
+.app-layout__nav-item_preview::after {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -57,7 +57,7 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	height: 100%;
 }
 
-.AppLayout__link {
+.app-layout__link {
 	display: flex;
 	align-items: center;
 	gap: 0.75em;
@@ -74,12 +74,12 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 		color 160ms ease;
 }
 
-.AppLayout__link[data-shortcut] {
+.app-layout__link[data-shortcut] {
 	position: relative;
 	padding-right: 4.75em;
 }
 
-.AppLayout__link[data-shortcut]::after {
+.app-layout__link[data-shortcut]::after {
 	content: attr(data-shortcut);
 	position: absolute;
 	top: 50%;
@@ -106,21 +106,21 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 		opacity 160ms ease;
 }
 
-.AppLayout__link[data-shortcut]:hover::after,
-.AppLayout__link[data-shortcut]:focus-visible::after {
+.app-layout__link[data-shortcut]:hover::after,
+.app-layout__link[data-shortcut]:focus-visible::after {
 	border-color: rgba($color-selected, 0.65);
 	background: $color-button-bg;
 	color: $color-selected;
 	opacity: 1;
 }
 
-.AppLayout__link span {
+.app-layout__link span {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.AppLayout__linkMeta {
+.app-layout__link-meta {
 	min-width: 0;
 	margin-left: auto;
 	overflow: hidden;
@@ -131,9 +131,9 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	text-overflow: ellipsis;
 }
 
-.AppLayout__link:hover,
-.AppLayout__link:focus-visible,
-.AppLayout__link.router-link-exact-active {
+.app-layout__link:hover,
+.app-layout__link:focus-visible,
+.app-layout__link.router-link-exact-active {
 	background: rgba($color-selected, 0.1);
 	color: $color-selected;
 	outline: none;
@@ -142,11 +142,11 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	border-bottom-right-radius: 0;
 }
 
-.AppLayout__link:focus-visible {
+.app-layout__link:focus-visible {
 	box-shadow: 0 0 0 0.125em rgba($color-selected, 0.45);
 }
 
-.AppLayout__link::before {
+.app-layout__link::before {
 	content: "";
 	display: block;
 	flex: 0 0 1.125em;
@@ -155,31 +155,31 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	background: currentColor;
 }
 
-.AppLayout__link--home::before {
+.app-layout__link_home::before {
 	@include icon-mask($icon-home);
 }
 
-.AppLayout__link--projects::before {
+.app-layout__link_projects::before {
 	@include icon-mask($icon-projects);
 }
 
-.AppLayout__link--users::before {
+.app-layout__link_users::before {
 	@include icon-mask($icon-users);
 }
 
-.AppLayout__link--chat::before {
+.app-layout__link_chat::before {
 	@include icon-mask($icon-chat);
 }
 
-.AppLayout__link--signals::before {
+.app-layout__link_signals::before {
 	@include icon-mask($icon-signals);
 }
 
-.AppLayout__link--author::before {
+.app-layout__link_author::before {
 	@include icon-mask($icon-author);
 }
 
-.AppLayout__preview {
+.app-layout__preview {
 	position: absolute;
 	top: 0;
 	left: calc(100% + 0.75em);
@@ -202,31 +202,31 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 		transform 160ms ease;
 }
 
-.AppLayout__navItem--preview:hover .AppLayout__preview,
-.AppLayout__navItem--preview:focus-within .AppLayout__preview {
+.app-layout__nav-item_preview:hover .app-layout__preview,
+.app-layout__nav-item_preview:focus-within .app-layout__preview {
 	opacity: 1;
 	pointer-events: auto;
 	transform: translateX(0);
 }
 
-.AppLayout__previewHeader,
-.AppLayout__previewItem,
-.AppLayout__previewActions {
+.app-layout__preview-header,
+.app-layout__preview-item,
+.app-layout__preview-actions {
 	display: flex;
 	gap: 0.75em;
 }
 
-.AppLayout__previewHeader,
-.AppLayout__previewItem {
+.app-layout__preview-header,
+.app-layout__preview-item {
 	align-items: flex-start;
 	justify-content: space-between;
 }
 
-.AppLayout__previewActions {
+.app-layout__preview-actions {
 	align-items: center;
 }
 
-.AppLayout__previewHeader strong {
+.app-layout__preview-header strong {
 	margin: 0;
 	color: $color-text-primary;
 	font-weight: 400;
@@ -234,11 +234,11 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	letter-spacing: 0;
 }
 
-.AppLayout__previewHeader strong {
+.app-layout__preview-header strong {
 	font-size: 13pt;
 }
 
-.AppLayout__previewHeader span {
+.app-layout__preview-header span {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -253,7 +253,7 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	font-size: 10pt;
 }
 
-.AppLayout__previewList {
+.app-layout__preview-list {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
@@ -261,7 +261,7 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	padding-right: 0.125em;
 }
 
-.AppLayout__previewItem {
+.app-layout__preview-item {
 	gap: 0.5em;
 	padding: 0.625em;
 	border: $border-default;
@@ -269,43 +269,43 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	background: $color-page-bg;
 }
 
-.AppLayout__previewItem--selected {
+.app-layout__preview-item_selected {
 	border-color: $color-selected;
 	background: rgba($color-selected, 0.1);
 }
 
-.AppLayout__previewItem--selected .AppLayout__previewMain strong {
+.app-layout__preview-item_selected .app-layout__preview-main strong {
 	color: $color-selected;
 }
 
-.AppLayout__previewMain {
+.app-layout__preview-main {
 	min-width: 0;
 	color: $color-text-secondary;
 	text-decoration: none;
 }
 
-.AppLayout__previewMain:hover,
-.AppLayout__previewMain:focus-visible {
+.app-layout__preview-main:hover,
+.app-layout__preview-main:focus-visible {
 	color: $color-selected;
 	outline: none;
 }
 
-.AppLayout__previewMain strong,
-.AppLayout__previewMain small {
+.app-layout__preview-main strong,
+.app-layout__preview-main small {
 	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.AppLayout__previewMain strong {
+.app-layout__preview-main strong {
 	color: $color-text-primary;
 	font-size: 11pt;
 	font-weight: 700;
 	line-height: 1.2;
 }
 
-.AppLayout__previewMain small {
+.app-layout__preview-main small {
 	margin-top: 0.3em;
 	color: currentColor;
 	font-family: $font-data;
@@ -313,12 +313,12 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	line-height: 1.25;
 }
 
-.AppLayout__previewActions {
+.app-layout__preview-actions {
 	flex: 0 0 auto;
 	gap: 0.35em;
 }
 
-.AppLayout__iconButton {
+.app-layout__icon-button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -336,7 +336,7 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 		color 160ms ease;
 }
 
-.AppLayout__iconButton::before {
+.app-layout__icon-button::before {
 	content: "";
 	display: block;
 	width: 1em;
@@ -344,40 +344,40 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	background: currentColor;
 }
 
-.AppLayout__iconButton--edit::before {
+.app-layout__icon-button_edit::before {
 	@include icon-mask($icon-edit);
 }
 
-.AppLayout__iconButton--delete::before {
+.app-layout__icon-button_delete::before {
 	@include icon-mask($icon-trash);
 }
 
-.AppLayout__iconButton:hover,
-.AppLayout__iconButton:focus-visible {
+.app-layout__icon-button:hover,
+.app-layout__icon-button:focus-visible {
 	border-color: $color-selected;
 	background: $color-button-bg-hover;
 	color: $color-selected;
 	outline: none;
 }
 
-.AppLayout__previewEmpty,
-.AppLayout__previewError,
-.AppLayout__formError {
+.app-layout__preview-empty,
+.app-layout__preview-error,
+.app-layout__form-error {
 	margin: 0;
 	font-size: 11pt;
 	line-height: 1.35;
 }
 
-.AppLayout__previewEmpty {
+.app-layout__preview-empty {
 	color: $color-text-secondary;
 }
 
-.AppLayout__previewError,
-.AppLayout__formError {
+.app-layout__preview-error,
+.app-layout__form-error {
 	color: $color-selected;
 }
 
-.AppLayout__button {
+.app-layout__button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -400,29 +400,29 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 		color 160ms ease;
 }
 
-.AppLayout__button:hover,
-.AppLayout__button:focus-visible {
+.app-layout__button:hover,
+.app-layout__button:focus-visible {
 	border-color: $color-selected;
 	background: $color-button-bg-hover;
 	color: $color-selected;
 	outline: none;
 }
 
-.AppLayout__button:disabled {
+.app-layout__button:disabled {
 	cursor: not-allowed;
 	opacity: 0.48;
 }
 
-.AppLayout__button--primary {
+.app-layout__button_primary {
 	background: $color-page-bg;
 }
 
-.AppLayout__button--ghost {
+.app-layout__button_ghost {
 	background: transparent;
 }
 
 @media (max-width: 58em) {
-	.AppLayout__preview {
+	.app-layout__preview {
 		top: calc(100% + 0.5em);
 		left: 0;
 		width: min(23em, calc(100vw - 2.5em));

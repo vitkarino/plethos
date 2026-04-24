@@ -1,6 +1,6 @@
 @use "../core/variables" as *;
 
-.UsersPage {
+.users-page {
 	display: flex;
 	flex-direction: column;
 	gap: 1em;
@@ -9,24 +9,24 @@
 	color: $color-text-primary;
 }
 
-.UsersPage__header,
-.UsersPage__headerActions,
-.UsersPage__actions {
+.users-page__header,
+.users-page__header-actions,
+.users-page__actions {
 	display: flex;
 	gap: 1em;
 }
 
-.UsersPage__header {
+.users-page__header {
 	align-items: flex-start;
 	justify-content: space-between;
 }
 
-.UsersPage__headerActions,
-.UsersPage__actions {
+.users-page__header-actions,
+.users-page__actions {
 	align-items: center;
 }
 
-.UsersPage__header h1 {
+.users-page__header h1 {
 	margin: 0;
 	color: $color-text-primary;
 	font-weight: 400;
@@ -34,11 +34,11 @@
 	letter-spacing: 0;
 }
 
-.UsersPage__header h1 {
+.users-page__header h1 {
 	font-size: 22pt;
 }
 
-.UsersPage__counter {
+.users-page__counter {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -53,14 +53,14 @@
 	white-space: nowrap;
 }
 
-.UsersPage__formError {
+.users-page__form-error {
 	margin: 0;
 	color: $color-selected;
 	font-size: 11pt;
 	line-height: 1.35;
 }
 
-.UsersPage__button {
+.users-page__button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -83,38 +83,38 @@
 		color 160ms ease;
 }
 
-.UsersPage__button:hover,
-.UsersPage__button:focus-visible {
+.users-page__button:hover,
+.users-page__button:focus-visible {
 	border-color: $color-selected;
 	background: $color-button-bg-hover;
 	color: $color-selected;
 	outline: none;
 }
 
-.UsersPage__button:disabled {
+.users-page__button:disabled {
 	cursor: not-allowed;
 	opacity: 0.48;
 }
 
-.UsersPage__button--primary {
+.users-page__button_primary {
 	background: $color-page-bg;
 }
 
-.UsersPage__button--ghost {
+.users-page__button_ghost {
 	background: transparent;
 }
 
-.UsersPage__button--danger:hover,
-.UsersPage__button--danger:focus-visible {
+.users-page__button_danger:hover,
+.users-page__button_danger:focus-visible {
 	color: $color-selected;
 }
 
-.UsersPage__table {
+.users-page__table {
 	overflow: auto;
 	padding: 0;
 }
 
-.UsersPage__row {
+.users-page__row {
 	display: grid;
 	grid-template-columns: minmax(14em, 1.3fr) 5em 6.5em minmax(14em, 1fr) 8em 11em;
 	gap: 1em;
@@ -126,11 +126,11 @@
 	font-size: 11pt;
 }
 
-.UsersPage__row:first-child {
+.users-page__row:first-child {
 	border-top: 0;
 }
 
-.UsersPage__row--head {
+.users-page__row_head {
 	color: $color-text-secondary;
 	font-size: 10pt;
 	font-weight: 700;
@@ -138,19 +138,19 @@
 	text-transform: uppercase;
 }
 
-.UsersPage__row strong,
-.UsersPage__row small {
+.users-page__row strong,
+.users-page__row small {
 	display: block;
 }
 
-.UsersPage__row strong {
+.users-page__row strong {
 	color: $color-text-primary;
 	font-size: 12pt;
 	font-weight: 400;
 	line-height: 1.2;
 }
 
-.UsersPage__row small {
+.users-page__row small {
 	margin-top: 0.3em;
 	color: $color-text-secondary;
 	font-family: $font-data;
@@ -158,34 +158,34 @@
 	line-height: 1.25;
 }
 
-.UsersPage__row span:not(:first-child):not(.UsersPage__actions) {
+.users-page__row span:not(:first-child):not(.users-page__actions) {
 	font-family: $font-data;
 }
 
-.UsersPage__actions {
+.users-page__actions {
 	gap: 0.5em;
 }
 
-.UsersPage__actions .UsersPage__button {
+.users-page__actions .users-page__button {
 	min-height: 2.25em;
 	padding: 0 0.75em;
 	font-size: 10pt;
 }
 
 @media (max-width: 46em) {
-	.UsersPage {
+	.users-page {
 		height: auto;
 	}
 
-	.UsersPage__header,
-	.UsersPage__headerActions,
-	.UsersPage__actions {
+	.users-page__header,
+	.users-page__header-actions,
+	.users-page__actions {
 		align-items: stretch;
 		flex-direction: column;
 	}
 
-	.UsersPage__counter,
-	.UsersPage__headerActions > .UsersPage__button {
+	.users-page__counter,
+	.users-page__header-actions > .users-page__button {
 		align-self: flex-start;
 	}
 }

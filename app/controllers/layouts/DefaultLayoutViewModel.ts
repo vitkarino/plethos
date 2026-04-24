@@ -1,6 +1,7 @@
 import { reactive } from 'vue'
+import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { DefaultLayoutState } from '~/types/layouts/default'
-import type { Project, ProjectUser, User } from '~/types/shared/entities'
+import type { Project, User } from '~/types/shared/entities'
 import {
 	clearSelectedProjectId,
 	findProjectByRouteName,
@@ -14,6 +15,8 @@ import {
 } from '~/utils/shared'
 
 export class DefaultLayoutViewModel {
+	private readonly api = new PulsoApiModel()
+
 	public readonly state = reactive<DefaultLayoutState>({
 		projects: [],
 		selectedProject: null,
@@ -39,12 +42,28 @@ export class DefaultLayoutViewModel {
 		pageError: '',
 	})
 
-	public initialize(projectName = '') {
+	public initialize(routeProjectName: unknown = '') {
 		return this.refreshPreviewData().catch((error) => {
 			this.state.pageError = getRequestErrorMessage(error, 'Preview data was not loaded')
 		}).finally(() => {
-			this.syncSelectedProject(projectName)
+			this.syncSelectedProjectByRouteParam(routeProjectName)
 		})
+	}
+
+	public mountShortcutListeners() {
+		if (typeof window === 'undefined') {
+			return
+		}
+
+		window.addEventListener('keydown', this.handleShortcutKey)
+	}
+
+	public destroyShortcutListeners() {
+		if (typeof window === 'undefined') {
+			return
+		}
+
+		window.removeEventListener('keydown', this.handleShortcutKey)
 	}
 
 	public refreshPreviewData() {
@@ -56,7 +75,7 @@ export class DefaultLayoutViewModel {
 	}
 
 	public refreshProjects() {
-		return $fetch<Project[]>('/api/projects')
+		return this.api.fetchProjects()
 			.then((projects) => {
 				this.state.projects = projects
 				this.syncSelectedProject()
@@ -65,7 +84,7 @@ export class DefaultLayoutViewModel {
 	}
 
 	public refreshUsers() {
-		return $fetch<User[]>('/api/users')
+		return this.api.fetchUsers()
 			.then((users) => {
 				this.state.users = users
 				return users
@@ -73,7 +92,7 @@ export class DefaultLayoutViewModel {
 	}
 
 	public refreshProjectUsers() {
-		return $fetch<ProjectUser[]>('/api/project_users')
+		return this.api.fetchProjectUsers()
 			.then((projectUsers) => {
 				this.state.projectUsers = projectUsers
 				return projectUsers
@@ -100,6 +119,10 @@ export class DefaultLayoutViewModel {
 		if (!selectedProject && selectedProjectId) {
 			clearSelectedProjectId()
 		}
+	}
+
+	public syncSelectedProjectByRouteParam(value: unknown) {
+		this.syncSelectedProject(this.getRouteProjectName(value))
 	}
 
 	public selectProject(project: Project) {
@@ -158,12 +181,9 @@ export class DefaultLayoutViewModel {
 		this.state.projectFormError = ''
 		this.state.pageError = ''
 
-		return $fetch(`/api/projects/${this.state.editingProjectId}`, {
-			method: 'PUT',
-			body: {
-				title: this.state.projectForm.title,
-				description: this.state.projectForm.description,
-			},
+		return this.api.updateProject(this.state.editingProjectId, {
+			title: this.state.projectForm.title,
+			description: this.state.projectForm.description,
 		}).then(() => {
 			this.closeProjectModal()
 			return this.refreshProjects()
@@ -181,9 +201,7 @@ export class DefaultLayoutViewModel {
 
 		this.state.pageError = ''
 
-		return $fetch(`/api/projects/${project.id}`, {
-			method: 'DELETE',
-		}).then(() => {
+		return this.api.deleteProject(project.id).then(() => {
 			if (this.state.editingProjectId === project.id) {
 				this.resetProjectForm()
 			}
@@ -233,13 +251,10 @@ export class DefaultLayoutViewModel {
 		this.state.userFormError = ''
 		this.state.pageError = ''
 
-		return $fetch(`/api/users/${this.state.editingUserId}`, {
-			method: 'PUT',
-			body: {
-				name: this.state.userForm.name,
-				age,
-				sex: this.state.userForm.sex,
-			},
+		return this.api.updateUser(this.state.editingUserId, {
+			name: this.state.userForm.name,
+			age,
+			sex: this.state.userForm.sex,
 		}).then(() => {
 			this.closeUserModal()
 			return this.refreshUsers()
@@ -257,9 +272,7 @@ export class DefaultLayoutViewModel {
 
 		this.state.pageError = ''
 
-		return $fetch(`/api/users/${user.id}`, {
-			method: 'DELETE',
-		}).then(() => {
+		return this.api.deleteUser(user.id).then(() => {
 			if (this.state.editingUserId === user.id) {
 				this.resetUserForm()
 			}
@@ -287,6 +300,40 @@ export class DefaultLayoutViewModel {
 
 	private confirmDelete(message: string) {
 		return typeof window === 'undefined' || window.confirm(message)
+	}
+
+	private readonly handleShortcutKey = (event: KeyboardEvent) => {
+		if (!event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || !/^[1-5]$/.test(event.key)) {
+			return
+		}
+
+		const target = event.target
+
+		if (
+			target instanceof HTMLInputElement ||
+			target instanceof HTMLTextAreaElement ||
+			target instanceof HTMLSelectElement ||
+			target instanceof HTMLElement && target.isContentEditable
+		) {
+			return
+		}
+
+		const link = document.querySelector<HTMLAnchorElement>(`.app-layout__link[data-shortcut="Ctrl + ${event.key}"]`)
+
+		if (!link) {
+			return
+		}
+
+		event.preventDefault()
+		link.click()
+	}
+
+	private getRouteProjectName(value: unknown) {
+		if (Array.isArray(value)) {
+			return value[0] ?? ''
+		}
+
+		return typeof value === 'string' ? value : ''
 	}
 
 	private resetProjectForm() {

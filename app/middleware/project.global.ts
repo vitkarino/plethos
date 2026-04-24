@@ -1,3 +1,4 @@
+import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { Project } from '~/types/shared/entities'
 import {
 	clearSelectedProjectId,
@@ -13,7 +14,9 @@ const projectlessWorkRoutes = new Set([
 	'/ai',
 ])
 
-export default defineNuxtRouteMiddleware(async (to) => {
+const api = new PulsoApiModel()
+
+export default defineNuxtRouteMiddleware((to) => {
 	if (import.meta.server) {
 		return
 	}
@@ -24,12 +27,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		return
 	}
 
-	const projects = await $fetch<Project[]>('/api/projects').catch(() => null)
+	return api.fetchProjects()
+		.then((projects) => resolveProjectRoute(to, path, projects))
+		.catch(() => undefined)
+})
 
-	if (!projects) {
-		return
-	}
-
+function resolveProjectRoute(to: { params: Record<string, unknown> }, path: string, projects: Project[]) {
 	if (projects.length === 0) {
 		clearSelectedProjectId()
 
@@ -68,7 +71,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	if (path.startsWith('/p/')) {
 		return navigateTo(getProjectRoutePath(selectedProject, getSectionPath(path)), { replace: true })
 	}
-})
+}
 
 function normalizePath(path: string) {
 	return path.replace(/\/+$/, '') || '/'

@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
+import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { ProjectsPageState } from '~/types/pages/projects'
-import type { ApiResponse } from '~/types/shared/api'
-import type { AssignedUser, Project, ProjectUser, User } from '~/types/shared/entities'
+import type { AssignedUser, Project, User } from '~/types/shared/entities'
 import {
 	clearSelectedProjectId,
 	formatDateValue,
@@ -13,6 +13,8 @@ import {
 } from '~/utils/shared'
 
 export class ProjectsPageViewModel {
+	private readonly api = new PulsoApiModel()
+
 	public readonly state = reactive<ProjectsPageState>({
 		projects: [],
 		selectedProject: null,
@@ -52,7 +54,7 @@ export class ProjectsPageViewModel {
 	}
 
 	public refreshProjects() {
-		return $fetch<Project[]>('/api/projects')
+		return this.api.fetchProjects()
 			.then((projects) => {
 				this.state.projects = projects
 				this.syncSelectedProject()
@@ -61,7 +63,7 @@ export class ProjectsPageViewModel {
 	}
 
 	public loadUsers() {
-		return $fetch<User[]>('/api/users')
+		return this.api.fetchUsers()
 			.then((users) => {
 				this.state.users = users
 				return users
@@ -69,7 +71,7 @@ export class ProjectsPageViewModel {
 	}
 
 	public refreshProjectUsers() {
-		return $fetch<ProjectUser[]>('/api/project_users')
+		return this.api.fetchProjectUsers()
 			.then((projectUsers) => {
 				this.state.projectUsers = projectUsers
 				return projectUsers
@@ -149,20 +151,8 @@ export class ProjectsPageViewModel {
 		this.state.pageError = ''
 
 		const request = this.state.editingProjectId
-			? $fetch(`/api/projects/${this.state.editingProjectId}`, {
-				method: 'PUT',
-				body,
-			}).then(() => null)
-			: $fetch<ApiResponse<Project>>('/api/projects', {
-				method: 'POST',
-				body,
-			}).then((response) => {
-				if (response.$meta.status !== 'success' || !response.data) {
-					return Promise.reject(new Error(response.$meta.message ?? 'Project was not created'))
-				}
-
-				return response.data
-			})
+			? this.api.updateProject(this.state.editingProjectId, body).then(() => null)
+			: this.api.createProject(body)
 
 		return request
 			.then((createdProject) => {
@@ -202,9 +192,7 @@ export class ProjectsPageViewModel {
 
 		this.state.pageError = ''
 
-		return $fetch(`/api/projects/${projectId}`, {
-			method: 'DELETE',
-		}).then(() => {
+		return this.api.deleteProject(projectId).then(() => {
 			if (this.state.editingProjectId === projectId) {
 				this.resetProjectForm()
 			}
@@ -254,13 +242,10 @@ export class ProjectsPageViewModel {
 		this.state.userFormError = ''
 		this.state.pageError = ''
 
-		return $fetch(`/api/users/${this.state.editingUserId}`, {
-			method: 'PUT',
-			body: {
-				name: this.state.userForm.name,
-				age,
-				sex: this.state.userForm.sex,
-			},
+		return this.api.updateUser(this.state.editingUserId, {
+			name: this.state.userForm.name,
+			age,
+			sex: this.state.userForm.sex,
 		}).then(() => {
 			this.closeUserModal()
 			return this.loadUsers()
@@ -286,12 +271,9 @@ export class ProjectsPageViewModel {
 
 		this.state.pageError = ''
 
-		return $fetch('/api/project_users', {
-			method: 'POST',
-			body: {
-				project_id: projectId,
-				user_id: userId,
-			},
+		return this.api.assignUser({
+			project_id: projectId,
+			user_id: userId,
 		}).then(() => {
 			this.state.assignmentForms[projectId] = ''
 
@@ -307,12 +289,9 @@ export class ProjectsPageViewModel {
 	public unassignUser(projectId: number, userId: number) {
 		this.state.pageError = ''
 
-		return $fetch('/api/project_users', {
-			method: 'DELETE',
-			body: {
-				project_id: projectId,
-				user_id: userId,
-			},
+		return this.api.unassignUser({
+			project_id: projectId,
+			user_id: userId,
 		}).then(() => {
 			return Promise.all([
 				this.refreshProjects(),

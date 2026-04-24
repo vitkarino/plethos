@@ -1,14 +1,14 @@
 import { createTimestamp, mockProjects } from '../../data/mock';
+import { createApiErrorResponse, createApiSuccessResponse } from '../../utils/api-response';
 
 export default defineEventHandler((event) => {
 	const id = Number(getRouterParam(event, 'id'));
 	const project = mockProjects.find((item) => item.id === id);
 
 	if (!project) {
-		throw createError({
-			statusCode: 404,
-			statusMessage: 'Project not found',
-		});
+		setResponseStatus(event, 404);
+
+		return createApiErrorResponse('PROJECT_NOT_FOUND', 'Project not found');
 	}
 
 	return readBody<{
@@ -19,16 +19,15 @@ export default defineEventHandler((event) => {
 		const description = body.description?.trim();
 
 		if (!title || !description) {
-			throw createError({
-				statusCode: 400,
-				statusMessage: 'Invalid project data',
-			});
+			setResponseStatus(event, 400);
+
+			return createApiErrorResponse('INVALID_PROJECT_DATA', 'Invalid project data');
 		}
 
 		project.title = title;
 		project.description = description;
 		project.updated_at = createTimestamp();
 
-		return project;
+		return createApiSuccessResponse(project);
 	});
 });

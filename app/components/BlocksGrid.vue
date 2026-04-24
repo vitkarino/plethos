@@ -1,14 +1,14 @@
 <template>
-	<div class="BlocksGrid">
-		<div class="BlocksGrid__topLeft">
+	<div class="blocks-grid">
+		<div class="blocks-grid__top-left">
 			<slot name="topLeft" />
 		</div>
 
-		<div class="BlocksGrid__bottomLeft">
+		<div class="blocks-grid__bottom-left">
 			<slot name="bottomLeft" />
 		</div>
 
-		<div class="BlocksGrid__right">
+		<div class="blocks-grid__right">
 			<slot name="right" />
 		</div>
 	</div>

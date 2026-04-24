@@ -1,18 +1,18 @@
 @use "../core/variables" as *;
 
-.BPMBlock {
+.bpm-block {
 	display: flex;
 	flex-direction: column;
 	gap: 1em;
 }
 
-.BPMBlock__header {
+.bpm-block__header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 }
 
-.BPMBlock__title {
+.bpm-block__title {
 	color: $color-text-secondary;
 	font-size: 12pt;
 	font-weight: 700;
@@ -20,7 +20,7 @@
 	text-transform: uppercase;
 }
 
-button.BPMBlock__title {
+button.bpm-block__title {
 	min-height: 2.25em;
 	padding: 0 1em;
 	border: $border-default;
@@ -34,19 +34,19 @@ button.BPMBlock__title {
 		color 160ms ease;
 }
 
-button.BPMBlock__title:hover,
-button.BPMBlock__title:focus-visible {
+button.bpm-block__title:hover,
+button.bpm-block__title:focus-visible {
 	border-color: $color-selected;
 	background: $color-button-bg-hover;
 	color: $color-selected;
 	outline: none;
 }
 
-button.BPMBlock__title:active {
+button.bpm-block__title:active {
 	transform: translateY(0.0625em);
 }
 
-.BPMBlock__value {
+.bpm-block__value {
 	color: $color-selected;
 	font-family: $font-data;
 	font-size: 28pt;
@@ -54,12 +54,12 @@ button.BPMBlock__title:active {
 	line-height: 1;
 }
 
-.BPMBlock__status {
+.bpm-block__status {
 	color: $color-text-secondary;
 	font-size: 11pt;
 }
 
-.BPMBlock__chart {
+.bpm-block__chart {
 	min-height: 11.25em;
 	overflow: auto;
 	border: $border-default;
@@ -67,8 +67,8 @@ button.BPMBlock__title:active {
 	background: $color-page-bg;
 }
 
-.BPMBlock__chart pre,
-.BPMBlock__chart p {
+.bpm-block__chart pre,
+.bpm-block__chart p {
 	margin: 0;
 	padding: 1em;
 	color: $color-text-secondary;

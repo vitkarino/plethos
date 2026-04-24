@@ -1,22 +1,22 @@
 <template>
-	<section class="UsersPage">
-		<header class="UsersPage__header">
+	<section class="users-page">
+		<header class="users-page__header">
 			<h1>Користувачі системи</h1>
 
-			<div class="UsersPage__headerActions">
-				<span class="UsersPage__counter">{{ viewModel.state.users.length }}</span>
-				<button class="UsersPage__button" type="button" @click="viewModel.openCreateUserModal()">
+			<div class="users-page__header-actions">
+				<span class="users-page__counter">{{ viewModel.state.users.length }}</span>
+				<button class="users-page__button" type="button" @click="viewModel.openCreateUserModal()">
 					New user
 				</button>
 			</div>
 		</header>
 
-		<p v-if="viewModel.state.pageError" class="UsersPage__formError">
+		<p v-if="viewModel.state.pageError" class="users-page__form-error">
 			{{ viewModel.state.pageError }}
 		</p>
 
-		<Block class="UsersPage__table">
-			<div class="UsersPage__row UsersPage__row--head">
+		<Block class="users-page__table">
+			<div class="users-page__row users-page__row_head">
 				<span>Name</span>
 				<span>Age</span>
 				<span>Sex</span>
@@ -28,7 +28,7 @@
 			<div
 				v-for="user in viewModel.state.users"
 				:key="user.id"
-				class="UsersPage__row"
+				class="users-page__row"
 			>
 				<span>
 					<strong>{{ user.name }}</strong>
@@ -38,12 +38,12 @@
 				<span>{{ viewModel.sexLabel(user.sex) }}</span>
 				<span>{{ viewModel.userProjectTitles(user.id) }}</span>
 				<span>{{ viewModel.formatDate(user.updated_at) }}</span>
-				<span class="UsersPage__actions">
-					<button class="UsersPage__button" type="button" @click="viewModel.openEditUserModal(user)">
+				<span class="users-page__actions">
+					<button class="users-page__button" type="button" @click="viewModel.openEditUserModal(user)">
 						Edit
 					</button>
 					<button
-						class="UsersPage__button UsersPage__button--danger"
+						class="users-page__button users-page__button_danger"
 						type="button"
 						@click="viewModel.deleteUser(user)"
 					>
@@ -80,7 +80,7 @@
 				</select>
 			</label>
 
-			<p v-if="viewModel.state.userFormError" class="UsersPage__formError">
+			<p v-if="viewModel.state.userFormError" class="users-page__form-error">
 				{{ viewModel.state.userFormError }}
 			</p>
 		</Modal>

@@ -1,6 +1,7 @@
 import { reactive } from 'vue'
+import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { ProjectDashboardPageState } from '~/types/pages/project-dashboard'
-import type { AssignedUser, Project, ProjectUser, User } from '~/types/shared/entities'
+import type { AssignedUser, User } from '~/types/shared/entities'
 import {
 	findProjectByRouteName,
 	formatDateValue,
@@ -10,6 +11,8 @@ import {
 } from '~/utils/shared'
 
 export class ProjectDashboardPageViewModel {
+	private readonly api = new PulsoApiModel()
+
 	public readonly state = reactive<ProjectDashboardPageState>({
 		projectName: '',
 		projects: [],
@@ -51,7 +54,7 @@ export class ProjectDashboardPageViewModel {
 	}
 
 	private loadProjects() {
-		return $fetch<Project[]>('/api/projects')
+		return this.api.fetchProjects()
 			.then((projects) => {
 				this.state.projects = projects
 				return projects
@@ -59,7 +62,7 @@ export class ProjectDashboardPageViewModel {
 	}
 
 	private loadUsers() {
-		return $fetch<User[]>('/api/users')
+		return this.api.fetchUsers()
 			.then((users) => {
 				this.state.users = users
 				return users
@@ -67,7 +70,7 @@ export class ProjectDashboardPageViewModel {
 	}
 
 	private loadProjectUsers() {
-		return $fetch<ProjectUser[]>('/api/project_users')
+		return this.api.fetchProjectUsers()
 			.then((projectUsers) => {
 				this.state.projectUsers = projectUsers
 				return projectUsers

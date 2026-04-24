@@ -1,4 +1,5 @@
 import { createTimestamp, mockProjectUsers, mockProjects, mockUsers } from '../data/mock';
+import { createApiErrorResponse, createApiSuccessResponse } from '../utils/api-response';
 
 export default defineEventHandler((event) => {
 	return readBody<{
@@ -13,13 +14,7 @@ export default defineEventHandler((event) => {
 		if (!project || !user) {
 			setResponseStatus(event, 404);
 
-			return {
-				$meta: {
-					status: 'error',
-					message: 'Project or user not found',
-				},
-				data: null,
-			};
+			return createApiErrorResponse('PROJECT_OR_USER_NOT_FOUND', 'Project or user not found');
 		}
 
 		const existingAssignment = mockProjectUsers.find((item) => {
@@ -27,12 +22,7 @@ export default defineEventHandler((event) => {
 		});
 
 		if (existingAssignment) {
-			return {
-				$meta: {
-					status: 'success',
-				},
-				data: existingAssignment,
-			};
+			return createApiSuccessResponse(existingAssignment);
 		}
 
 		const assignedAt = createTimestamp();
@@ -45,11 +35,6 @@ export default defineEventHandler((event) => {
 		mockProjectUsers.push(assignment);
 		project.updated_at = assignedAt;
 
-		return {
-			$meta: {
-				status: 'success',
-			},
-			data: assignment,
-		};
+		return createApiSuccessResponse(assignment);
 	});
 });
