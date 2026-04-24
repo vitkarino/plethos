@@ -79,5 +79,5 @@ viewModel.initialize();
 </script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/pages/project-dashboard";
+@use "~/assets/styles/scss/pages/project-dashboard";
 </style>

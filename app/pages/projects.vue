@@ -155,124 +155,65 @@
 			</Block>
 		</div>
 
-		<Teleport to="body">
-			<div
-				v-if="viewModel.state.isProjectModalOpen"
-				class="ProjectsPage__modalOverlay"
-				@click.self="viewModel.closeProjectModal()"
-			>
-				<form class="ProjectsPage__modal" @submit.prevent="viewModel.saveProject()">
-					<div class="ProjectsPage__modalHeader">
-						<h2>{{ viewModel.state.editingProjectId ? 'Edit project' : 'New project' }}</h2>
+		<Modal
+			:is-open="viewModel.state.isProjectModalOpen"
+			:title="viewModel.state.editingProjectId ? 'Edit project' : 'New project'"
+			:submit-label="viewModel.state.editingProjectId ? 'Save changes' : 'Create project'"
+			:submit-disabled="viewModel.state.isProjectSaving"
+			@close="viewModel.closeProjectModal()"
+			@submit="viewModel.saveProject()"
+		>
+			<label>
+				<span>Title</span>
+				<input v-model.trim="viewModel.state.projectForm.title" type="text" required />
+			</label>
 
-						<button
-							class="ProjectsPage__button ProjectsPage__button--ghost"
-							type="button"
-							@click="viewModel.closeProjectModal()"
-						>
-							Close
-						</button>
-					</div>
+			<label>
+				<span>Description</span>
+				<textarea v-model.trim="viewModel.state.projectForm.description" rows="4" required></textarea>
+			</label>
 
-					<label>
-						<span>Title</span>
-						<input v-model.trim="viewModel.state.projectForm.title" type="text" required />
-					</label>
+			<p v-if="viewModel.state.projectFormError" class="ProjectsPage__formError">
+				{{ viewModel.state.projectFormError }}
+			</p>
+		</Modal>
 
-					<label>
-						<span>Description</span>
-						<textarea v-model.trim="viewModel.state.projectForm.description" rows="4" required></textarea>
-					</label>
+		<Modal
+			:is-open="viewModel.state.isUserModalOpen"
+			title="Edit user"
+			submit-label="Save changes"
+			:submit-disabled="viewModel.state.isUserSaving"
+			@close="viewModel.closeUserModal()"
+			@submit="viewModel.saveUser()"
+		>
+			<label>
+				<span>Name</span>
+				<input v-model.trim="viewModel.state.userForm.name" type="text" required />
+			</label>
 
-					<p v-if="viewModel.state.projectFormError" class="ProjectsPage__formError">
-						{{ viewModel.state.projectFormError }}
-					</p>
+			<label>
+				<span>Age</span>
+				<input v-model.number="viewModel.state.userForm.age" min="0" type="number" required />
+			</label>
 
-					<div class="ProjectsPage__modalActions">
-						<button
-							class="ProjectsPage__button ProjectsPage__button--ghost"
-							type="button"
-							@click="viewModel.closeProjectModal()"
-						>
-							Cancel
-						</button>
-						<button
-							class="ProjectsPage__button ProjectsPage__button--primary"
-							type="submit"
-							:disabled="viewModel.state.isProjectSaving"
-						>
-							{{ viewModel.state.editingProjectId ? 'Save changes' : 'Create project' }}
-						</button>
-					</div>
-				</form>
-			</div>
-		</Teleport>
+			<label>
+				<span>Sex</span>
+				<select v-model="viewModel.state.userForm.sex">
+					<option value="male">Male</option>
+					<option value="female">Female</option>
+				</select>
+			</label>
 
-		<Teleport to="body">
-			<div
-				v-if="viewModel.state.isUserModalOpen"
-				class="ProjectsPage__modalOverlay"
-				@click.self="viewModel.closeUserModal()"
-			>
-				<form class="ProjectsPage__modal" @submit.prevent="viewModel.saveUser()">
-					<div class="ProjectsPage__modalHeader">
-						<h2>Edit user</h2>
-
-						<button
-							class="ProjectsPage__button ProjectsPage__button--ghost"
-							type="button"
-							@click="viewModel.closeUserModal()"
-						>
-							Close
-						</button>
-					</div>
-
-					<label>
-						<span>Name</span>
-						<input v-model.trim="viewModel.state.userForm.name" type="text" required />
-					</label>
-
-					<label>
-						<span>Age</span>
-						<input v-model.number="viewModel.state.userForm.age" min="0" type="number" required />
-					</label>
-
-					<label>
-						<span>Sex</span>
-						<select v-model="viewModel.state.userForm.sex">
-							<option value="male">Male</option>
-							<option value="female">Female</option>
-						</select>
-					</label>
-
-					<p v-if="viewModel.state.userFormError" class="ProjectsPage__formError">
-						{{ viewModel.state.userFormError }}
-					</p>
-
-					<div class="ProjectsPage__modalActions">
-						<button
-							class="ProjectsPage__button ProjectsPage__button--ghost"
-							type="button"
-							@click="viewModel.closeUserModal()"
-						>
-							Cancel
-						</button>
-						<button
-							class="ProjectsPage__button ProjectsPage__button--primary"
-							type="submit"
-							:disabled="viewModel.state.isUserSaving"
-						>
-							Save changes
-						</button>
-					</div>
-				</form>
-			</div>
-		</Teleport>
+			<p v-if="viewModel.state.userFormError" class="ProjectsPage__formError">
+				{{ viewModel.state.userFormError }}
+			</p>
+		</Modal>
 	</section>
 </template>
 
 <script setup lang="ts">
 import Block from '~/components/Block.vue';
+import Modal from '~/components/Modal.vue';
 import { ProjectsPageViewModel } from '~/controllers/pages/ProjectsPageViewModel';
 
 const viewModel = new ProjectsPageViewModel();
@@ -281,5 +222,5 @@ viewModel.initialize();
 </script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/pages/projects";
+@use "~/assets/styles/scss/pages/projects";
 </style>

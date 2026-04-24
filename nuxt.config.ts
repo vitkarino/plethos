@@ -6,6 +6,6 @@ export default defineNuxtConfig({
     '@fontsource/pt-sans/400.css',
     '@fontsource/pt-sans/700.css',
     '@fontsource/pt-mono/400.css',
-    '~/styles/scss/main.scss'
+    '~/assets/styles/scss/main.scss'
   ]
 })

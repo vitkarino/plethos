@@ -1,0 +1,157 @@
+@use "../core/variables" as *;
+
+.ModalOverlay {
+	position: fixed;
+	inset: 0;
+	z-index: var(--modal-z-index);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.25em;
+	background: rgba(0, 0, 0, 0.62);
+}
+
+.Modal {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	width: min(100%, var(--modal-width));
+	padding: 1.25em;
+	border: $border-default;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+	color: $color-text-primary;
+	box-shadow: 0 1em 2.5em rgba(0, 0, 0, 0.38);
+}
+
+.Modal__header,
+.Modal__actions {
+	display: flex;
+	gap: 0.75em;
+}
+
+.Modal__header {
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.Modal__header h2 {
+	margin: 0;
+	color: $color-text-primary;
+	font-size: 16pt;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: 0;
+}
+
+.Modal__body {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+}
+
+.Modal__body :deep(label) {
+	display: flex;
+	flex-direction: column;
+}
+
+.Modal__body :deep(label span) {
+	margin: 0 0 0.35em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.Modal__body :deep(input),
+.Modal__body :deep(select),
+.Modal__body :deep(textarea) {
+	width: 100%;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	outline: none;
+	transition:
+		border-color 160ms ease,
+		background-color 160ms ease;
+}
+
+.Modal__body :deep(input),
+.Modal__body :deep(select) {
+	min-height: 2.5em;
+	padding: 0 0.75em;
+}
+
+.Modal__body :deep(textarea) {
+	min-height: 7em;
+	padding: 0.625em 0.75em;
+	resize: vertical;
+}
+
+.Modal__body :deep(input:focus),
+.Modal__body :deep(select:focus),
+.Modal__body :deep(textarea:focus) {
+	border-color: $color-selected;
+	background: $color-button-bg;
+}
+
+.Modal__actions {
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5em;
+}
+
+.Modal__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.5em;
+	padding: 0 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	font-weight: 700;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.Modal__button:hover,
+.Modal__button:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.Modal__button:disabled {
+	cursor: not-allowed;
+	opacity: 0.48;
+}
+
+.Modal__button--primary {
+	background: $color-page-bg;
+}
+
+.Modal__button--ghost {
+	background: transparent;
+}
+
+@media (max-width: 46em) {
+	.Modal__actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+}

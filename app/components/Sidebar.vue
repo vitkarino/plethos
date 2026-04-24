@@ -17,5 +17,5 @@
 <script setup lang="ts"></script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/components/Sidebar";
+@use "~/assets/styles/scss/components/Sidebar";
 </style>

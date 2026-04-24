@@ -74,5 +74,5 @@ const viewModel = new AIPageViewModel();
 </script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/pages/ai";
+@use "~/assets/styles/scss/pages/ai";
 </style>

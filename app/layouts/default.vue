@@ -2,18 +2,24 @@
 	<div class="AppLayout">
 		<Sidebar>
 			<template #top>
-				<div class="AppLayout__logo">Pulso</div>
+				<div class="AppLayout__logo">
+					<img :src="pulsoLogo" alt="Pulso" />
+				</div>
 			</template>
 
 			<template #nav>
 				<div class="AppLayout__navItem">
-					<NuxtLink class="AppLayout__link AppLayout__link--home" :to="viewModel.workPath('/dashboard')">
+					<NuxtLink
+						class="AppLayout__link AppLayout__link--home"
+						data-shortcut="Ctrl + 1"
+						:to="viewModel.workPath('/dashboard')"
+					>
 						Головна
 					</NuxtLink>
 				</div>
 
 				<div class="AppLayout__navItem AppLayout__navItem--preview">
-					<NuxtLink class="AppLayout__link AppLayout__link--projects" to="/projects">
+					<NuxtLink class="AppLayout__link AppLayout__link--projects" data-shortcut="Ctrl + 2" to="/projects">
 						<span>Проєкти</span>
 						<small v-if="viewModel.state.selectedProject" class="AppLayout__linkMeta">
 							{{ viewModel.selectedProjectLabel() }}
@@ -70,7 +76,13 @@
 				</div>
 
 				<div class="AppLayout__navItem AppLayout__navItem--preview">
-					<NuxtLink class="AppLayout__link AppLayout__link--users" :to="viewModel.workPath('/users')">Користувачі</NuxtLink>
+					<NuxtLink
+						class="AppLayout__link AppLayout__link--users"
+						data-shortcut="Ctrl + 3"
+						:to="viewModel.workPath('/users')"
+					>
+						Користувачі
+					</NuxtLink>
 
 					<div class="AppLayout__preview">
 						<div class="AppLayout__previewHeader">
@@ -117,11 +129,17 @@
 				</div>
 
 				<div class="AppLayout__navItem">
-					<NuxtLink class="AppLayout__link AppLayout__link--chat" :to="viewModel.workPath('/ai')">ШІ Чат</NuxtLink>
+					<NuxtLink
+						class="AppLayout__link AppLayout__link--chat"
+						data-shortcut="Ctrl + 4"
+						:to="viewModel.workPath('/ai')"
+					>
+						ШІ Чат
+					</NuxtLink>
 				</div>
 
 				<div class="AppLayout__navItem">
-					<a class="AppLayout__link AppLayout__link--signals" href="#">Редактор сигналів</a>
+					<a class="AppLayout__link AppLayout__link--signals" data-shortcut="Ctrl + 5" href="#">Редактор сигналів</a>
 				</div>
 			</template>
 
@@ -134,123 +152,65 @@
 			<slot />
 		</main>
 
-		<Teleport to="body">
-			<div
-				v-if="viewModel.state.isProjectModalOpen"
-				class="AppLayout__modalOverlay"
-				@click.self="viewModel.closeProjectModal()"
-			>
-				<form class="AppLayout__modal" @submit.prevent="viewModel.saveProject()">
-					<div class="AppLayout__modalHeader">
-						<h2>Edit project</h2>
+		<Modal
+			:is-open="viewModel.state.isProjectModalOpen"
+			title="Edit project"
+			submit-label="Save changes"
+			:submit-disabled="viewModel.state.isProjectSaving"
+			@close="viewModel.closeProjectModal()"
+			@submit="viewModel.saveProject()"
+		>
+			<label>
+				<span>Title</span>
+				<input v-model.trim="viewModel.state.projectForm.title" type="text" required />
+			</label>
 
-						<button
-							class="AppLayout__button AppLayout__button--ghost"
-							type="button"
-							@click="viewModel.closeProjectModal()"
-						>
-							Close
-						</button>
-					</div>
+			<label>
+				<span>Description</span>
+				<textarea v-model.trim="viewModel.state.projectForm.description" rows="4" required></textarea>
+			</label>
 
-					<label>
-						<span>Title</span>
-						<input v-model.trim="viewModel.state.projectForm.title" type="text" required />
-					</label>
+			<p v-if="viewModel.state.projectFormError" class="AppLayout__formError">
+				{{ viewModel.state.projectFormError }}
+			</p>
+		</Modal>
 
-					<label>
-						<span>Description</span>
-						<textarea v-model.trim="viewModel.state.projectForm.description" rows="4" required></textarea>
-					</label>
+		<Modal
+			:is-open="viewModel.state.isUserModalOpen"
+			title="Edit user"
+			submit-label="Save changes"
+			:submit-disabled="viewModel.state.isUserSaving"
+			@close="viewModel.closeUserModal()"
+			@submit="viewModel.saveUser()"
+		>
+			<label>
+				<span>Name</span>
+				<input v-model.trim="viewModel.state.userForm.name" type="text" required />
+			</label>
 
-					<p v-if="viewModel.state.projectFormError" class="AppLayout__formError">
-						{{ viewModel.state.projectFormError }}
-					</p>
+			<label>
+				<span>Age</span>
+				<input v-model.number="viewModel.state.userForm.age" min="0" type="number" required />
+			</label>
 
-					<div class="AppLayout__modalActions">
-						<button
-							class="AppLayout__button AppLayout__button--ghost"
-							type="button"
-							@click="viewModel.closeProjectModal()"
-						>
-							Cancel
-						</button>
-						<button
-							class="AppLayout__button AppLayout__button--primary"
-							type="submit"
-							:disabled="viewModel.state.isProjectSaving"
-						>
-							Save changes
-						</button>
-					</div>
-				</form>
-			</div>
-		</Teleport>
+			<label>
+				<span>Sex</span>
+				<select v-model="viewModel.state.userForm.sex">
+					<option value="male">Male</option>
+					<option value="female">Female</option>
+				</select>
+			</label>
 
-		<Teleport to="body">
-			<div
-				v-if="viewModel.state.isUserModalOpen"
-				class="AppLayout__modalOverlay"
-				@click.self="viewModel.closeUserModal()"
-			>
-				<form class="AppLayout__modal" @submit.prevent="viewModel.saveUser()">
-					<div class="AppLayout__modalHeader">
-						<h2>Edit user</h2>
-
-						<button
-							class="AppLayout__button AppLayout__button--ghost"
-							type="button"
-							@click="viewModel.closeUserModal()"
-						>
-							Close
-						</button>
-					</div>
-
-					<label>
-						<span>Name</span>
-						<input v-model.trim="viewModel.state.userForm.name" type="text" required />
-					</label>
-
-					<label>
-						<span>Age</span>
-						<input v-model.number="viewModel.state.userForm.age" min="0" type="number" required />
-					</label>
-
-					<label>
-						<span>Sex</span>
-						<select v-model="viewModel.state.userForm.sex">
-							<option value="male">Male</option>
-							<option value="female">Female</option>
-						</select>
-					</label>
-
-					<p v-if="viewModel.state.userFormError" class="AppLayout__formError">
-						{{ viewModel.state.userFormError }}
-					</p>
-
-					<div class="AppLayout__modalActions">
-						<button
-							class="AppLayout__button AppLayout__button--ghost"
-							type="button"
-							@click="viewModel.closeUserModal()"
-						>
-							Cancel
-						</button>
-						<button
-							class="AppLayout__button AppLayout__button--primary"
-							type="submit"
-							:disabled="viewModel.state.isUserSaving"
-						>
-							Save changes
-						</button>
-					</div>
-				</form>
-			</div>
-		</Teleport>
+			<p v-if="viewModel.state.userFormError" class="AppLayout__formError">
+				{{ viewModel.state.userFormError }}
+			</p>
+		</Modal>
 	</div>
 </template>
 
 <script setup lang="ts">
+import pulsoLogo from '~/assets/images/pulso_logo.svg';
+import Modal from '~/components/Modal.vue';
 import Sidebar from '~/components/Sidebar.vue';
 import { DefaultLayoutViewModel } from '~/controllers/layouts/DefaultLayoutViewModel';
 
@@ -264,6 +224,40 @@ watch(
 	(value) => viewModel.syncSelectedProject(getRouteProjectName(value)),
 );
 
+onMounted(() => {
+	window.addEventListener('keydown', handleShortcutKey);
+});
+
+onBeforeUnmount(() => {
+	window.removeEventListener('keydown', handleShortcutKey);
+});
+
+function handleShortcutKey(event: KeyboardEvent) {
+	if (!event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || !/^[1-5]$/.test(event.key)) {
+		return;
+	}
+
+	const target = event.target;
+
+	if (
+		target instanceof HTMLInputElement ||
+		target instanceof HTMLTextAreaElement ||
+		target instanceof HTMLSelectElement ||
+		target instanceof HTMLElement && target.isContentEditable
+	) {
+		return;
+	}
+
+	const link = document.querySelector<HTMLAnchorElement>(`.AppLayout__link[data-shortcut="Ctrl + ${event.key}"]`);
+
+	if (!link) {
+		return;
+	}
+
+	event.preventDefault();
+	link.click();
+}
+
 function getRouteProjectName(value: unknown) {
 	if (Array.isArray(value)) {
 		return value[0] ?? '';
@@ -274,5 +268,5 @@ function getRouteProjectName(value: unknown) {
 </script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/layouts/default";
+@use "~/assets/styles/scss/layouts/default";
 </style>

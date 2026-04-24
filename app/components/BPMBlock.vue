@@ -46,5 +46,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/components/BPMBlock";
+@use "~/assets/styles/scss/components/BPMBlock";
 </style>

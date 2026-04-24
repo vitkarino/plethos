@@ -7,5 +7,5 @@
 <script setup lang="ts"></script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/components/Block";
+@use "~/assets/styles/scss/components/Block";
 </style>
