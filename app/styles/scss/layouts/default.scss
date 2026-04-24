@@ -1,4 +1,4 @@
-@use "variables" as *;
+@use "../core/variables" as *;
 
 @mixin icon-mask($svg) {
 	-webkit-mask: url($svg) center / contain no-repeat;
@@ -54,9 +54,10 @@ $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' view
 }
 
 .AppLayout__link:hover,
-.AppLayout__link:focus-visible {
+.AppLayout__link:focus-visible,
+.AppLayout__link.router-link-exact-active {
 	background: rgba($color-selected, 0.1);
-	color: $color-text-primary;
+	color: $color-selected;
 	outline: none;
 }
 

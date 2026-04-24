@@ -46,5 +46,5 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/BPMBlock";
+@use "~/styles/scss/components/BPMBlock";
 </style>

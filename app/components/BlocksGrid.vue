@@ -17,5 +17,5 @@
 <script setup lang="ts"></script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/BlocksGrid";
+@use "~/styles/scss/components/BlocksGrid";
 </style>

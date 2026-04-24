@@ -1,0 +1,365 @@
+@use "../core/variables" as *;
+
+@mixin icon-mask($svg) {
+	-webkit-mask: url($svg) center / contain no-repeat;
+	mask: url($svg) center / contain no-repeat;
+}
+
+$icon-spark: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14m0-14.14L4.93 19.07M7.76 2.76l8.48 18.48m5-13.48L2.76 16.24m0-8.48l18.48 8.48M16.24 2.76L7.76 21.24'/%3E%3C/svg%3E";
+$icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 12h14m-7-7v14'/%3E%3C/svg%3E";
+$icon-mic: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M12 19v3m7-12v2a7 7 0 0 1-14 0v-2'/%3E%3Crect width='6' height='11' x='9' y='2' rx='3'/%3E%3C/g%3E%3C/svg%3E";
+$icon-chevron: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9l6 6l6-6'/%3E%3C/svg%3E";
+$icon-check: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m20 6l-11 11l-5-5'/%3E%3C/svg%3E";
+
+.AIPage {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: min(100%, 48em);
+	min-height: 100%;
+	color: $color-text-primary;
+}
+
+.AIPage__header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75em;
+	width: 100%;
+	margin-bottom: 1.25em;
+}
+
+.AIPage__mark {
+	flex: 0 0 1.875em;
+	width: 1.875em;
+	height: 1.875em;
+	background: $color-selected;
+
+	@include icon-mask($icon-spark);
+}
+
+.AIPage__header h1 {
+	margin: 0;
+	color: $color-text-primary;
+	font-size: 24pt;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: 0;
+}
+
+.AIPage__composer {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	min-height: 9.25em;
+	padding: 1.25em;
+	border: $border-default;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+}
+
+.AIPage__label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+.AIPage__textarea {
+	flex: 1;
+	width: 100%;
+	min-height: 4em;
+	padding: 0;
+	resize: none;
+	border: 0;
+	background: transparent;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 13pt;
+	line-height: 1.4;
+	outline: none;
+}
+
+.AIPage__textarea::placeholder {
+	color: $color-text-secondary;
+	opacity: 0.8;
+}
+
+.AIPage__toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75em;
+	margin-top: 1em;
+}
+
+.AIPage__actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+}
+
+.AIPage__iconButton,
+.AIPage__modelButton,
+.AIPage__send,
+.AIPage__modelOption {
+	border: $border-default;
+	font-family: $font-text;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.AIPage__iconButton,
+.AIPage__send {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.375em;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+}
+
+.AIPage__iconButton {
+	width: 2.375em;
+	padding: 0;
+}
+
+.AIPage__iconButton::before {
+	content: "";
+	display: block;
+	width: 1.1em;
+	height: 1.1em;
+	background: currentColor;
+}
+
+.AIPage__iconButton--attach::before {
+	@include icon-mask($icon-plus);
+}
+
+.AIPage__iconButton--mic::before {
+	@include icon-mask($icon-mic);
+}
+
+.AIPage__send {
+	padding: 0 1em;
+	font-size: 11pt;
+	font-weight: 700;
+}
+
+.AIPage__model {
+	position: relative;
+}
+
+.AIPage__modelButton {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45em;
+	min-height: 2.375em;
+	padding: 0 0.875em;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-size: 11pt;
+}
+
+.AIPage__modelChevron,
+.AIPage__modelCheck {
+	display: block;
+	width: 0.9em;
+	height: 0.9em;
+	background: currentColor;
+}
+
+.AIPage__modelChevron {
+	@include icon-mask($icon-chevron);
+}
+
+.AIPage__modelMenu {
+	position: absolute;
+	right: 0;
+	top: calc(100% + 0.5em);
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25em;
+	width: min(24em, calc(100vw - 3em));
+	padding: 0.625em;
+	border: $border-default;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+	box-shadow: 0 1em 2em rgba(0, 0, 0, 0.32);
+}
+
+.AIPage__modelOption {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1em;
+	width: 100%;
+	padding: 0.65em 0.75em;
+	border-color: transparent;
+	border-radius: $radius-control;
+	background: transparent;
+	color: $color-text-secondary;
+	text-align: left;
+}
+
+.AIPage__modelOption span:first-child,
+.AIPage__thinking span:first-child {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2em;
+}
+
+.AIPage__modelOption strong,
+.AIPage__thinking strong {
+	color: $color-text-primary;
+	font-size: 11pt;
+	font-weight: 400;
+	line-height: 1.2;
+}
+
+.AIPage__modelOption small,
+.AIPage__thinking small {
+	color: $color-text-secondary;
+	font-size: 10pt;
+	line-height: 1.25;
+}
+
+.AIPage__modelOption--selected .AIPage__modelCheck {
+	color: $color-selected;
+
+	@include icon-mask($icon-check);
+}
+
+.AIPage__thinking {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1em;
+	margin: 0.375em 0 0;
+	padding: 0.75em;
+	border-top: $border-default;
+	background: $color-page-bg;
+}
+
+.AIPage__switch {
+	position: relative;
+	display: inline-flex;
+	flex: 0 0 auto;
+	width: 3em;
+	height: 1.7em;
+	cursor: pointer;
+}
+
+.AIPage__switch input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.AIPage__switch span {
+	position: absolute;
+	inset: 0;
+	border: $border-default;
+	border-radius: 999em;
+	background: $color-page-bg;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease;
+}
+
+.AIPage__switch span::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 0.2em;
+	width: 1.2em;
+	height: 1.2em;
+	border-radius: 50%;
+	background: $color-text-primary;
+	transform: translateY(-50%);
+	transition: transform 160ms ease;
+}
+
+.AIPage__switch input:checked + span {
+	border-color: $color-selected;
+	background: rgba($color-selected, 0.18);
+}
+
+.AIPage__switch input:checked + span::before {
+	transform: translate(1.25em, -50%);
+}
+
+.AIPage__iconButton:hover,
+.AIPage__iconButton:focus-visible,
+.AIPage__modelButton:hover,
+.AIPage__modelButton:focus-visible,
+.AIPage__send:hover,
+.AIPage__send:focus-visible,
+.AIPage__modelOption:hover,
+.AIPage__modelOption:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+@media (max-width: 54em) {
+	.AIPage {
+		justify-content: flex-start;
+		padding: 1em 0;
+	}
+
+	.AIPage__header {
+		justify-content: flex-start;
+	}
+
+	.AIPage__composer {
+		padding: 1em;
+	}
+
+	.AIPage__modelMenu {
+		right: auto;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+}
+
+@media (max-width: 34em) {
+	.AIPage__header h1 {
+		font-size: 16pt;
+	}
+
+	.AIPage__toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.AIPage__actions,
+	.AIPage__model,
+	.AIPage__modelButton {
+		width: 100%;
+	}
+
+	.AIPage__actions {
+		flex-wrap: wrap;
+	}
+
+	.AIPage__modelButton {
+		justify-content: space-between;
+	}
+
+	.AIPage__send {
+		flex: 1;
+	}
+}

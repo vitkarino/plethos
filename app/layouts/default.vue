@@ -6,10 +6,10 @@
 			</template>
 
 			<template #nav>
-				<a class="AppLayout__link" href="#">Головна</a>
+				<NuxtLink class="AppLayout__link" to="/">Головна</NuxtLink>
 				<a class="AppLayout__link" href="#">Проєкти</a>
 				<a class="AppLayout__link" href="#">Користувачі</a>
-				<a class="AppLayout__link" href="#">ШІ Чат</a>
+				<NuxtLink class="AppLayout__link" to="/ai">ШІ Чат</NuxtLink>
 				<a class="AppLayout__link" href="#">Редактор сигналів</a>
 			</template>
 
@@ -29,5 +29,5 @@ import Sidebar from '~/components/Sidebar.vue';
 </script>
 
 <style scoped lang="scss">
-@use "~/styles/scss/default";
+@use "~/styles/scss/layouts/default";
 </style>
