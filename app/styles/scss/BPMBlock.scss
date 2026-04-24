@@ -1,0 +1,78 @@
+@use "variables" as *;
+
+.BPMBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+}
+
+.BPMBlock__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.BPMBlock__title {
+	color: $color-text-secondary;
+	font-size: 12pt;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+button.BPMBlock__title {
+	min-height: 2.25em;
+	padding: 0 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+button.BPMBlock__title:hover,
+button.BPMBlock__title:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+button.BPMBlock__title:active {
+	transform: translateY(0.0625em);
+}
+
+.BPMBlock__value {
+	color: $color-selected;
+	font-family: $font-data;
+	font-size: 28pt;
+	font-weight: 400;
+	line-height: 1;
+}
+
+.BPMBlock__status {
+	color: $color-text-secondary;
+	font-size: 11pt;
+}
+
+.BPMBlock__chart {
+	min-height: 11.25em;
+	overflow: auto;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+}
+
+.BPMBlock__chart pre,
+.BPMBlock__chart p {
+	margin: 0;
+	padding: 1em;
+	color: $color-text-secondary;
+	font-family: $font-data;
+	font-size: 10pt;
+	line-height: 1.5;
+}

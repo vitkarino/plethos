@@ -1,0 +1,35 @@
+@use "variables" as *;
+
+.Sidebar {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	width: $sidebar-width;
+	min-width: $sidebar-width;
+	height: 100vh;
+	padding: 1.5em 1em;
+	border-right: $border-default;
+	background: $color-surface-bg;
+	color: $color-text-secondary;
+}
+
+.Sidebar__top {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25em;
+}
+
+.Sidebar__nav {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375em;
+	flex: 1;
+	margin: 2em 0;
+	min-height: 0;
+}
+
+.Sidebar__bottom {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375em;
+}

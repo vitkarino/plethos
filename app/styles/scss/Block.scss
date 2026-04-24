@@ -1,0 +1,18 @@
+@use "variables" as *;
+
+.Block {
+	width: 100%;
+	height: 100%;
+	padding: 1.5em;
+	border: $border-default;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+	color: $color-text-primary;
+	box-sizing: border-box;
+}
+
+.Block p {
+	margin: 0;
+	color: $color-text-secondary;
+	font-size: 12pt;
+}

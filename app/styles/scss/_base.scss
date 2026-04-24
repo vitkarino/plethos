@@ -1,0 +1,36 @@
+@use "variables" as *;
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 12pt;
+}
+
+body {
+	min-width: 0;
+	min-height: 100vh;
+	margin: 0;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	line-height: 1.45;
+}
+
+button,
+input,
+textarea,
+select {
+	font: inherit;
+}
+
+::selection {
+	background: rgba($color-selected, 0.22);
+	color: $color-text-primary;
+}
