@@ -8,7 +8,10 @@ import {
 	formatDateValue,
 	getProjectRoutePath,
 	getRequestErrorMessage,
+	getSexIcon,
 	getSexLabel,
+	getUserInitials,
+	getUserProjectTitles,
 	readSelectedProjectId,
 	setSelectedProjectId,
 	toProjectSlug,
@@ -130,6 +133,10 @@ export class DefaultLayoutViewModel {
 		setSelectedProjectId(project.id)
 	}
 
+	public switchToProject(project: Project) {
+		this.selectProject(project)
+	}
+
 	public isProjectSelected(project: Project) {
 		return this.state.selectedProject?.id === project.id
 	}
@@ -147,15 +154,12 @@ export class DefaultLayoutViewModel {
 	}
 
 	public userProjectTitles(userId: number) {
-		const projectIds = this.state.projectUsers
-			.filter((projectUser) => projectUser.user_id === userId)
-			.map((projectUser) => projectUser.project_id)
-
-		const titles = this.state.projects
-			.filter((project) => projectIds.includes(project.id))
-			.map((project) => project.title)
-
+		const titles = this.userProjectTitlesList(userId)
 		return titles.length > 0 ? titles.join(', ') : 'No projects'
+	}
+
+	public userProjectTitlesList(userId: number) {
+		return getUserProjectTitles(this.state.projects, this.state.projectUsers, userId)
 	}
 
 	public openEditProjectModal(project: Project) {
@@ -292,6 +296,14 @@ export class DefaultLayoutViewModel {
 
 	public sexLabel(sex: User['sex']) {
 		return getSexLabel(sex)
+	}
+
+	public sexIcon(sex: User['sex']) {
+		return getSexIcon(sex)
+	}
+
+	public userInitials(name: string) {
+		return getUserInitials(name)
 	}
 
 	public formatDate(value: string) {

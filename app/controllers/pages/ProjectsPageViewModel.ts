@@ -7,6 +7,7 @@ import {
 	formatDateValue,
 	getProjectRoutePath,
 	getRequestErrorMessage,
+	getUserInitials,
 	readSelectedProjectId,
 	setSelectedProjectId,
 	toProjectSlug,
@@ -119,6 +120,10 @@ export class ProjectsPageViewModel {
 
 	public projectDashboardPath(project: Project) {
 		return getProjectRoutePath(project, '/dashboard')
+	}
+
+	public userInitials(name: string) {
+		return getUserInitials(name)
 	}
 
 	public openCreateProjectModal() {

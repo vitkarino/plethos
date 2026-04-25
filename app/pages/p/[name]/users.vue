@@ -1,12 +1,11 @@
 <template>
 	<section class="users-page">
 		<header class="users-page__header">
-			<h1>Користувачі системи</h1>
+			<h1>Користувачі <span>· {{ viewModel.state.users.length }}</span></h1>
 
 			<div class="users-page__header-actions">
-				<span class="users-page__counter">{{ viewModel.state.users.length }}</span>
-				<button class="users-page__button" type="button" @click="viewModel.openCreateUserModal()">
-					New user
+				<button class="users-page__button users-page__button_primary users-page__button_add" type="button" @click="viewModel.openCreateUserModal()">
+					Add user
 				</button>
 			</div>
 		</header>
@@ -18,8 +17,6 @@
 		<Block class="users-page__table">
 			<div class="users-page__row users-page__row_head">
 				<span>Name</span>
-				<span>Age</span>
-				<span>Sex</span>
 				<span>Projects</span>
 				<span>Updated</span>
 				<span>Actions</span>
@@ -30,26 +27,37 @@
 				:key="user.id"
 				class="users-page__row"
 			>
-				<span>
-					<strong>{{ user.name }}</strong>
-					<small>ID {{ user.id }} · Created {{ viewModel.formatDate(user.created_at) }}</small>
-				</span>
-				<span>{{ user.age }}</span>
-				<span>{{ viewModel.sexLabel(user.sex) }}</span>
-				<span>{{ viewModel.userProjectTitles(user.id) }}</span>
+				<div class="users-page__identity">
+					<span class="users-page__avatar" aria-hidden="true">{{ viewModel.userInitials(user.name) }}</span>
+					<span>
+						<strong>{{ user.name }} <small>· {{ viewModel.sexIcon(user.sex) }} {{ user.age }}</small></strong>
+						<small>ID {{ user.id }} · Created {{ viewModel.formatDate(user.created_at) }}</small>
+					</span>
+				</div>
+				<div class="users-page__chips">
+					<template v-if="viewModel.userProjectTitlesList(user.id).length">
+						<span
+							v-for="title in viewModel.userProjectTitlesList(user.id).slice(0, 3)"
+							:key="title"
+							class="users-page__chip"
+						>
+							{{ title }}
+						</span>
+						<span v-if="viewModel.userProjectTitlesList(user.id).length > 3" class="users-page__chip users-page__chip_more">
+							+{{ viewModel.userProjectTitlesList(user.id).length - 3 }}
+						</span>
+					</template>
+					<span v-else class="users-page__empty">No projects</span>
+				</div>
 				<span>{{ viewModel.formatDate(user.updated_at) }}</span>
-				<span class="users-page__actions">
-					<button class="users-page__button" type="button" @click="viewModel.openEditUserModal(user)">
+				<ToolTip class="users-page__menu" aria-label="User actions">
+					<button type="button" @click="viewModel.openEditUserModal(user)">
 						Edit
 					</button>
-					<button
-						class="users-page__button users-page__button_danger"
-						type="button"
-						@click="viewModel.deleteUser(user)"
-					>
+					<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteUser(user)">
 						Remove
 					</button>
-				</span>
+				</ToolTip>
 			</div>
 		</Block>
 
@@ -90,6 +98,7 @@
 <script setup lang="ts">
 import Block from '~/components/Block.vue';
 import Modal from '~/components/Modal.vue';
+import ToolTip from '~/components/ToolTip.vue';
 import { UsersPageViewModel } from '~/controllers/pages/UsersPageViewModel';
 
 const viewModel = new UsersPageViewModel();

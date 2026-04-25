@@ -2,7 +2,14 @@ import { reactive } from 'vue'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { UsersPageState } from '~/types/pages/users'
 import type { User } from '~/types/shared/entities'
-import { formatDateValue, getRequestErrorMessage, getSexLabel } from '~/utils/shared'
+import {
+	formatDateValue,
+	getRequestErrorMessage,
+	getSexIcon,
+	getSexLabel,
+	getUserInitials,
+	getUserProjectTitles,
+} from '~/utils/shared'
 
 export class UsersPageViewModel {
 	private readonly api = new PulsoApiModel()
@@ -61,15 +68,20 @@ export class UsersPageViewModel {
 		return getSexLabel(sex)
 	}
 
+	public sexIcon(sex: User['sex']) {
+		return getSexIcon(sex)
+	}
+
+	public userInitials(name: string) {
+		return getUserInitials(name)
+	}
+
+	public userProjectTitlesList(userId: number) {
+		return getUserProjectTitles(this.state.projects, this.state.projectUsers, userId)
+	}
+
 	public userProjectTitles(userId: number) {
-		const projectIds = this.state.projectUsers
-			.filter((projectUser) => projectUser.user_id === userId)
-			.map((projectUser) => projectUser.project_id)
-
-		const titles = this.state.projects
-			.filter((project) => projectIds.includes(project.id))
-			.map((project) => project.title)
-
+		const titles = this.userProjectTitlesList(userId)
 		return titles.length > 0 ? titles.join(', ') : 'No projects'
 	}
 

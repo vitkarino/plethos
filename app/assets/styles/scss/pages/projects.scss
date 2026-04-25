@@ -5,8 +5,7 @@
 	mask: url($svg) center / contain no-repeat;
 }
 
-$icon-edit: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/%3E%3Cpath d='M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z'/%3E%3C/g%3E%3C/svg%3E";
-$icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'/%3E%3Cpath d='M10 11v6m4-6v6'/%3E%3C/g%3E%3C/svg%3E";
+$icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 12h14M12 5v14'/%3E%3C/svg%3E";
 
 .projects-page {
 	display: flex;
@@ -65,22 +64,6 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	font-weight: 700;
 	line-height: 1;
 	text-transform: uppercase;
-}
-
-.projects-page__counter,
-.projects-page__project-header > span {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 2.375em;
-	padding: 0 0.875em;
-	border: $border-default;
-	border-radius: $radius-control;
-	background: $color-page-bg;
-	color: $color-selected;
-	font-family: $font-data;
-	font-size: 11pt;
-	white-space: nowrap;
 }
 
 .projects-page__create-form {
@@ -172,7 +155,9 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 }
 
 .projects-page__button_primary {
-	background: $color-page-bg;
+	border-color: rgba($color-selected, 0.7);
+	background: $color-selected;
+	color: $color-button-bg;
 }
 
 .projects-page__button_ghost {
@@ -203,18 +188,6 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	min-height: 20em;
 }
 
-.projects-page__project_selected {
-	border-color: $color-selected;
-	background:
-		linear-gradient(rgba($color-selected, 0.08), rgba($color-selected, 0.02)),
-		$color-surface-bg;
-}
-
-.projects-page__selected-badge {
-	border-color: $color-selected;
-	background: rgba($color-selected, 0.1);
-}
-
 .projects-page__description,
 .projects-page__empty {
 	margin: 0;
@@ -240,12 +213,23 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	gap: 0.5em;
 }
 
+.projects-page__chip-menu,
+.projects-page__menu,
+.projects-page__assign-panel {
+	position: relative;
+}
+
+.projects-page__chip-menu[open],
+.projects-page__menu[open] {
+	z-index: 5;
+}
+
 .projects-page__chip {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5em;
 	min-height: 2.25em;
-	padding: 0.25em 0.375em 0.25em 0.75em;
+	padding: 0.25em 0.75em 0.25em 0.25em;
 	border: $border-default;
 	border-radius: $radius-control;
 	background: $color-page-bg;
@@ -258,55 +242,30 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 		color 160ms ease;
 }
 
-.projects-page__chip-actions {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.25em;
-}
-
-.projects-page__icon-button {
+.projects-page__avatar {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 1.875em;
-	height: 1.875em;
-	padding: 0;
-	border: $border-default;
-	border-radius: $radius-control;
-	background: $color-button-bg;
-	color: $color-text-secondary;
-	cursor: pointer;
-	transition:
-		background-color 160ms ease,
-		border-color 160ms ease,
-		color 160ms ease;
+	width: 1.75em;
+	height: 1.75em;
+	border-radius: 50%;
+	background: rgba($color-selected, 0.12);
+	color: $color-selected;
+	font-family: $font-data;
+	font-size: 8.5pt;
+	font-weight: 700;
+	line-height: 1;
 }
 
-.projects-page__icon-button::before {
-	content: "";
-	display: block;
-	width: 0.95em;
-	height: 0.95em;
-	background: currentColor;
-}
-
-.projects-page__icon-button_edit::before {
-	@include icon-mask($icon-edit);
-}
-
-.projects-page__icon-button_delete::before {
-	@include icon-mask($icon-trash);
-}
-
-.projects-page__chip:hover,
-.projects-page__icon-button:hover,
-.projects-page__icon-button:focus-visible {
+.projects-page__chip:hover {
 	border-color: $color-selected;
 	color: $color-selected;
 	outline: none;
 }
 
 .projects-page__assign-form {
+	flex-direction: column;
+	align-items: stretch;
 	gap: 0.5em;
 }
 
@@ -314,33 +273,31 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	min-width: 0;
 }
 
+.projects-page__assign-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45em;
+	width: max-content;
+	color: $color-selected;
+	font-size: 10.5pt;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.projects-page__assign-trigger::before {
+	content: "";
+	display: block;
+	width: 1em;
+	height: 1em;
+	background: currentColor;
+	@include icon-mask($icon-plus);
+}
+
 .projects-page__meta {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.75em;
 	margin: auto 0 0;
-}
-
-.projects-page__meta div {
-	padding: 0.875em;
-	border: $border-default;
-	border-radius: $radius-control;
-	background: $color-page-bg;
-}
-
-.projects-page__meta dt {
-	margin: 0 0 0.35em;
 	color: $color-text-secondary;
-	font-size: 10pt;
-	line-height: 1;
-}
-
-.projects-page__meta dd {
-	margin: 0;
-	color: $color-text-primary;
-	font-family: $font-data;
-	font-size: 11pt;
-	line-height: 1.2;
+	font-size: 10.5pt;
+	line-height: 1.35;
 }
 
 .projects-page__project-actions {
@@ -367,13 +324,9 @@ $icon-trash: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 		flex-direction: column;
 	}
 
-	.projects-page__counter,
 	.projects-page__header > .projects-page__button,
 	.projects-page__header-actions > .projects-page__button {
 		align-self: flex-start;
 	}
 
-	.projects-page__meta {
-		grid-template-columns: 1fr;
-	}
 }

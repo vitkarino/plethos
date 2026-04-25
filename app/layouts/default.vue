@@ -1,5 +1,8 @@
 <template>
-	<div class="app-layout">
+	<div
+		class="app-layout"
+		:class="{ 'app-layout_modal-open': viewModel.state.isProjectModalOpen || viewModel.state.isUserModalOpen }"
+	>
 		<Sidebar>
 			<template #top>
 				<div class="app-layout__logo">
@@ -8,6 +11,11 @@
 			</template>
 
 			<template #nav>
+				<div v-if="viewModel.state.selectedProject" class="app-layout__project-info">
+					<span>Поточний проєкт</span>
+					<strong>{{ viewModel.selectedProjectLabel() }}</strong>
+				</div>
+
 				<div class="app-layout__nav-item">
 					<NuxtLink
 						class="app-layout__link app-layout__link_home"
@@ -20,59 +28,42 @@
 
 				<div class="app-layout__nav-item app-layout__nav-item_preview">
 					<NuxtLink class="app-layout__link app-layout__link_projects" data-shortcut="Ctrl + 2" to="/projects">
-						<span>Проєкти</span>
-						<small v-if="viewModel.state.selectedProject" class="app-layout__link-meta">
-							{{ viewModel.selectedProjectLabel() }}
-						</small>
+						Проєкти
 					</NuxtLink>
 
-					<div class="app-layout__preview">
-						<div class="app-layout__preview-header">
-							<strong>Проєкти</strong>
-							<span>{{ viewModel.state.projects.length }}</span>
-						</div>
-
-						<p v-if="viewModel.state.pageError" class="app-layout__preview-error">
-							{{ viewModel.state.pageError }}
-						</p>
-
-						<div v-if="viewModel.state.projects.length" class="app-layout__preview-list">
-							<div
-								v-for="project in viewModel.state.projects"
-								:key="project.id"
-								class="app-layout__preview-item"
-								:class="{ 'app-layout__preview-item_selected': viewModel.isProjectSelected(project) }"
-							>
-								<NuxtLink
-									class="app-layout__preview-main"
-									:to="viewModel.projectDashboardPath(project)"
-									@click="viewModel.selectProject(project)"
-								>
+					<PreviewToolTip
+						title="Проєкти"
+						:count="viewModel.state.projects.length"
+						:error="viewModel.state.pageError"
+						:has-items="viewModel.state.projects.length > 0"
+						empty-label="No projects"
+					>
+						<ToolTip
+							v-for="project in viewModel.state.projects"
+							:key="project.id"
+							class="preview-tool-tip__item"
+							:class="{ 'preview-tool-tip__item_selected': viewModel.isProjectSelected(project) }"
+							trigger-class="preview-tool-tip__summary"
+						>
+							<template #trigger>
+								<span class="preview-tool-tip__main">
 									<strong>{{ project.title }}</strong>
 									<small>{{ viewModel.projectUserCount(project.id) }} users · {{ viewModel.formatDate(project.updated_at) }}</small>
-								</NuxtLink>
+								</span>
+								<span class="tool-tip__icon-button" aria-hidden="true"></span>
+							</template>
 
-								<div class="app-layout__preview-actions">
-									<button
-										class="app-layout__icon-button app-layout__icon-button_edit"
-										type="button"
-										title="Edit project"
-										aria-label="Edit project"
-										@click="viewModel.openEditProjectModal(project)"
-									></button>
-									<button
-										class="app-layout__icon-button app-layout__icon-button_delete"
-										type="button"
-										title="Delete project"
-										aria-label="Delete project"
-										@click="viewModel.deleteProject(project)"
-									></button>
-								</div>
-							</div>
-						</div>
-
-						<p v-else class="app-layout__preview-empty">No projects</p>
-					</div>
+							<button type="button" @click="viewModel.switchToProject(project)">
+								Switch to this project
+							</button>
+							<button type="button" @click="viewModel.openEditProjectModal(project)">
+								Edit
+							</button>
+							<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteProject(project)">
+								Delete
+							</button>
+						</ToolTip>
+					</PreviewToolTip>
 				</div>
 
 				<div class="app-layout__nav-item app-layout__nav-item_preview">
@@ -84,48 +75,51 @@
 						Користувачі
 					</NuxtLink>
 
-					<div class="app-layout__preview">
-						<div class="app-layout__preview-header">
-							<strong>Користувачі</strong>
-							<span>{{ viewModel.state.users.length }}</span>
-						</div>
+					<PreviewToolTip
+						title="Користувачі"
+						:count="viewModel.state.users.length"
+						:error="viewModel.state.pageError"
+						:has-items="viewModel.state.users.length > 0"
+						empty-label="No users"
+					>
+						<ToolTip
+							v-for="user in viewModel.state.users"
+							:key="user.id"
+							class="preview-tool-tip__item"
+							trigger-class="preview-tool-tip__summary"
+						>
+							<template #trigger>
+								<span class="preview-tool-tip__main preview-tool-tip__main_user">
+									<span class="preview-tool-tip__avatar" aria-hidden="true">{{ viewModel.userInitials(user.name) }}</span>
+									<span>
+										<strong>{{ user.name }} <span>· {{ viewModel.sexIcon(user.sex) }} {{ user.age }}</span></strong>
+										<span class="preview-tool-tip__chips">
+											<template v-if="viewModel.userProjectTitlesList(user.id).length">
+												<small
+													v-for="title in viewModel.userProjectTitlesList(user.id).slice(0, 2)"
+													:key="title"
+												>
+													{{ title }}
+												</small>
+												<small v-if="viewModel.userProjectTitlesList(user.id).length > 2">
+													+{{ viewModel.userProjectTitlesList(user.id).length - 2 }}
+												</small>
+											</template>
+											<small v-else>No projects</small>
+										</span>
+									</span>
+								</span>
+								<span class="tool-tip__icon-button" aria-hidden="true"></span>
+							</template>
 
-						<p v-if="viewModel.state.pageError" class="app-layout__preview-error">
-							{{ viewModel.state.pageError }}
-						</p>
-
-						<div v-if="viewModel.state.users.length" class="app-layout__preview-list">
-							<div
-								v-for="user in viewModel.state.users"
-								:key="user.id"
-								class="app-layout__preview-item"
-							>
-								<NuxtLink class="app-layout__preview-main" :to="viewModel.workPath('/users')">
-									<strong>{{ user.name }}</strong>
-									<small>{{ viewModel.sexLabel(user.sex) }}, {{ user.age }} · {{ viewModel.userProjectTitles(user.id) }}</small>
-								</NuxtLink>
-
-								<div class="app-layout__preview-actions">
-									<button
-										class="app-layout__icon-button app-layout__icon-button_edit"
-										type="button"
-										title="Edit user"
-										aria-label="Edit user"
-										@click="viewModel.openEditUserModal(user)"
-									></button>
-									<button
-										class="app-layout__icon-button app-layout__icon-button_delete"
-										type="button"
-										title="Delete user"
-										aria-label="Delete user"
-										@click="viewModel.deleteUser(user)"
-									></button>
-								</div>
-							</div>
-						</div>
-
-						<p v-else class="app-layout__preview-empty">No users</p>
-					</div>
+							<button type="button" @click="viewModel.openEditUserModal(user)">
+								Edit
+							</button>
+							<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteUser(user)">
+								Delete
+							</button>
+						</ToolTip>
+					</PreviewToolTip>
 				</div>
 
 				<div class="app-layout__nav-item">
@@ -211,7 +205,9 @@
 <script setup lang="ts">
 import pulsoLogo from '~/assets/images/pulso_logo.svg';
 import Modal from '~/components/Modal.vue';
+import PreviewToolTip from '~/components/PreviewToolTip.vue';
 import Sidebar from '~/components/Sidebar.vue';
+import ToolTip from '~/components/ToolTip.vue';
 import { DefaultLayoutViewModel } from '~/controllers/layouts/DefaultLayoutViewModel';
 
 const viewModel = new DefaultLayoutViewModel();

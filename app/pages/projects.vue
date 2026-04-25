@@ -4,7 +4,6 @@
 			<h1>{{ viewModel.state.projects.length ? 'Активні проєкти' : 'Створіть перший проєкт' }}</h1>
 
 			<div class="projects-page__header-actions">
-				<span class="projects-page__counter">{{ viewModel.state.projects.length }}</span>
 				<button
 					v-if="viewModel.state.projects.length"
 					class="projects-page__button"
@@ -47,17 +46,12 @@
 				v-for="project in viewModel.state.projects"
 				:key="project.id"
 				class="projects-page__project"
-				:class="{ 'projects-page__project_selected': viewModel.isProjectSelected(project) }"
 			>
 				<div class="projects-page__project-header">
 					<div>
 						<p>Project #{{ project.id }}</p>
 						<h2>{{ project.title }}</h2>
 					</div>
-
-					<span :class="{ 'projects-page__selected-badge': viewModel.isProjectSelected(project) }">
-						{{ viewModel.isProjectSelected(project) ? 'Selected · ' : '' }}{{ viewModel.projectUserCount(project.id) }} users
-					</span>
 				</div>
 
 				<p class="projects-page__description">{{ project.description }}</p>
@@ -68,89 +62,92 @@
 					</div>
 
 					<div v-if="viewModel.assignedUsers(project.id).length" class="projects-page__chips">
-						<div
+						<ToolTip
 							v-for="assignment in viewModel.assignedUsers(project.id)"
 							:key="assignment.user.id"
-							class="projects-page__chip"
+							class="projects-page__chip-menu"
+							placement="left"
+							min-width="12em"
+							@click.stop
 						>
-							<span>{{ assignment.user.name }}</span>
-							<div class="projects-page__chip-actions">
-								<button
-									class="projects-page__icon-button projects-page__icon-button_edit"
-									type="button"
-									title="Edit user"
-									aria-label="Edit user"
-									@click="viewModel.openEditUserModal(assignment.user)"
-								></button>
-								<button
-									class="projects-page__icon-button projects-page__icon-button_delete"
-									type="button"
-									title="Remove user from project"
-									aria-label="Remove user from project"
-									@click="viewModel.unassignUser(project.id, assignment.user.id)"
-								></button>
-							</div>
-						</div>
+							<template #trigger>
+								<span class="projects-page__chip">
+									<span class="projects-page__avatar" aria-hidden="true">{{ viewModel.userInitials(assignment.user.name) }}</span>
+									<span>{{ assignment.user.name }}</span>
+								</span>
+							</template>
+
+							<button type="button" @click="viewModel.openEditUserModal(assignment.user)">
+								Edit user
+							</button>
+							<button type="button" class="tool-tip__menu-danger" @click="viewModel.unassignUser(project.id, assignment.user.id)">
+								Remove from project
+							</button>
+						</ToolTip>
 					</div>
 
 					<p v-else class="projects-page__empty">No assigned users</p>
 
-					<form class="projects-page__assign-form" @submit.prevent="viewModel.assignUser(project.id)">
-						<select
-							v-model.number="viewModel.state.assignmentForms[project.id]"
-							:disabled="viewModel.unassignedUsers(project.id).length === 0"
-						>
-							<option value="">
-								{{ viewModel.unassignedUsers(project.id).length === 0 ? 'All users assigned' : 'Select user' }}
-							</option>
-							<option
-								v-for="user in viewModel.unassignedUsers(project.id)"
-								:key="user.id"
-								:value="user.id"
-							>
-								{{ user.name }}
-							</option>
-						</select>
+					<ToolTip
+						class="projects-page__assign-panel"
+						placement="left"
+						min-width="18em"
+						@click.stop
+					>
+						<template #trigger>
+							<span class="projects-page__assign-trigger">
+								Assign user
+							</span>
+						</template>
 
-						<button
-							class="projects-page__button"
-							type="submit"
-							:disabled="viewModel.unassignedUsers(project.id).length === 0"
-						>
-							Assign
-						</button>
-					</form>
+						<form class="projects-page__assign-form" @submit.prevent="viewModel.assignUser(project.id)">
+							<select
+								v-model.number="viewModel.state.assignmentForms[project.id]"
+								:disabled="viewModel.unassignedUsers(project.id).length === 0"
+							>
+								<option value="">
+									{{ viewModel.unassignedUsers(project.id).length === 0 ? 'All users assigned' : 'Select user' }}
+								</option>
+								<option
+									v-for="user in viewModel.unassignedUsers(project.id)"
+									:key="user.id"
+									:value="user.id"
+								>
+									{{ user.name }}
+								</option>
+							</select>
+
+							<button
+								class="projects-page__button"
+								type="submit"
+								:disabled="viewModel.unassignedUsers(project.id).length === 0"
+							>
+								Assign
+							</button>
+						</form>
+					</ToolTip>
 				</div>
 
-				<dl class="projects-page__meta">
-					<div>
-						<dt>Created</dt>
-						<dd>{{ viewModel.formatDate(project.created_at) }}</dd>
-					</div>
-					<div>
-						<dt>Updated</dt>
-						<dd>{{ viewModel.formatDate(project.updated_at) }}</dd>
-					</div>
-				</dl>
+				<p class="projects-page__meta">
+					Created {{ viewModel.formatDate(project.created_at) }} · Updated {{ viewModel.formatDate(project.updated_at) }}
+				</p>
 
 				<div class="projects-page__project-actions">
 					<NuxtLink
 						class="projects-page__button projects-page__button_primary"
 						:to="viewModel.projectDashboardPath(project)"
-						@click="viewModel.selectProject(project)"
+						@click.stop="viewModel.selectProject(project)"
 					>
-						{{ viewModel.isProjectSelected(project) ? 'Open' : 'Select and open' }}
+						Open
 					</NuxtLink>
-					<button class="projects-page__button" type="button" @click="viewModel.openEditProjectModal(project)">
-						Edit
-					</button>
-					<button
-						class="projects-page__button projects-page__button_danger"
-						type="button"
-						@click="viewModel.deleteProject(project)"
-					>
-						Remove
-					</button>
+					<ToolTip class="projects-page__menu" aria-label="Project actions" @click.stop>
+						<button type="button" @click="viewModel.openEditProjectModal(project)">
+							Edit
+						</button>
+						<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteProject(project)">
+							Remove
+						</button>
+					</ToolTip>
 				</div>
 			</Block>
 		</div>
@@ -214,6 +211,7 @@
 <script setup lang="ts">
 import Block from '~/components/Block.vue';
 import Modal from '~/components/Modal.vue';
+import ToolTip from '~/components/ToolTip.vue';
 import { ProjectsPageViewModel } from '~/controllers/pages/ProjectsPageViewModel';
 
 const viewModel = new ProjectsPageViewModel();

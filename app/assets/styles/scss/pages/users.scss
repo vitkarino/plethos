@@ -1,5 +1,12 @@
 @use "../core/variables" as *;
 
+@mixin icon-mask($svg) {
+	-webkit-mask: url($svg) center / contain no-repeat;
+	mask: url($svg) center / contain no-repeat;
+}
+
+$icon-plus-user: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M19 8v6m3-3h-6'/%3E%3C/g%3E%3C/svg%3E";
+
 .users-page {
 	display: flex;
 	flex-direction: column;
@@ -38,19 +45,9 @@
 	font-size: 22pt;
 }
 
-.users-page__counter {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 2.375em;
-	padding: 0 0.875em;
-	border: $border-default;
-	border-radius: $radius-control;
-	background: $color-surface-bg;
+.users-page__header h1 span {
 	color: $color-selected;
-	font-family: $font-data;
-	font-size: 11pt;
-	white-space: nowrap;
+	font-size: 18pt;
 }
 
 .users-page__form-error {
@@ -97,7 +94,9 @@
 }
 
 .users-page__button_primary {
-	background: $color-page-bg;
+	border-color: rgba($color-selected, 0.7);
+	background: $color-selected;
+	color: $color-button-bg;
 }
 
 .users-page__button_ghost {
@@ -109,6 +108,19 @@
 	color: $color-selected;
 }
 
+.users-page__button_add {
+	gap: 0.55em;
+}
+
+.users-page__button_add::before {
+	content: "";
+	display: block;
+	width: 1.05em;
+	height: 1.05em;
+	background: currentColor;
+	@include icon-mask($icon-plus-user);
+}
+
 .users-page__table {
 	overflow: auto;
 	padding: 0;
@@ -116,10 +128,10 @@
 
 .users-page__row {
 	display: grid;
-	grid-template-columns: minmax(14em, 1.3fr) 5em 6.5em minmax(14em, 1fr) 8em 11em;
+	grid-template-columns: minmax(16em, 1.4fr) minmax(16em, 1fr) 7em 2.75em;
 	gap: 1em;
 	align-items: center;
-	min-width: 66em;
+	min-width: 48em;
 	padding: 1em 1.25em;
 	border-top: $border-default;
 	color: $color-text-secondary;
@@ -140,7 +152,7 @@
 
 .users-page__row strong,
 .users-page__row small {
-	display: block;
+	display: inline;
 }
 
 .users-page__row strong {
@@ -151,25 +163,77 @@
 }
 
 .users-page__row small {
-	margin-top: 0.3em;
 	color: $color-text-secondary;
-	font-family: $font-data;
 	font-size: 9pt;
 	line-height: 1.25;
 }
 
-.users-page__row span:not(:first-child):not(.users-page__actions) {
+.users-page__identity > span > small,
+.users-page__row > span {
+	display: block;
+	margin-top: 0.3em;
 	font-family: $font-data;
 }
 
-.users-page__actions {
-	gap: 0.5em;
+.users-page__identity {
+	display: flex;
+	align-items: center;
+	gap: 0.85em;
+	min-width: 0;
 }
 
-.users-page__actions .users-page__button {
-	min-height: 2.25em;
-	padding: 0 0.75em;
+.users-page__avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 2.5em;
+	height: 2.5em;
+	border-radius: 50%;
+	background: rgba($color-selected, 0.12);
+	color: $color-selected;
+	font-family: $font-data;
 	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.users-page__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.45em;
+}
+
+.users-page__chip {
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+	min-height: 2em;
+	padding: 0 0.65em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-size: 10pt;
+	line-height: 1;
+}
+
+.users-page__chip_more,
+.users-page__empty {
+	color: $color-text-secondary;
+}
+
+.users-page__menu {
+	position: relative;
+	justify-self: end;
+	opacity: 0;
+	transition: opacity 160ms ease;
+}
+
+.users-page__row:hover .users-page__menu,
+.users-page__row:focus-within .users-page__menu,
+.users-page__menu[open] {
+	opacity: 1;
 }
 
 @media (max-width: 46em) {
@@ -178,13 +242,11 @@
 	}
 
 	.users-page__header,
-	.users-page__header-actions,
-	.users-page__actions {
+	.users-page__header-actions {
 		align-items: stretch;
 		flex-direction: column;
 	}
 
-	.users-page__counter,
 	.users-page__header-actions > .users-page__button {
 		align-self: flex-start;
 	}

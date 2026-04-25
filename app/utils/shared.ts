@@ -1,5 +1,5 @@
 import type { ApiResponse } from '~/types/shared/api'
-import type { Project, Sex } from '~/types/shared/entities'
+import type { Project, ProjectUser, Sex } from '~/types/shared/entities'
 
 export const SELECTED_PROJECT_STORAGE_KEY = 'pulso.selectedProjectId'
 
@@ -15,6 +15,31 @@ export function formatDateValue(value: string) {
 
 export function getSexLabel(sex: Sex) {
 	return sex === 'female' ? 'Female' : 'Male'
+}
+
+export function getSexIcon(sex: Sex) {
+	return sex === 'female' ? '♀' : '♂'
+}
+
+export function getUserInitials(name: string) {
+	const initials = name
+		.trim()
+		.split(/\s+/)
+		.slice(0, 2)
+		.map((part) => part[0]?.toUpperCase() ?? '')
+		.join('')
+
+	return initials || 'U'
+}
+
+export function getUserProjectTitles(projects: Project[], projectUsers: ProjectUser[], userId: number) {
+	const projectIds = projectUsers
+		.filter((projectUser) => projectUser.user_id === userId)
+		.map((projectUser) => projectUser.project_id)
+
+	return projects
+		.filter((project) => projectIds.includes(project.id))
+		.map((project) => project.title)
 }
 
 export function toProjectSlug(title: string) {
