@@ -5,7 +5,7 @@
 
 			<div class="users-page__header-actions">
 				<button class="users-page__button users-page__button_primary users-page__button_add" type="button" @click="viewModel.openCreateUserModal()">
-					Add user
+					Додати користувача
 				</button>
 			</div>
 		</header>
@@ -16,10 +16,10 @@
 
 		<Block class="users-page__table">
 			<div class="users-page__row users-page__row_head">
-				<span>Name</span>
-				<span>Projects</span>
-				<span>Updated</span>
-				<span>Actions</span>
+				<span>Ім'я</span>
+				<span>Проєкти</span>
+				<span>Оновлено</span>
+				<span>Дії</span>
 			</div>
 
 			<div
@@ -31,7 +31,7 @@
 					<span class="users-page__avatar" aria-hidden="true">{{ viewModel.userInitials(user.name) }}</span>
 					<span>
 						<strong>{{ user.name }} <small>· {{ viewModel.sexIcon(user.sex) }} {{ user.age }}</small></strong>
-						<small>ID {{ user.id }} · Created {{ viewModel.formatDate(user.created_at) }}</small>
+						<small>ID {{ user.id }} · Створено {{ viewModel.formatDate(user.created_at) }}</small>
 					</span>
 				</div>
 				<div class="users-page__chips">
@@ -47,15 +47,15 @@
 							+{{ viewModel.userProjectTitlesList(user.id).length - 3 }}
 						</span>
 					</template>
-					<span v-else class="users-page__empty">No projects</span>
+					<span v-else class="users-page__empty">Немає проєктів</span>
 				</div>
 				<span>{{ viewModel.formatDate(user.updated_at) }}</span>
-				<ToolTip class="users-page__menu" aria-label="User actions">
+				<ToolTip class="users-page__menu" aria-label="Дії з користувачем">
 					<button type="button" @click="viewModel.openEditUserModal(user)">
-						Edit
+						Редагувати
 					</button>
 					<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteUser(user)">
-						Remove
+						Видалити
 					</button>
 				</ToolTip>
 			</div>
@@ -63,30 +63,24 @@
 
 		<Modal
 			:is-open="viewModel.state.isUserModalOpen"
-			:title="viewModel.state.editingUserId ? 'Edit user' : 'New user'"
-			:submit-label="viewModel.state.editingUserId ? 'Save changes' : 'Create user'"
+			:title="viewModel.state.editingUserId ? 'Редагувати користувача' : 'Новий користувач'"
+			:submit-label="viewModel.state.editingUserId ? 'Зберегти зміни' : 'Створити користувача'"
 			:submit-disabled="viewModel.state.isUserSaving"
 			width="30em"
 			@close="viewModel.closeUserModal()"
 			@submit="viewModel.saveUser()"
 		>
 			<label>
-				<span>Name</span>
+				<span>Ім'я</span>
 				<input v-model.trim="viewModel.state.userForm.name" type="text" required />
 			</label>
 
 			<label>
-				<span>Age</span>
+				<span>Вік</span>
 				<input v-model.number="viewModel.state.userForm.age" min="0" type="number" required />
 			</label>
 
-			<label>
-				<span>Sex</span>
-				<select v-model="viewModel.state.userForm.sex">
-					<option value="male">Male</option>
-					<option value="female">Female</option>
-				</select>
-			</label>
+			<SelectBox v-model="viewModel.state.userForm.sex" label="Стать" :items="sexOptions" />
 
 			<p v-if="viewModel.state.userFormError" class="users-page__form-error">
 				{{ viewModel.state.userFormError }}
@@ -98,10 +92,15 @@
 <script setup lang="ts">
 import Block from '~/components/Block.vue';
 import Modal from '~/components/Modal.vue';
+import SelectBox from '~/components/SelectBox.vue';
 import ToolTip from '~/components/ToolTip.vue';
 import { UsersPageViewModel } from '~/controllers/pages/UsersPageViewModel';
 
 const viewModel = new UsersPageViewModel();
+const sexOptions = [
+	{ label: 'Чоловіча', value: 'male' },
+	{ label: 'Жіноча', value: 'female' },
+];
 
 viewModel.initialize();
 </script>

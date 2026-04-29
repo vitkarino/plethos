@@ -11,7 +11,8 @@ import {
 const projectlessWorkRoutes = new Set([
 	'/dashboard',
 	'/users',
-	'/ai',
+	// СТРОГО НЕ УДАЛЯТЬ, ОСТАВИТЬ НА БУДУЩЕЕ: маршрут ШІ-чату тимчасово вимкнено.
+	// '/ai',
 ])
 
 const api = new PulsoApiModel()

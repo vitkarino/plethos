@@ -1,5 +1,13 @@
 @use "../core/variables" as *;
 
+@mixin icon-mask($svg) {
+	-webkit-mask: url($svg) center / contain no-repeat;
+	mask: url($svg) center / contain no-repeat;
+}
+
+$icon-projects: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2m4-10v4m4-4v2m4-2v6'/%3E%3C/svg%3E";
+$icon-users: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3C/g%3E%3C/svg%3E";
+
 .preview-tool-tip {
 	position: absolute;
 	top: 0;
@@ -46,9 +54,30 @@
 	letter-spacing: 0;
 }
 
-.preview-tool-tip__header span {
+.preview-tool-tip__count {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35em;
 	color: $color-selected;
 	font-size: 12pt;
+}
+
+.preview-tool-tip__count::before {
+	content: "";
+	display: none;
+	width: 1em;
+	height: 1em;
+	background: currentColor;
+}
+
+.preview-tool-tip__count_projects::before {
+	display: block;
+	@include icon-mask($icon-projects);
+}
+
+.preview-tool-tip__count_users::before {
+	display: block;
+	@include icon-mask($icon-users);
 }
 
 .preview-tool-tip__list {

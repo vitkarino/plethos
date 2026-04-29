@@ -1,5 +1,11 @@
 <template>
-	<details v-bind="$attrs" class="tool-tip" :class="`tool-tip_${placement}`">
+	<details
+		ref="rootElement"
+		v-bind="$attrs"
+		class="tool-tip"
+		:class="`tool-tip_${placement}`"
+		@toggle="closeOtherToolTips"
+	>
 		<summary class="tool-tip__trigger" :class="triggerClass" :aria-label="ariaLabel">
 			<slot name="trigger">
 				<span class="tool-tip__icon-button" aria-hidden="true"></span>
@@ -26,6 +32,22 @@ withDefaults(defineProps<{
 	placement: 'right',
 	minWidth: undefined,
 });
+
+const rootElement = ref<HTMLDetailsElement | null>(null);
+
+function closeOtherToolTips() {
+	const currentElement = rootElement.value;
+
+	if (!currentElement?.open) {
+		return;
+	}
+
+	document.querySelectorAll<HTMLDetailsElement>('details.tool-tip[open]').forEach((element) => {
+		if (element !== currentElement) {
+			element.open = false;
+		}
+	});
+}
 </script>
 
 <style lang="scss">

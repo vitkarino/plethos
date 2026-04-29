@@ -2,7 +2,12 @@
 	<div class="preview-tool-tip">
 		<div class="preview-tool-tip__header">
 			<strong>{{ title }}</strong>
-			<span>{{ count }}</span>
+			<span
+				class="preview-tool-tip__count"
+				:class="countIcon ? `preview-tool-tip__count_${countIcon}` : undefined"
+			>
+				{{ count }}
+			</span>
 		</div>
 
 		<p v-if="error" class="preview-tool-tip__error">
@@ -22,11 +27,13 @@ withDefaults(defineProps<{
 	title: string;
 	count: number;
 	hasItems: boolean;
+	countIcon?: 'projects' | 'users';
 	error?: string;
 	emptyLabel?: string;
 }>(), {
+	countIcon: undefined,
 	error: '',
-	emptyLabel: 'No items',
+	emptyLabel: 'Немає елементів',
 });
 </script>
 

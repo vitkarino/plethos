@@ -1,9 +1,28 @@
 @use "../core/variables" as *;
 
+@mixin icon-mask($svg) {
+	-webkit-mask: url($svg) center / contain no-repeat;
+	mask: url($svg) center / contain no-repeat;
+}
+
+$icon-heart-pulse: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 9.5a5.5 5.5 0 0 1 9.59-3.676.56.56 0 0 0 .82 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5'/%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3.22 12H9.5l.5-1l2 4.5l2-7l1.5 3.5h5.27'/%3E%3C/svg%3E";
+$icon-droplets: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M7 16.3c2.2 0 4-1.83 4-4.05c0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05'/%3E%3Cpath d='M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97'/%3E%3C/g%3E%3C/svg%3E";
+$icon-signal: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 20h.01M7 20v-4m5 4v-8m5 8V8m5 12V4'/%3E%3C/svg%3E";
+
 .bpm-block {
+	height: 100%;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.bpm-block :deep(.block__content) {
 	display: flex;
+	flex: 1 1 auto;
 	flex-direction: column;
 	gap: 1em;
+	height: 100%;
+	min-height: 0;
+	overflow: hidden;
 }
 
 .bpm-block__header {
@@ -46,12 +65,73 @@ button.bpm-block__title:active {
 	transform: translateY(0.0625em);
 }
 
-.bpm-block__value {
+.bpm-block__selects {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75em;
+}
+
+.bpm-block__metrics {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.75em;
+}
+
+.bpm-block__metric {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 0.75em;
+	min-width: 0;
+	padding: 0.875em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+}
+
+.bpm-block__metric-content {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35em;
+	min-width: 0;
+}
+
+.bpm-block__metric-content span {
+	overflow: hidden;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+	text-overflow: ellipsis;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.bpm-block__metric-content strong {
 	color: $color-selected;
 	font-family: $font-data;
-	font-size: 28pt;
+	font-size: 24pt;
 	font-weight: 400;
 	line-height: 1;
+}
+
+.bpm-block__metric-icon {
+	display: block;
+	width: 2.25em;
+	height: 2.25em;
+	background: rgba($color-selected, 0.82);
+}
+
+.bpm-block__metric-icon_bpm {
+	@include icon-mask($icon-heart-pulse);
+}
+
+.bpm-block__metric-icon_spo2 {
+	@include icon-mask($icon-droplets);
+}
+
+.bpm-block__metric-icon_signal {
+	@include icon-mask($icon-signal);
 }
 
 .bpm-block__status {
@@ -59,20 +139,93 @@ button.bpm-block__title:active {
 	font-size: 11pt;
 }
 
+.bpm-block__charts {
+	position: relative;
+	flex: 1 1 0;
+	display: grid;
+	grid-template-rows: repeat(2, minmax(0, 1fr));
+	gap: 0.75em;
+	height: auto;
+	min-height: 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
 .bpm-block__chart {
-	min-height: 11.25em;
-	overflow: auto;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5em;
+	min-height: 0;
+	min-width: 0;
+	padding: 0.75em 0.875em 0.875em;
+	overflow: hidden;
 	border: $border-default;
 	border-radius: $radius-control;
 	background: $color-page-bg;
 }
 
-.bpm-block__chart pre,
-.bpm-block__chart p {
+.bpm-block__chart-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.75em;
+	min-height: 1em;
+}
+
+.bpm-block__chart-header span {
+	color: $color-text-primary;
+	font-family: $font-data;
+	font-size: 10pt;
+	line-height: 1;
+}
+
+.bpm-block__chart-header strong {
+	overflow: hidden;
+	color: $color-text-secondary;
+	font-size: 9pt;
+	font-weight: 700;
+	line-height: 1;
+	text-overflow: ellipsis;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.bpm-block__canvas {
+	flex: 1 1 auto;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-height: 100%;
+	min-height: 0;
+}
+
+.bpm-block__canvas--hidden {
+	display: none;
+}
+
+.bpm-block__empty {
+	position: absolute;
+	inset: 1em;
 	margin: 0;
-	padding: 1em;
 	color: $color-text-secondary;
 	font-family: $font-data;
 	font-size: 10pt;
 	line-height: 1.5;
+}
+
+@media (max-width: 42em) {
+	.bpm-block__header {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.bpm-block__selects,
+	.bpm-block__metrics {
+		grid-template-columns: 1fr;
+	}
+
+	.bpm-block__charts {
+		min-height: 18em;
+	}
 }

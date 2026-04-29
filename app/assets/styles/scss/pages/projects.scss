@@ -10,35 +10,31 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 .projects-page {
 	display: flex;
 	flex-direction: column;
-	gap: 1em;
 	width: min(100%, 72em);
 	height: 100%;
 	color: $color-text-primary;
 }
 
-.projects-page__header,
-.projects-page__header-actions,
 .projects-page__project-header,
 .projects-page__project-actions,
 .projects-page__assign-form,
-.projects-page__create-form {
+.projects-page__create-form,
+.projects-page__toolbar {
 	display: flex;
 	gap: 1em;
 }
 
-.projects-page__header,
 .projects-page__project-header {
 	align-items: flex-start;
 	justify-content: space-between;
 }
 
-.projects-page__header-actions,
 .projects-page__project-actions,
-.projects-page__assign-form {
+.projects-page__assign-form,
+.projects-page__toolbar {
 	align-items: center;
 }
 
-.projects-page__header h1,
 .projects-page__project-header h2 {
 	margin: 0;
 	color: $color-text-primary;
@@ -47,15 +43,10 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	letter-spacing: 0;
 }
 
-.projects-page__header h1 {
-	font-size: 22pt;
-}
-
 .projects-page__project-header h2 {
 	font-size: 15pt;
 }
 
-.projects-page__project-header p,
 .projects-page__section-title span,
 .projects-page__create-form label span {
 	margin: 0 0 0.35em;
@@ -101,7 +92,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 .projects-page__create-form textarea {
 	min-height: 7em;
 	padding: 0.625em 0.75em;
-	resize: vertical;
+	resize: none;
 }
 
 .projects-page__create-form input:focus,
@@ -116,6 +107,15 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	color: $color-selected;
 	font-size: 11pt;
 	line-height: 1.35;
+}
+
+.projects-page__field-hint {
+	align-self: flex-end;
+	margin-top: -0.65em;
+	color: $color-text-secondary;
+	font-family: $font-data;
+	font-size: 9pt;
+	line-height: 1.2;
 }
 
 .projects-page__button {
@@ -174,11 +174,6 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 1em;
 	min-height: 0;
-}
-
-.projects-page__empty-create {
-	display: flex;
-	align-items: flex-start;
 }
 
 .projects-page__project {
@@ -276,12 +271,18 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 .projects-page__assign-trigger {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.45em;
-	width: max-content;
+	justify-content: center;
+	width: 2.25em;
+	height: 2.25em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
 	color: $color-selected;
-	font-size: 10.5pt;
-	font-weight: 700;
 	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
 }
 
 .projects-page__assign-trigger::before {
@@ -291,6 +292,13 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	height: 1em;
 	background: currentColor;
 	@include icon-mask($icon-plus);
+}
+
+.projects-page__assign-trigger:hover,
+.projects-page__assign-panel .tool-tip__trigger:focus-visible .projects-page__assign-trigger {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
 }
 
 .projects-page__meta {
@@ -316,17 +324,10 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 		height: auto;
 	}
 
-	.projects-page__header,
-	.projects-page__header-actions,
 	.projects-page__project-header,
 	.projects-page__assign-form {
 		align-items: stretch;
 		flex-direction: column;
-	}
-
-	.projects-page__header > .projects-page__button,
-	.projects-page__header-actions > .projects-page__button {
-		align-self: flex-start;
 	}
 
 }

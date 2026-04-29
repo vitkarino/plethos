@@ -4,15 +4,15 @@ import type { AIPageState, ModelOption } from '~/types/pages/ai'
 const models: ModelOption[] = [
 	{
 		name: 'GPT-5.5',
-		description: 'Most capable for ambitious work',
+		description: 'Найпотужніша модель для складної роботи',
 	},
 	{
 		name: 'Claude Opus 4.7',
-		description: 'Most efficient for everyday tasks',
+		description: 'Найефективніша для щоденних задач',
 	},
 	{
 		name: 'Gemini 3 Flash',
-		description: 'Fastest for short answers',
+		description: 'Найшвидша для коротких відповідей',
 	},
 ]
 

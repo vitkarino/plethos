@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from '~/constants/forms'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { ProjectsPageState } from '~/types/pages/projects'
 import type { AssignedUser, Project, User } from '~/types/shared/entities'
@@ -50,7 +51,7 @@ export class ProjectsPageViewModel {
 		]).then(() => {
 			this.syncSelectedProject()
 		}).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'Projects data was not loaded')
+			this.state.pageError = getRequestErrorMessage(error, 'Дані проєктів не завантажено')
 		})
 	}
 
@@ -146,6 +147,11 @@ export class ProjectsPageViewModel {
 	}
 
 	public saveProject() {
+		if (this.state.projectForm.description.length > PROJECT_DESCRIPTION_MAX_LENGTH) {
+			this.state.projectFormError = `Опис не може перевищувати ${PROJECT_DESCRIPTION_MAX_LENGTH} символів`
+			return Promise.resolve()
+		}
+
 		const body = {
 			title: this.state.projectForm.title,
 			description: this.state.projectForm.description,
@@ -178,7 +184,7 @@ export class ProjectsPageViewModel {
 			})
 			.then(() => undefined)
 			.catch((error) => {
-				this.state.projectFormError = getRequestErrorMessage(error, 'Project was not saved')
+				this.state.projectFormError = getRequestErrorMessage(error, 'Проєкт не збережено')
 			})
 			.finally(() => {
 				this.state.isProjectSaving = false
@@ -191,7 +197,7 @@ export class ProjectsPageViewModel {
 			? this.state.projects.find((item) => item.id === projectId)?.title
 			: project.title
 
-		if (!this.confirmDelete(title ? `Delete project "${title}"?` : 'Delete this project?')) {
+		if (!this.confirmDelete(title ? `Видалити проєкт "${title}"?` : 'Видалити цей проєкт?')) {
 			return Promise.resolve()
 		}
 
@@ -212,7 +218,7 @@ export class ProjectsPageViewModel {
 				this.refreshProjectUsers(),
 			])
 		}).then(() => undefined).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'Project was not deleted')
+			this.state.pageError = getRequestErrorMessage(error, 'Проєкт не видалено')
 		})
 	}
 
@@ -239,7 +245,7 @@ export class ProjectsPageViewModel {
 		const age = Number(this.state.userForm.age)
 
 		if (!Number.isFinite(age)) {
-			this.state.userFormError = 'Invalid age'
+			this.state.userFormError = 'Некоректний вік'
 			return Promise.resolve()
 		}
 
@@ -255,7 +261,7 @@ export class ProjectsPageViewModel {
 			this.closeUserModal()
 			return this.loadUsers()
 		}).then(() => undefined).catch((error) => {
-			this.state.userFormError = getRequestErrorMessage(error, 'User was not saved')
+			this.state.userFormError = getRequestErrorMessage(error, 'Користувача не збережено')
 		}).finally(() => {
 			this.state.isUserSaving = false
 		})
@@ -287,7 +293,7 @@ export class ProjectsPageViewModel {
 				this.refreshProjectUsers(),
 			])
 		}).then(() => undefined).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'User was not assigned')
+			this.state.pageError = getRequestErrorMessage(error, 'Користувача не призначено')
 		})
 	}
 
@@ -303,7 +309,7 @@ export class ProjectsPageViewModel {
 				this.refreshProjectUsers(),
 			])
 		}).then(() => undefined).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'User was not unassigned')
+			this.state.pageError = getRequestErrorMessage(error, 'Користувача не прибрано з проєкту')
 		})
 	}
 

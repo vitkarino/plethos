@@ -1,6 +1,9 @@
 @use "../core/variables" as *;
 
 .block {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5em;
 	width: 100%;
 	height: 100%;
 	padding: 1.5em;
@@ -9,10 +12,82 @@
 	background: $color-reflector-surface-bg;
 	color: $color-text-primary;
 	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.block__content {
+	flex: 1 1 auto;
+	min-height: 0;
 }
 
 .block p {
 	margin: 0;
 	color: $color-text-secondary;
 	font-size: 12pt;
+}
+
+.block__header,
+.block__footer {
+	display: flex;
+	align-items: center;
+	min-height: 2.25em;
+	padding: 0.375em 1.5em;
+	border-color: rgba(255, 255, 255, 0.08);
+	background: rgba(21, 28, 36, 0.42);
+	box-sizing: border-box;
+}
+
+.block__header {
+	margin: -1.5em -1.5em 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.block__footer {
+	margin: auto -1.5em -1.5em;
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.block-header-data,
+.block__footer :deep(.block-footer-data) {
+	display: flex;
+	align-items: center;
+	gap: 1.25em;
+	min-width: 0;
+	overflow: hidden;
+	color: $color-text-primary;
+	font-family: $font-data;
+	font-size: 10pt;
+	line-height: 1.35;
+	white-space: nowrap;
+}
+
+.block-header-data {
+	color: $color-text-secondary;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.block__footer :deep(.block-footer-data__item) {
+	display: inline-flex;
+	gap: 0.5em;
+	min-width: 0;
+}
+
+.block__footer :deep(.block-footer-data__label) {
+	color: $color-text-primary;
+}
+
+.block__footer :deep(.block-footer-data__value) {
+	overflow: hidden;
+	color: $color-text-primary;
+	text-overflow: ellipsis;
+}
+
+@media (max-width: 42em) {
+	.block__footer :deep(.block-footer-data) {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 0.25em;
+		white-space: normal;
+	}
 }

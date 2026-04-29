@@ -36,7 +36,7 @@ export class UsersPageViewModel {
 			this.loadProjects(),
 			this.refreshProjectUsers(),
 		]).then(() => undefined).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'Users data was not loaded')
+			this.state.pageError = getRequestErrorMessage(error, 'Дані користувачів не завантажено')
 		})
 	}
 
@@ -82,7 +82,7 @@ export class UsersPageViewModel {
 
 	public userProjectTitles(userId: number) {
 		const titles = this.userProjectTitlesList(userId)
-		return titles.length > 0 ? titles.join(', ') : 'No projects'
+		return titles.length > 0 ? titles.join(', ') : 'Немає проєктів'
 	}
 
 	public openCreateUserModal() {
@@ -109,7 +109,7 @@ export class UsersPageViewModel {
 		const age = Number(this.state.userForm.age)
 
 		if (!Number.isFinite(age)) {
-			this.state.userFormError = 'Invalid age'
+			this.state.userFormError = 'Некоректний вік'
 			return Promise.resolve()
 		}
 
@@ -134,7 +134,7 @@ export class UsersPageViewModel {
 			})
 			.then(() => undefined)
 			.catch((error) => {
-				this.state.userFormError = getRequestErrorMessage(error, 'User was not saved')
+				this.state.userFormError = getRequestErrorMessage(error, 'Користувача не збережено')
 			})
 			.finally(() => {
 				this.state.isUserSaving = false
@@ -147,7 +147,7 @@ export class UsersPageViewModel {
 			? this.state.users.find((item) => item.id === userId)?.name
 			: user.name
 
-		if (!this.confirmDelete(name ? `Delete user "${name}"?` : 'Delete this user?')) {
+		if (!this.confirmDelete(name ? `Видалити користувача "${name}"?` : 'Видалити цього користувача?')) {
 			return Promise.resolve()
 		}
 
@@ -163,7 +163,7 @@ export class UsersPageViewModel {
 				this.refreshProjectUsers(),
 			])
 		}).then(() => undefined).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'User was not deleted')
+			this.state.pageError = getRequestErrorMessage(error, 'Користувача не видалено')
 		})
 	}
 

@@ -1,8 +1,26 @@
 export type BPMBlockStatus = 'idle' | 'recording' | 'ready' | 'failed'
 
+export type PulseSample = {
+	id: number
+	recording_id: string
+	sample_index: number
+	raw_data: {
+		r: number
+		ir: number
+	}
+	created_at: string
+}
+
+export type PulseSampleChannel = 'r' | 'ir'
+
 export type BPMChartDataset = {
 	label: string
-	data: number[]
+	data: Array<number | PulseSample>
+	sampleChannel?: PulseSampleChannel
+	parsing?: {
+		xAxisKey: string
+		yAxisKey: string
+	}
 	yAxisID?: string
 	borderColor?: string
 	backgroundColor?: string
@@ -13,7 +31,7 @@ export type BPMChartDataset = {
 }
 
 export type BPMChartData = {
-	labels: number[]
+	labels?: number[]
 	datasets: BPMChartDataset[]
 }
 
@@ -41,11 +59,28 @@ export type LegacyPulseChartResponse = {
 	bpm?: number
 }
 
+export type PulseSamplesResponse = {
+	data: {
+		measurement_id: string
+		samples: PulseSample[]
+		limit: number
+		offset: number
+	}
+	$meta?: {
+		status?: string
+		time?: {
+			iso?: string
+		}
+	}
+}
+
 export type BPMBlockState = {
 	status: BPMBlockStatus
 	progress: number
 	measurementId: string | null
 	bpm: number | null
+	spo2: number | null
+	signalQuality: number | null
 	chartData: BPMChartData | null
 	error: string | null
 }

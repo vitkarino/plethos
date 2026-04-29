@@ -2,12 +2,12 @@
 	<section v-if="viewModel.state.project" class="project-dashboard-page">
 		<header class="project-dashboard-page__header">
 			<div>
-				<p>Project dashboard</p>
+				<p>Дашборд проєкту</p>
 				<h1>{{ viewModel.state.project.title }}</h1>
 			</div>
 
 			<NuxtLink class="project-dashboard-page__back" to="/projects">
-				All projects
+				Усі проєкти
 			</NuxtLink>
 		</header>
 
@@ -17,15 +17,15 @@
 
 				<dl>
 					<div>
-						<dt>Created</dt>
+						<dt>Створено</dt>
 						<dd>{{ viewModel.formatDate(viewModel.state.project.created_at) }}</dd>
 					</div>
 					<div>
-						<dt>Updated</dt>
+						<dt>Оновлено</dt>
 						<dd>{{ viewModel.formatDate(viewModel.state.project.updated_at) }}</dd>
 					</div>
 					<div>
-						<dt>Assigned users</dt>
+						<dt>Користувачі</dt>
 						<dd>{{ viewModel.state.assignedUsers.length }}</dd>
 					</div>
 				</dl>
@@ -33,7 +33,7 @@
 
 			<Block class="project-dashboard-page__users">
 				<div class="project-dashboard-page__block-title">
-					<p>Team</p>
+					<p>Команда</p>
 					<span>{{ viewModel.state.assignedUsers.length }}</span>
 				</div>
 
@@ -44,7 +44,7 @@
 				>
 					<div>
 						<strong>{{ assignment.user.name }}</strong>
-						<small>{{ viewModel.sexLabel(assignment.user.sex) }} · {{ assignment.user.age }} years</small>
+						<small>{{ viewModel.sexLabel(assignment.user.sex) }} · {{ assignment.user.age }} років</small>
 					</div>
 
 					<span>{{ viewModel.formatDate(assignment.assigned_at) }}</span>
@@ -56,12 +56,12 @@
 	<section v-else-if="!viewModel.state.isLoading" class="project-dashboard-page">
 		<header class="project-dashboard-page__header">
 			<div>
-				<p>Project dashboard</p>
+				<p>Дашборд проєкту</p>
 				<h1>{{ viewModel.state.pageError }}</h1>
 			</div>
 
 			<NuxtLink class="project-dashboard-page__back" to="/projects">
-				All projects
+				Усі проєкти
 			</NuxtLink>
 		</header>
 	</section>

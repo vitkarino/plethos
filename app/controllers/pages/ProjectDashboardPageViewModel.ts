@@ -39,7 +39,7 @@ export class ProjectDashboardPageViewModel {
 		]).then(() => {
 			this.syncProjectState()
 		}).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'Project dashboard was not loaded')
+			this.state.pageError = getRequestErrorMessage(error, 'Дашборд проєкту не завантажено')
 		}).finally(() => {
 			this.state.isLoading = false
 		})
@@ -82,7 +82,7 @@ export class ProjectDashboardPageViewModel {
 
 		if (!this.state.project) {
 			this.state.assignedUsers = []
-			this.state.pageError = 'Project not found'
+			this.state.pageError = 'Проєкт не знайдено'
 			return
 		}
 

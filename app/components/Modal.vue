@@ -16,8 +16,8 @@
 				<div class="modal__header">
 					<h2>{{ title }}</h2>
 
-					<button class="modal__button modal__button_ghost" type="button" @click="emit('close')">
-						{{ closeLabel }}
+					<button class="modal__close" type="button" :aria-label="closeLabel" @click="emit('close')">
+						<span aria-hidden="true"></span>
 					</button>
 				</div>
 
@@ -25,7 +25,7 @@
 					<slot />
 				</div>
 
-				<div v-if="$slots.actions || submitLabel" class="modal__actions">
+				<footer v-if="$slots.actions || submitLabel" class="modal__footer">
 					<slot name="actions">
 						<button class="modal__button modal__button_ghost" type="button" @click="emit('close')">
 							{{ cancelLabel }}
@@ -34,7 +34,7 @@
 							{{ submitLabel }}
 						</button>
 					</slot>
-				</div>
+				</footer>
 			</form>
 		</div>
 	</Teleport>
@@ -53,8 +53,8 @@ const props = withDefaults(defineProps<{
 	width?: string;
 	zIndex?: number;
 }>(), {
-	closeLabel: 'Close',
-	cancelLabel: 'Cancel',
+	closeLabel: 'Закрити',
+	cancelLabel: 'Скасувати',
 	submitLabel: '',
 	submitDisabled: false,
 	width: '34em',

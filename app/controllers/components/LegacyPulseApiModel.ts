@@ -3,7 +3,9 @@ import type {
 	BPMMeasurement,
 	BPMNowMeasurement,
 	LegacyPulseChartResponse,
+	PulseSamplesResponse,
 } from '~/types/components/bpm-block'
+import { createChartDataFromPulseSamples } from '~/controllers/components/pulseSamplesChart'
 
 export class LegacyPulseApiModel {
 	private readonly url = 'http://127.0.0.1:4000/api/'
@@ -36,6 +38,32 @@ export class LegacyPulseApiModel {
 	}
 
 	public getChart(params: {
+		id: string
+		from: number
+		to: number
+		channels: number
+		type: number
+	}): Promise<{ chartData: BPMChartData; bpm: number | null }> {
+		return this.getSamplesChart(params.id)
+			.catch(() => this.getLegacyChart(params))
+	}
+
+	private getSamplesChart(id: string): Promise<{ chartData: BPMChartData; bpm: number | null }> {
+		return $fetch<PulseSamplesResponse>(
+			`${this.url}measurements/${encodeURIComponent(id)}/samples?limit=1000&offset=0`,
+		).then((response) => {
+			const samples = Array.isArray(response.data?.samples)
+				? response.data.samples
+				: []
+
+			return {
+				chartData: createChartDataFromPulseSamples(samples),
+				bpm: null,
+			}
+		})
+	}
+
+	private getLegacyChart(params: {
 		id: string
 		from: number
 		to: number

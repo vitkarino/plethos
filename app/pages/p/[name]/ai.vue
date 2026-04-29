@@ -1,4 +1,6 @@
 <template>
+	<!-- СТРОГО НЕ УДАЛЯТЬ, ОСТАВИТЬ НА БУДУЩЕЕ: функціонал ШІ-чату тимчасово вимкнено. -->
+	<!--
 	<section class="ai-page">
 		<header class="ai-page__header">
 			<span class="ai-page__mark" aria-hidden="true"></span>
@@ -60,17 +62,18 @@
 					</div>
 
 					<button class="ai-page__icon-button ai-page__icon-button_mic" type="button" aria-label="Голосовий ввід"></button>
-					<button class="ai-page__send" type="submit">Send</button>
+					<button class="ai-page__send" type="submit">Надіслати</button>
 				</div>
 			</div>
 		</form>
 	</section>
+	-->
 </template>
 
 <script setup lang="ts">
-import { AIPageViewModel } from '~/controllers/pages/AIPageViewModel';
-
-const viewModel = new AIPageViewModel();
+// СТРОГО НЕ УДАЛЯТЬ, ОСТАВИТЬ НА БУДУЩЕЕ: залишено для майбутнього повернення ШІ-чату.
+// import { AIPageViewModel } from '~/controllers/pages/AIPageViewModel';
+// const viewModel = new AIPageViewModel();
 </script>
 
 <style scoped lang="scss">

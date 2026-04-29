@@ -1,6 +1,14 @@
 <template>
 	<div class="block">
-		<slot />
+		<header v-if="$slots.header" class="block__header">
+			<slot name="header" />
+		</header>
+		<div class="block__content">
+			<slot />
+		</div>
+		<footer v-if="$slots.footer" class="block__footer">
+			<slot name="footer" />
+		</footer>
 	</div>
 </template>
 

@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from '~/constants/forms'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { DefaultLayoutState } from '~/types/layouts/default'
 import type { Project, User } from '~/types/shared/entities'
@@ -47,7 +48,7 @@ export class DefaultLayoutViewModel {
 
 	public initialize(routeProjectName: unknown = '') {
 		return this.refreshPreviewData().catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'Preview data was not loaded')
+			this.state.pageError = getRequestErrorMessage(error, 'Дані перегляду не завантажено')
 		}).finally(() => {
 			this.syncSelectedProjectByRouteParam(routeProjectName)
 		})
@@ -139,7 +140,7 @@ export class DefaultLayoutViewModel {
 
 	public userProjectTitles(userId: number) {
 		const titles = this.userProjectTitlesList(userId)
-		return titles.length > 0 ? titles.join(', ') : 'No projects'
+		return titles.length > 0 ? titles.join(', ') : 'Немає проєктів'
 	}
 
 	public userProjectTitlesList(userId: number) {
@@ -165,6 +166,11 @@ export class DefaultLayoutViewModel {
 			return Promise.resolve()
 		}
 
+		if (this.state.projectForm.description.length > PROJECT_DESCRIPTION_MAX_LENGTH) {
+			this.state.projectFormError = `Опис не може перевищувати ${PROJECT_DESCRIPTION_MAX_LENGTH} символів`
+			return Promise.resolve()
+		}
+
 		this.state.isProjectSaving = true
 		this.state.projectFormError = ''
 		this.state.pageError = ''
@@ -176,14 +182,14 @@ export class DefaultLayoutViewModel {
 			this.closeProjectModal()
 			return this.refreshProjects()
 		}).then(() => undefined).catch((error) => {
-			this.state.projectFormError = getRequestErrorMessage(error, 'Project was not saved')
+			this.state.projectFormError = getRequestErrorMessage(error, 'Проєкт не збережено')
 		}).finally(() => {
 			this.state.isProjectSaving = false
 		})
 	}
 
 	public deleteProject(project: Project) {
-		if (!this.confirmDelete(`Delete project "${project.title}"?`)) {
+		if (!this.confirmDelete(`Видалити проєкт "${project.title}"?`)) {
 			return Promise.resolve()
 		}
 
@@ -204,7 +210,7 @@ export class DefaultLayoutViewModel {
 				this.refreshProjectUsers(),
 			])
 		}).then(() => undefined).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'Project was not deleted')
+			this.state.pageError = getRequestErrorMessage(error, 'Проєкт не видалено')
 		})
 	}
 
@@ -231,7 +237,7 @@ export class DefaultLayoutViewModel {
 		const age = Number(this.state.userForm.age)
 
 		if (!Number.isFinite(age)) {
-			this.state.userFormError = 'Invalid age'
+			this.state.userFormError = 'Некоректний вік'
 			return Promise.resolve()
 		}
 
@@ -247,14 +253,14 @@ export class DefaultLayoutViewModel {
 			this.closeUserModal()
 			return this.refreshUsers()
 		}).then(() => undefined).catch((error) => {
-			this.state.userFormError = getRequestErrorMessage(error, 'User was not saved')
+			this.state.userFormError = getRequestErrorMessage(error, 'Користувача не збережено')
 		}).finally(() => {
 			this.state.isUserSaving = false
 		})
 	}
 
 	public deleteUser(user: User) {
-		if (!this.confirmDelete(`Delete user "${user.name}"?`)) {
+		if (!this.confirmDelete(`Видалити користувача "${user.name}"?`)) {
 			return Promise.resolve()
 		}
 
@@ -270,7 +276,7 @@ export class DefaultLayoutViewModel {
 				this.refreshProjectUsers(),
 			])
 		}).then(() => undefined).catch((error) => {
-			this.state.pageError = getRequestErrorMessage(error, 'User was not deleted')
+			this.state.pageError = getRequestErrorMessage(error, 'Користувача не видалено')
 		})
 	}
 

@@ -1,28 +1,37 @@
 <template>
 	<BlocksGrid>
 		<template #topLeft>
-			<BPMBlock />
-		</template>
+			<BPMBlock>
+				<template #header>
+					<div class="block-header-data">Сигнал</div>
+				</template>
 
-		<template #bottomLeft>
-			<Block>
-				<p>{{ viewModel.state.projectsLabel }}</p>
-			</Block>
-		</template>
-
-		<template #right>
-			<Block>
-				<p>{{ viewModel.state.analysisLabel }}</p>
-			</Block>
+				<template #footer>
+					<div class="block-footer-data">
+						<span class="block-footer-data__item">
+							<span class="block-footer-data__label">Пристрій:</span>
+							<span class="block-footer-data__value">sim-device-1</span>
+						</span>
+						<span class="block-footer-data__item">
+							<span class="block-footer-data__label">ID:</span>
+							<span class="block-footer-data__value">234823498243928</span>
+						</span>
+						<span class="block-footer-data__item">
+							<span class="block-footer-data__label">Температура сенсора:</span>
+							<span class="block-footer-data__value">36 C</span>
+						</span>
+						<span class="block-footer-data__item">
+							<span class="block-footer-data__label">Частота дискретизації:</span>
+							<span class="block-footer-data__value">25</span>
+						</span>
+					</div>
+				</template>
+			</BPMBlock>
 		</template>
 	</BlocksGrid>
 </template>
 
 <script setup lang="ts">
-import Block from '~/components/Block.vue';
 import BlocksGrid from '~/components/BlocksGrid.vue';
 import BPMBlock from '~/components/BPMBlock.vue';
-import { DashboardPageViewModel } from '~/controllers/pages/DashboardPageViewModel';
-
-const viewModel = new DashboardPageViewModel();
 </script>

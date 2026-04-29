@@ -6,16 +6,18 @@
 	grid-template-rows: 1fr 1fr;
 	grid-template-areas:
 		"topLeft right"
-		"bottomLeft right";
+		"topLeft right";
 	gap: 1em;
+}
+
+.blocks-grid_single {
+	grid-template-columns: 1fr;
+	grid-template-rows: 1fr;
+	grid-template-areas: "topLeft";
 }
 
 .blocks-grid__top-left {
 	grid-area: topLeft;
-}
-
-.blocks-grid__bottom-left {
-	grid-area: bottomLeft;
 }
 
 .blocks-grid__right {
@@ -23,7 +25,7 @@
 }
 
 .blocks-grid__top-left,
-.blocks-grid__bottom-left,
 .blocks-grid__right {
 	min-width: 0;
+	min-height: 0;
 }

@@ -14,7 +14,7 @@ export function formatDateValue(value: string) {
 }
 
 export function getSexLabel(sex: Sex) {
-	return sex === 'female' ? 'Female' : 'Male'
+	return sex === 'female' ? 'Жіноча' : 'Чоловіча'
 }
 
 export function getSexIcon(sex: Sex) {
@@ -29,7 +29,7 @@ export function getUserInitials(name: string) {
 		.map((part) => part[0]?.toUpperCase() ?? '')
 		.join('')
 
-	return initials || 'U'
+	return initials || 'К'
 }
 
 export function getUserProjectTitles(projects: Project[], projectUsers: ProjectUser[], userId: number) {

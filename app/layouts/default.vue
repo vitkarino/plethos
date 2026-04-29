@@ -33,9 +33,10 @@
 					<PreviewToolTip
 						title="Проєкти"
 						:count="viewModel.state.projects.length"
+						count-icon="projects"
 						:error="viewModel.state.pageError"
 						:has-items="viewModel.state.projects.length > 0"
-						empty-label="No projects"
+						empty-label="Немає проєктів"
 					>
 						<ToolTip
 							v-for="project in viewModel.state.projects"
@@ -47,19 +48,19 @@
 							<template #trigger>
 								<span class="preview-tool-tip__main">
 									<strong>{{ project.title }}</strong>
-									<small>{{ viewModel.projectUserCount(project.id) }} users · {{ viewModel.formatDate(project.updated_at) }}</small>
+									<small>{{ viewModel.projectUserCount(project.id) }} користувачів · {{ viewModel.formatDate(project.updated_at) }}</small>
 								</span>
 								<span class="tool-tip__icon-button" aria-hidden="true"></span>
 							</template>
 
 							<button type="button" @click="viewModel.switchToProject(project)">
-								Switch to this project
+								Перейти до проєкту
 							</button>
 							<button type="button" @click="viewModel.openEditProjectModal(project)">
-								Edit
+								Редагувати
 							</button>
 							<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteProject(project)">
-								Delete
+								Видалити
 							</button>
 						</ToolTip>
 					</PreviewToolTip>
@@ -76,9 +77,10 @@
 					<PreviewToolTip
 						title="Користувачі"
 						:count="viewModel.state.users.length"
+						count-icon="users"
 						:error="viewModel.state.pageError"
 						:has-items="viewModel.state.users.length > 0"
-						empty-label="No users"
+						empty-label="Немає користувачів"
 					>
 						<ToolTip
 							v-for="user in viewModel.state.users"
@@ -103,7 +105,7 @@
 													+{{ viewModel.userProjectTitlesList(user.id).length - 2 }}
 												</small>
 											</template>
-											<small v-else>No projects</small>
+											<small v-else>Немає проєктів</small>
 										</span>
 									</span>
 								</span>
@@ -111,23 +113,24 @@
 							</template>
 
 							<button type="button" @click="viewModel.openEditUserModal(user)">
-								Edit
+								Редагувати
 							</button>
 							<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteUser(user)">
-								Delete
+								Видалити
 							</button>
 						</ToolTip>
 					</PreviewToolTip>
 				</div>
 
-				<div class="app-layout__nav-item">
+				<!-- СТРОГО НЕ УДАЛЯТЬ, ОСТАВИТЬ НА БУДУЩЕЕ: функціонал ШІ-чату тимчасово вимкнено. -->
+				<!-- <div class="app-layout__nav-item">
 					<NuxtLink
 						class="app-layout__link app-layout__link_chat"
 						:to="viewModel.workPath('/ai')"
 					>
 						ШІ Чат
 					</NuxtLink>
-				</div>
+				</div> -->
 
 				<div class="app-layout__nav-item">
 					<a class="app-layout__link app-layout__link_signals" href="#">Редактор сигналів</a>
@@ -145,21 +148,29 @@
 
 		<Modal
 			:is-open="viewModel.state.isProjectModalOpen"
-			title="Edit project"
-			submit-label="Save changes"
+			title="Редагувати проєкт"
+			submit-label="Зберегти зміни"
 			:submit-disabled="viewModel.state.isProjectSaving"
 			@close="viewModel.closeProjectModal()"
 			@submit="viewModel.saveProject()"
 		>
 			<label>
-				<span>Title</span>
+				<span>Назва</span>
 				<input v-model.trim="viewModel.state.projectForm.title" type="text" required />
 			</label>
 
 			<label>
-				<span>Description</span>
-				<textarea v-model.trim="viewModel.state.projectForm.description" rows="4" required></textarea>
+				<span>Опис</span>
+				<textarea
+					v-model.trim="viewModel.state.projectForm.description"
+					rows="4"
+					:maxlength="PROJECT_DESCRIPTION_MAX_LENGTH"
+					required
+				></textarea>
 			</label>
+			<span class="app-layout__field-hint">
+				{{ viewModel.state.projectForm.description.length }}/{{ PROJECT_DESCRIPTION_MAX_LENGTH }}
+			</span>
 
 			<p v-if="viewModel.state.projectFormError" class="app-layout__form-error">
 				{{ viewModel.state.projectFormError }}
@@ -168,29 +179,23 @@
 
 		<Modal
 			:is-open="viewModel.state.isUserModalOpen"
-			title="Edit user"
-			submit-label="Save changes"
+			title="Редагувати користувача"
+			submit-label="Зберегти зміни"
 			:submit-disabled="viewModel.state.isUserSaving"
 			@close="viewModel.closeUserModal()"
 			@submit="viewModel.saveUser()"
 		>
 			<label>
-				<span>Name</span>
+				<span>Ім'я</span>
 				<input v-model.trim="viewModel.state.userForm.name" type="text" required />
 			</label>
 
 			<label>
-				<span>Age</span>
+				<span>Вік</span>
 				<input v-model.number="viewModel.state.userForm.age" min="0" type="number" required />
 			</label>
 
-			<label>
-				<span>Sex</span>
-				<select v-model="viewModel.state.userForm.sex">
-					<option value="male">Male</option>
-					<option value="female">Female</option>
-				</select>
-			</label>
+			<SelectBox v-model="viewModel.state.userForm.sex" label="Стать" :items="sexOptions" />
 
 			<p v-if="viewModel.state.userFormError" class="app-layout__form-error">
 				{{ viewModel.state.userFormError }}
@@ -203,12 +208,18 @@
 import pulsoLogo from '~/assets/images/pulso_logo.svg';
 import Modal from '~/components/Modal.vue';
 import PreviewToolTip from '~/components/PreviewToolTip.vue';
+import SelectBox from '~/components/SelectBox.vue';
 import Sidebar from '~/components/Sidebar.vue';
 import ToolTip from '~/components/ToolTip.vue';
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from '~/constants/forms';
 import { DefaultLayoutViewModel } from '~/controllers/layouts/DefaultLayoutViewModel';
 
 const viewModel = new DefaultLayoutViewModel();
 const route = useRoute();
+const sexOptions = [
+	{ label: 'Чоловіча', value: 'male' },
+	{ label: 'Жіноча', value: 'female' },
+];
 
 viewModel.initialize(route.params.name);
 
