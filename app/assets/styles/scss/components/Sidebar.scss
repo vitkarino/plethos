@@ -7,9 +7,10 @@
 	width: $sidebar-width;
 	min-width: $sidebar-width;
 	height: 100vh;
-	padding: 1.5em 0 1.5em 1em;
-	border-right: 1px solid $color-reflector-border;
-	background: $color-reflector-surface-bg;
+	padding-block: 2.25em;
+	padding-inline: 1.5em;
+	// border-right: 1px solid $color-reflector-border;
+	// background: $color-reflector-surface-bg;
 	color: $color-text-secondary;
 }
 

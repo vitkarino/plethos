@@ -19,7 +19,6 @@
 				<div class="app-layout__nav-item">
 					<NuxtLink
 						class="app-layout__link app-layout__link_home"
-						data-shortcut="Ctrl + 1"
 						:to="viewModel.workPath('/dashboard')"
 					>
 						Головна
@@ -27,7 +26,7 @@
 				</div>
 
 				<div class="app-layout__nav-item app-layout__nav-item_preview">
-					<NuxtLink class="app-layout__link app-layout__link_projects" data-shortcut="Ctrl + 2" to="/projects">
+					<NuxtLink class="app-layout__link app-layout__link_projects" to="/projects">
 						Проєкти
 					</NuxtLink>
 
@@ -69,7 +68,6 @@
 				<div class="app-layout__nav-item app-layout__nav-item_preview">
 					<NuxtLink
 						class="app-layout__link app-layout__link_users"
-						data-shortcut="Ctrl + 3"
 						:to="viewModel.workPath('/users')"
 					>
 						Користувачі
@@ -125,7 +123,6 @@
 				<div class="app-layout__nav-item">
 					<NuxtLink
 						class="app-layout__link app-layout__link_chat"
-						data-shortcut="Ctrl + 4"
 						:to="viewModel.workPath('/ai')"
 					>
 						ШІ Чат
@@ -133,7 +130,7 @@
 				</div>
 
 				<div class="app-layout__nav-item">
-					<a class="app-layout__link app-layout__link_signals" data-shortcut="Ctrl + 5" href="#">Редактор сигналів</a>
+					<a class="app-layout__link app-layout__link_signals" href="#">Редактор сигналів</a>
 				</div>
 			</template>
 
@@ -220,13 +217,6 @@ watch(
 	(value) => viewModel.syncSelectedProjectByRouteParam(value),
 );
 
-onMounted(() => {
-	viewModel.mountShortcutListeners();
-});
-
-onBeforeUnmount(() => {
-	viewModel.destroyShortcutListeners();
-});
 </script>
 
 <style scoped lang="scss">

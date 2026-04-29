@@ -1,25 +1,18 @@
 $color-page-bg: #101010;
 $color-surface-bg: #151515;
-$color-reflector-bg:
-	linear-gradient(
-		45deg,
-		rgba(255, 255, 255, 0.18) 0%,
-		rgba(255, 255, 255, 0.06) 12%,
-		rgba(255, 255, 255, 0) 34%
-	),
-	linear-gradient(
-		45deg,
-		#080808 0%,
-		#141414 36%,
-		#211a19 68%,
-		#0f0f0f 100%
-	);
+$color-reflector-bg: linear-gradient(
+	45deg,
+	#080808 0%,
+	#141414 36%,
+	#13282b 68%,
+	#0f0f0f 100%
+);
 $color-reflector-surface-bg: rgba($color-surface-bg, 0.3);
 $color-reflector-border: rgba(255, 255, 255, 0.14);
 $color-border: #393939;
 $color-text-primary: #E8E8E8;
 $color-text-secondary: #B4B4B4;
-$color-selected: #FF5B4F;
+$color-selected: #22D3EE;
 $color-button-bg: #242424;
 $color-button-bg-hover: #303030;
 

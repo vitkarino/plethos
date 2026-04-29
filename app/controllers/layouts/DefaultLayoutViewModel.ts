@@ -53,22 +53,6 @@ export class DefaultLayoutViewModel {
 		})
 	}
 
-	public mountShortcutListeners() {
-		if (typeof window === 'undefined') {
-			return
-		}
-
-		window.addEventListener('keydown', this.handleShortcutKey)
-	}
-
-	public destroyShortcutListeners() {
-		if (typeof window === 'undefined') {
-			return
-		}
-
-		window.removeEventListener('keydown', this.handleShortcutKey)
-	}
-
 	public refreshPreviewData() {
 		return Promise.all([
 			this.refreshProjects(),
@@ -312,32 +296,6 @@ export class DefaultLayoutViewModel {
 
 	private confirmDelete(message: string) {
 		return typeof window === 'undefined' || window.confirm(message)
-	}
-
-	private readonly handleShortcutKey = (event: KeyboardEvent) => {
-		if (!event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || !/^[1-5]$/.test(event.key)) {
-			return
-		}
-
-		const target = event.target
-
-		if (
-			target instanceof HTMLInputElement ||
-			target instanceof HTMLTextAreaElement ||
-			target instanceof HTMLSelectElement ||
-			target instanceof HTMLElement && target.isContentEditable
-		) {
-			return
-		}
-
-		const link = document.querySelector<HTMLAnchorElement>(`.app-layout__link[data-shortcut="Ctrl + ${event.key}"]`)
-
-		if (!link) {
-			return
-		}
-
-		event.preventDefault()
-		link.click()
 	}
 
 	private getRouteProjectName(value: unknown) {
