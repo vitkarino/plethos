@@ -68,12 +68,84 @@
 		</form>
 	</section>
 	-->
+	<section class="ai-page">
+		<header class="ai-page__header">
+			<span class="ai-page__mark" aria-hidden="true"></span>
+			<h1>Асистент запису</h1>
+		</header>
+
+		<p v-if="viewModel.state.pageError" class="ai-page__error">
+			{{ viewModel.state.pageError }}
+		</p>
+
+		<div class="ai-page__status">
+			<span>{{ viewModel.state.assistantStatus?.enabled ? 'Активний' : 'Неактивний' }}</span>
+			<strong>{{ viewModel.state.assistantStatus?.model ?? 'LLM не налаштовано' }}</strong>
+		</div>
+
+		<div class="ai-page__messages">
+			<p v-if="!viewModel.state.messages.length" class="ai-page__empty">
+				Оберіть завершений запис і поставте питання
+			</p>
+
+			<div
+				v-for="message in viewModel.state.messages"
+				:key="`${message.timestamp}-${message.provider.type}`"
+				class="ai-message"
+				:class="{ 'ai-message_user': message.provider.type === 'user' }"
+			>
+				<span class="ai-message__meta">{{ message.provider.type }} · {{ message.provider.model }}</span>
+				<p>{{ message.message }}</p>
+			</div>
+		</div>
+
+		<form class="ai-page__composer" @submit.prevent="viewModel.sendMessage()">
+			<SelectBox
+				v-model="viewModel.state.selectedRecordingId"
+				label="Запис"
+				:items="viewModel.state.recordings"
+				label-key="id"
+				value-key="id"
+				:disabled="viewModel.state.isSending"
+			/>
+
+			<label class="ai-page__label" for="ai-prompt">Запит до ШІ</label>
+			<textarea
+				id="ai-prompt"
+				v-model.trim="viewModel.state.message"
+				class="ai-page__textarea"
+				placeholder="Питання щодо якості PPG-запису..."
+				rows="4"
+			></textarea>
+
+			<div class="ai-page__toolbar">
+				<span class="ai-page__hint">{{ viewModel.state.recordings.length }} завершених записів</span>
+				<button
+					class="ai-page__send"
+					type="submit"
+					:disabled="viewModel.state.isSending || !viewModel.state.selectedRecordingId || !viewModel.state.message.trim()"
+				>
+					Надіслати
+				</button>
+			</div>
+		</form>
+	</section>
 </template>
 
 <script setup lang="ts">
 // СТРОГО НЕ УДАЛЯТЬ, ОСТАВИТЬ НА БУДУЩЕЕ: залишено для майбутнього повернення ШІ-чату.
-// import { AIPageViewModel } from '~/controllers/pages/AIPageViewModel';
-// const viewModel = new AIPageViewModel();
+import SelectBox from '~/components/SelectBox.vue';
+import { AIPageViewModel } from '~/controllers/pages/AIPageViewModel';
+import { ProjectDashboardPageViewModel } from '~/controllers/pages/ProjectDashboardPageViewModel';
+
+const route = useRoute();
+const projectName = Array.isArray(route.params.name) ? route.params.name[0] : route.params.name;
+const projectViewModel = new ProjectDashboardPageViewModel(projectName ?? '');
+const viewModel = new AIPageViewModel();
+
+projectViewModel.initialize().then(() => {
+	return viewModel.initialize(projectViewModel.state.project?.id ?? null);
+});
 </script>
 
 <style scoped lang="scss">

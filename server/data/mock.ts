@@ -1,4 +1,25 @@
-import type { Project as MockProject, ProjectUser as MockProjectUser, User as MockUser } from '../../app/types/shared/entities';
+type MockUser = {
+	id: number
+	name: string
+	age: number
+	sex: 'male' | 'female'
+	created_at: string
+	updated_at: string
+}
+
+type MockProject = {
+	id: number
+	title: string
+	description: string
+	created_at: string
+	updated_at: string
+}
+
+type MockProjectUser = {
+	project_id: number
+	user_id: number
+	assigned_at: string
+}
 
 export const mockUsers: MockUser[] = [
 	{

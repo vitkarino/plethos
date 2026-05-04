@@ -13,9 +13,8 @@ const projectlessWorkRoutes = new Set([
 	'/users',
 	// СТРОГО НЕ УДАЛЯТЬ, ОСТАВИТЬ НА БУДУЩЕЕ: маршрут ШІ-чату тимчасово вимкнено.
 	// '/ai',
+	'/ai',
 ])
-
-const api = new PulsoApiModel()
 
 export default defineNuxtRouteMiddleware((to) => {
 	if (import.meta.server) {
@@ -27,6 +26,8 @@ export default defineNuxtRouteMiddleware((to) => {
 	if (path === '/projects') {
 		return
 	}
+
+	const api = new PulsoApiModel()
 
 	return api.fetchProjects()
 		.then((projects) => resolveProjectRoute(to, path, projects))

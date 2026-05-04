@@ -40,6 +40,7 @@
 					<div class="projects-page__assignments">
 						<div class="projects-page__section-title">
 							<span>Користувачі</span>
+							<span>{{ project.users_count ?? viewModel.projectUserCount(project.id) }}</span>
 						</div>
 
 						<div class="projects-page__chips">
@@ -207,6 +208,7 @@ const viewModel = new ProjectsPageViewModel();
 const sexOptions = [
 	{ label: 'Чоловіча', value: 'male' },
 	{ label: 'Жіноча', value: 'female' },
+	{ label: 'Інше', value: 'other' },
 ];
 
 viewModel.initialize();

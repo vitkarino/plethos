@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { UsersPageState } from '~/types/pages/users'
-import type { User } from '~/types/shared/entities'
+import type { EntityId, User } from '~/types/shared/entities'
 import {
 	formatDateValue,
 	getRequestErrorMessage,
@@ -76,11 +76,11 @@ export class UsersPageViewModel {
 		return getUserInitials(name)
 	}
 
-	public userProjectTitlesList(userId: number) {
+	public userProjectTitlesList(userId: EntityId) {
 		return getUserProjectTitles(this.state.projects, this.state.projectUsers, userId)
 	}
 
-	public userProjectTitles(userId: number) {
+	public userProjectTitles(userId: EntityId) {
 		const titles = this.userProjectTitlesList(userId)
 		return titles.length > 0 ? titles.join(', ') : 'Немає проєктів'
 	}
@@ -141,9 +141,9 @@ export class UsersPageViewModel {
 			})
 	}
 
-	public deleteUser(user: User | number) {
-		const userId = typeof user === 'number' ? user : user.id
-		const name = typeof user === 'number'
+	public deleteUser(user: User | EntityId) {
+		const userId = typeof user === 'string' ? user : user.id
+		const name = typeof user === 'string'
 			? this.state.users.find((item) => item.id === userId)?.name
 			: user.name
 
@@ -167,8 +167,8 @@ export class UsersPageViewModel {
 		})
 	}
 
-	public formatDate(value: string) {
-		return formatDateValue(value)
+	public formatDate(value?: string) {
+		return value ? formatDateValue(value) : '-'
 	}
 
 	private resetUserForm() {

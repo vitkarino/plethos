@@ -1,7 +1,9 @@
-export type BPMBlockStatus = 'idle' | 'recording' | 'ready' | 'failed'
+import type { Device, EntityId, QualityAnalysis, Recording, User } from '../shared/entities'
+
+export type BPMBlockStatus = 'idle' | 'measuring' | 'recording' | 'ready' | 'failed'
 
 export type PulseSample = {
-	id: number
+	id?: number
 	recording_id: string
 	sample_index: number
 	raw_data: {
@@ -78,9 +80,21 @@ export type BPMBlockState = {
 	status: BPMBlockStatus
 	progress: number
 	measurementId: string | null
+	recordingId: string | null
+	projectId: EntityId | null
+	selectedDeviceId: EntityId | null
+	selectedUserId: EntityId | null
+	devices: Device[]
+	users: User[]
+	recordings: Recording[]
+	isLoading: boolean
+	isActionRunning: boolean
+	sampleRateHz: number | null
+	sensorTempC: number | null
 	bpm: number | null
 	spo2: number | null
 	signalQuality: number | null
+	qualityAnalysis: QualityAnalysis | null
 	chartData: BPMChartData | null
 	error: string | null
 }

@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 import { PROJECT_DESCRIPTION_MAX_LENGTH } from '~/constants/forms'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { ProjectsPageState } from '~/types/pages/projects'
-import type { AssignedUser, Project, User } from '~/types/shared/entities'
+import type { AssignedUser, EntityId, Project, User } from '~/types/shared/entities'
 import {
 	clearSelectedProjectId,
 	formatDateValue,
@@ -80,11 +80,11 @@ export class ProjectsPageViewModel {
 			})
 	}
 
-	public projectUserCount(projectId: number) {
+	public projectUserCount(projectId: EntityId) {
 		return this.state.projectUsers.filter((projectUser) => projectUser.project_id === projectId).length
 	}
 
-	public assignedUsers(projectId: number): AssignedUser[] {
+	public assignedUsers(projectId: EntityId): AssignedUser[] {
 		return this.state.projectUsers
 			.filter((assignment) => assignment.project_id === projectId)
 			.map((assignment) => {
@@ -100,7 +100,7 @@ export class ProjectsPageViewModel {
 			.filter((assignment): assignment is AssignedUser => assignment !== null)
 	}
 
-	public unassignedUsers(projectId: number) {
+	public unassignedUsers(projectId: EntityId) {
 		const assignedUserIds = new Set(
 			this.state.projectUsers
 				.filter((assignment) => assignment.project_id === projectId)
@@ -191,9 +191,9 @@ export class ProjectsPageViewModel {
 			})
 	}
 
-	public deleteProject(project: Project | number) {
-		const projectId = typeof project === 'number' ? project : project.id
-		const title = typeof project === 'number'
+	public deleteProject(project: Project | EntityId) {
+		const projectId = typeof project === 'string' ? project : project.id
+		const title = typeof project === 'string'
 			? this.state.projects.find((item) => item.id === projectId)?.title
 			: project.title
 
@@ -267,16 +267,10 @@ export class ProjectsPageViewModel {
 		})
 	}
 
-	public assignUser(projectId: number) {
+	public assignUser(projectId: EntityId) {
 		const selectedUserId = this.state.assignmentForms[projectId]
 
 		if (!selectedUserId) {
-			return Promise.resolve()
-		}
-
-		const userId = Number(selectedUserId)
-
-		if (!Number.isFinite(userId) || userId <= 0) {
 			return Promise.resolve()
 		}
 
@@ -284,7 +278,7 @@ export class ProjectsPageViewModel {
 
 		return this.api.assignUser({
 			project_id: projectId,
-			user_id: userId,
+			user_id: selectedUserId,
 		}).then(() => {
 			this.state.assignmentForms[projectId] = ''
 
@@ -297,7 +291,7 @@ export class ProjectsPageViewModel {
 		})
 	}
 
-	public unassignUser(projectId: number, userId: number) {
+	public unassignUser(projectId: EntityId, userId: EntityId) {
 		this.state.pageError = ''
 
 		return this.api.unassignUser({
@@ -317,8 +311,8 @@ export class ProjectsPageViewModel {
 		return toProjectSlug(title)
 	}
 
-	public formatDate(value: string) {
-		return formatDateValue(value)
+	public formatDate(value?: string) {
+		return value ? formatDateValue(value) : '-'
 	}
 
 	private resetProjectForm() {

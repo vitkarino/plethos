@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 import { PROJECT_DESCRIPTION_MAX_LENGTH } from '~/constants/forms'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { DefaultLayoutState } from '~/types/layouts/default'
-import type { Project, User } from '~/types/shared/entities'
+import type { EntityId, Project, User } from '~/types/shared/entities'
 import {
 	clearSelectedProjectId,
 	findProjectByRouteName,
@@ -87,8 +87,10 @@ export class DefaultLayoutViewModel {
 			})
 	}
 
-	public projectUserCount(projectId: number) {
-		return this.state.projectUsers.filter((projectUser) => projectUser.project_id === projectId).length
+	public projectUserCount(projectId: EntityId) {
+		const project = this.state.projects.find((item) => item.id === projectId)
+
+		return project?.users_count ?? this.state.projectUsers.filter((projectUser) => projectUser.project_id === projectId).length
 	}
 
 	public syncSelectedProject(projectName = '') {
@@ -138,12 +140,12 @@ export class DefaultLayoutViewModel {
 		return this.state.selectedProject?.title ?? ''
 	}
 
-	public userProjectTitles(userId: number) {
+	public userProjectTitles(userId: EntityId) {
 		const titles = this.userProjectTitlesList(userId)
 		return titles.length > 0 ? titles.join(', ') : 'Немає проєктів'
 	}
 
-	public userProjectTitlesList(userId: number) {
+	public userProjectTitlesList(userId: EntityId) {
 		return getUserProjectTitles(this.state.projects, this.state.projectUsers, userId)
 	}
 
@@ -296,8 +298,8 @@ export class DefaultLayoutViewModel {
 		return getUserInitials(name)
 	}
 
-	public formatDate(value: string) {
-		return formatDateValue(value)
+	public formatDate(value?: string) {
+		return value ? formatDateValue(value) : '-'
 	}
 
 	private confirmDelete(message: string) {

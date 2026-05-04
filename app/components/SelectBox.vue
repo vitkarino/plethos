@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-type SelectBoxValue = string | number
+type SelectBoxValue = string | number | null
 type SelectBoxItem = SelectBoxValue | Record<string, unknown>
 type SelectBoxItems = SelectBoxItem[] | Record<string, SelectBoxItem>
 
@@ -122,7 +122,7 @@ function toSelectValue(value: unknown): SelectBoxValue {
 		return value
 	}
 
-	return String(value ?? '')
+	return value === null ? null : String(value ?? '')
 }
 
 function serializeValue(value: SelectBoxValue, fallbackKey: string) {

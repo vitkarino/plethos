@@ -105,7 +105,7 @@
 													+{{ viewModel.userProjectTitlesList(user.id).length - 2 }}
 												</small>
 											</template>
-											<small v-else>Немає проєктів</small>
+											<small v-else>Проєктів: {{ user.projects_count ?? 0 }}</small>
 										</span>
 									</span>
 								</span>
@@ -131,6 +131,14 @@
 						ШІ Чат
 					</NuxtLink>
 				</div> -->
+				<div class="app-layout__nav-item">
+					<NuxtLink
+						class="app-layout__link app-layout__link_chat"
+						:to="viewModel.workPath('/ai')"
+					>
+						ШІ Чат
+					</NuxtLink>
+				</div>
 
 				<div class="app-layout__nav-item">
 					<a class="app-layout__link app-layout__link_signals" href="#">Редактор сигналів</a>
@@ -219,6 +227,7 @@ const route = useRoute();
 const sexOptions = [
 	{ label: 'Чоловіча', value: 'male' },
 	{ label: 'Жіноча', value: 'female' },
+	{ label: 'Інше', value: 'other' },
 ];
 
 viewModel.initialize(route.params.name);

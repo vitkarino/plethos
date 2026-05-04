@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { ProjectDashboardPageState } from '~/types/pages/project-dashboard'
-import type { AssignedUser, User } from '~/types/shared/entities'
+import type { User } from '~/types/shared/entities'
 import {
 	findProjectByRouteName,
 	formatDateValue,
@@ -49,8 +49,8 @@ export class ProjectDashboardPageViewModel {
 		return getSexLabel(sex)
 	}
 
-	public formatDate(value: string) {
-		return formatDateValue(value)
+	public formatDate(value?: string) {
+		return value ? formatDateValue(value) : '-'
 	}
 
 	private loadProjects() {
@@ -62,7 +62,10 @@ export class ProjectDashboardPageViewModel {
 	}
 
 	private loadUsers() {
-		return this.api.fetchUsers()
+		return this.api.fetchUsers({
+			project_id: this.state.project?.id,
+			limit: 100,
+		})
 			.then((users) => {
 				this.state.users = users
 				return users
@@ -88,18 +91,17 @@ export class ProjectDashboardPageViewModel {
 
 		setSelectedProjectId(this.state.project.id)
 
-		this.state.assignedUsers = this.state.projectUsers
-			.filter((assignment) => assignment.project_id === this.state.project?.id)
-			.map((assignment) => {
-				const user = this.state.users.find((item) => item.id === assignment.user_id)
-
-				return user
-					? {
-						user,
-						assigned_at: assignment.assigned_at,
-					}
-					: null
+		this.api.fetchUsers({
+			project_id: this.state.project.id,
+			limit: 100,
+		}).then((users) => {
+			this.state.users = users
+			this.state.assignedUsers = users.map((user) => {
+				return {
+					user,
+					assigned_at: user.created_at,
+				}
 			})
-			.filter((assignment): assignment is AssignedUser => assignment !== null)
+		})
 	}
 }

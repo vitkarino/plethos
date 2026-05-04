@@ -5,7 +5,40 @@
 		</template>
 
 		<div class="bpm-block__header">
-			<button class="bpm-block__title" @click="viewModel.startMeasurement()">Старт</button>
+			<div class="bpm-block__actions">
+				<button
+					class="bpm-block__title"
+					type="button"
+					:disabled="viewModel.state.isActionRunning || viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
+					@click="viewModel.startMeasurement()"
+				>
+					Старт
+				</button>
+				<button
+					class="bpm-block__title"
+					type="button"
+					:disabled="viewModel.state.isActionRunning || !viewModel.state.measurementId || viewModel.state.status === 'recording'"
+					@click="viewModel.startRecording()"
+				>
+					Запис
+				</button>
+				<button
+					class="bpm-block__title"
+					type="button"
+					:disabled="viewModel.state.isActionRunning || viewModel.state.status !== 'recording'"
+					@click="viewModel.stopRecording()"
+				>
+					Стоп запис
+				</button>
+				<button
+					class="bpm-block__title"
+					type="button"
+					:disabled="viewModel.state.isActionRunning || !viewModel.state.measurementId"
+					@click="viewModel.stopMeasurement()"
+				>
+					Стоп
+				</button>
+			</div>
 		</div>
 
 		<div class="bpm-block__metrics">
@@ -33,13 +66,40 @@
 		</div>
 
 		<div class="bpm-block__selects">
-			<SelectBox v-model="selectedDevice" label="Пристрій" :items="devices" />
+			<SelectBox
+				v-model="viewModel.state.selectedDeviceId"
+				label="Пристрій"
+				:items="viewModel.state.devices"
+				label-key="id"
+				value-key="id"
+				:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
+			/>
+			<SelectBox
+				v-model="viewModel.state.selectedUserId"
+				label="Користувач"
+				:items="viewModel.state.users"
+				label-key="name"
+				value-key="id"
+				:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
+			/>
+			<SelectBox
+				v-model="viewModel.state.recordingId"
+				label="Запис"
+				:items="viewModel.state.recordings"
+				label-key="id"
+				value-key="id"
+				:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
+				@update:model-value="viewModel.loadRecording(String($event))"
+			/>
 			<SelectBox v-model="selectedFilter" label="Фільтр" :items="filters" />
 		</div>
 
 		<div class="bpm-block__status">
 			<span v-if="viewModel.state.status === 'recording'">
 				Запис {{ Math.round(viewModel.state.progress) }}%
+			</span>
+			<span v-else-if="viewModel.state.status === 'measuring'">
+				Live-вимірювання активне
 			</span>
 			<span v-else-if="viewModel.state.status === 'ready'">
 				Останнє вимірювання
@@ -115,16 +175,15 @@ Chart.register(
 	Tooltip,
 );
 
-const viewModel = new BPMBlockViewModel();
+const props = withDefaults(defineProps<{
+	projectId?: string | null
+}>(), {
+	projectId: null,
+});
+
+const viewModel = new BPMBlockViewModel(props.projectId);
 const irChartCanvas = ref<HTMLCanvasElement | null>(null);
 const rChartCanvas = ref<HTMLCanvasElement | null>(null);
-const devices = reactive({
-	device1: 'mock-device-1',
-	device2: 'mock-device-2',
-	device3: 'mock-device-3',
-	device4: 'mock-device-4',
-	device5: 'mock-device-5',
-});
 const filters = reactive({
 	bandPass: 'Смуговий фільтр',
 	lowPass: 'Низькочастотний фільтр',
@@ -135,7 +194,6 @@ const filters = reactive({
 	savitzkyGolay: 'Фільтр Савицького-Голея',
 	waveletDenoising: 'Вейвлет-знешумлення',
 });
-const selectedDevice = ref(devices.device1);
 const selectedFilter = ref(filters.bandPass);
 type BPMChartPoint = number | PulseSample;
 
@@ -357,6 +415,13 @@ watch(
 		renderCharts();
 	},
 	{ deep: true, flush: 'post' },
+);
+
+watch(
+	() => props.projectId,
+	(projectId) => {
+		viewModel.setProjectId(projectId);
+	},
 );
 </script>
 

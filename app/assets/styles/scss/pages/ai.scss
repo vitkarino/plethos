@@ -17,6 +17,7 @@ $icon-check: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	gap: 1em;
 	width: min(100%, 48em);
 	min-height: 100%;
 	color: $color-text-primary;
@@ -29,6 +30,76 @@ $icon-check: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 	gap: 0.75em;
 	width: 100%;
 	margin-bottom: 1.25em;
+}
+
+.ai-page__status,
+.ai-page__messages,
+.ai-message {
+	width: 100%;
+}
+
+.ai-page__status {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1em;
+	padding: 0.875em 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+}
+
+.ai-page__status span,
+.ai-page__hint,
+.ai-message__meta,
+.ai-page__empty,
+.ai-page__error {
+	color: $color-text-secondary;
+	font-size: 10pt;
+	line-height: 1.35;
+}
+
+.ai-page__status strong {
+	overflow: hidden;
+	color: $color-selected;
+	font-family: $font-data;
+	font-size: 11pt;
+	font-weight: 400;
+	line-height: 1.2;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ai-page__messages {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75em;
+	max-height: 24em;
+	overflow: auto;
+}
+
+.ai-message {
+	padding: 0.875em 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+}
+
+.ai-message_user {
+	border-color: rgba($color-selected, 0.42);
+}
+
+.ai-message p,
+.ai-page__empty,
+.ai-page__error {
+	margin: 0;
+}
+
+.ai-message p {
+	margin-top: 0.45em;
+	color: $color-text-primary;
+	font-size: 12pt;
+	line-height: 1.45;
 }
 
 .ai-page__mark {

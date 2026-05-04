@@ -1,11 +1,12 @@
-export type ModelOption = {
-	name: string
-	description: string
-}
+import type { AssistantMessage, AssistantStatus, Recording } from '../shared/entities'
 
 export type AIPageState = {
-	models: ModelOption[]
-	selectedModel: ModelOption
-	isModelMenuOpen: boolean
-	adaptiveThinking: boolean
+	assistantStatus: AssistantStatus | null
+	recordings: Recording[]
+	selectedRecordingId: string
+	message: string
+	messages: AssistantMessage[]
+	isLoading: boolean
+	isSending: boolean
+	pageError: string
 }

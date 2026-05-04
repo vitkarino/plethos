@@ -1,4 +1,4 @@
-import type { Project, ProjectUser, Sex, User } from '../shared/entities'
+import type { EntityId, Project, ProjectUser, Sex, User } from '../shared/entities'
 
 export type UserFormState = {
 	name: string
@@ -11,7 +11,7 @@ export type UsersPageState = {
 	projects: Project[]
 	projectUsers: ProjectUser[]
 	userForm: UserFormState
-	editingUserId: number | null
+	editingUserId: EntityId | null
 	isUserModalOpen: boolean
 	isUserSaving: boolean
 	userFormError: string

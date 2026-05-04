@@ -47,7 +47,7 @@
 							+{{ viewModel.userProjectTitlesList(user.id).length - 3 }}
 						</span>
 					</template>
-					<span v-else class="users-page__empty">Немає проєктів</span>
+					<span v-else class="users-page__empty">Проєктів: {{ user.projects_count ?? 0 }}</span>
 				</div>
 				<span>{{ viewModel.formatDate(user.updated_at) }}</span>
 				<ToolTip class="users-page__menu" aria-label="Дії з користувачем">
@@ -100,6 +100,7 @@ const viewModel = new UsersPageViewModel();
 const sexOptions = [
 	{ label: 'Чоловіча', value: 'male' },
 	{ label: 'Жіноча', value: 'female' },
+	{ label: 'Інше', value: 'other' },
 ];
 
 viewModel.initialize();

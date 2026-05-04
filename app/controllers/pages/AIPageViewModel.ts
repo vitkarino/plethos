@@ -1,35 +1,80 @@
 import { reactive } from 'vue'
-import type { AIPageState, ModelOption } from '~/types/pages/ai'
-
-const models: ModelOption[] = [
-	{
-		name: 'GPT-5.5',
-		description: 'Найпотужніша модель для складної роботи',
-	},
-	{
-		name: 'Claude Opus 4.7',
-		description: 'Найефективніша для щоденних задач',
-	},
-	{
-		name: 'Gemini 3 Flash',
-		description: 'Найшвидша для коротких відповідей',
-	},
-]
+import { PulsoApiModel } from '~/models/PulsoApiModel'
+import type { AIPageState } from '~/types/pages/ai'
+import type { AssistantMessage, EntityId } from '~/types/shared/entities'
+import { getRequestErrorMessage } from '~/utils/shared'
 
 export class AIPageViewModel {
+	private readonly api = new PulsoApiModel()
+
 	public readonly state = reactive<AIPageState>({
-		models,
-		selectedModel: models[1],
-		isModelMenuOpen: false,
-		adaptiveThinking: false,
+		assistantStatus: null,
+		recordings: [],
+		selectedRecordingId: '',
+		message: '',
+		messages: [],
+		isLoading: true,
+		isSending: false,
+		pageError: '',
 	})
 
-	public selectModel(model: ModelOption) {
-		this.state.selectedModel = model
-		this.state.isModelMenuOpen = false
+	public initialize(projectId: EntityId | null = null) {
+		this.state.isLoading = true
+		this.state.pageError = ''
+
+		return Promise.all([
+			this.api.fetchAssistantStatus(),
+			this.api.fetchRecordings({
+				project_id: projectId ?? undefined,
+				status: 'completed',
+				limit: 50,
+			}),
+		]).then(([assistantStatus, recordings]) => {
+			this.state.assistantStatus = assistantStatus
+			this.state.recordings = recordings
+			this.state.selectedRecordingId = recordings[0]?.id ?? ''
+		}).catch((error) => {
+			this.state.pageError = getRequestErrorMessage(error, 'Асистент не завантажено')
+		}).finally(() => {
+			this.state.isLoading = false
+		})
 	}
 
-	public toggleModelMenu() {
-		this.state.isModelMenuOpen = !this.state.isModelMenuOpen
+	public sendMessage() {
+		const recordingId = this.state.selectedRecordingId
+		const message = this.state.message.trim()
+
+		if (!recordingId || !message) {
+			return Promise.resolve()
+		}
+
+		this.state.isSending = true
+		this.state.pageError = ''
+
+		return this.api.sendAssistantMessage(recordingId, message)
+			.then((assistantMessage) => {
+				this.state.messages.push(this.createUserMessage(recordingId, message))
+				this.state.messages.push(assistantMessage)
+				this.state.message = ''
+			})
+			.catch((error) => {
+				this.state.pageError = getRequestErrorMessage(error, 'Асистент не відповів')
+			})
+			.finally(() => {
+				this.state.isSending = false
+			})
+	}
+
+	private createUserMessage(recordingId: EntityId, message: string): AssistantMessage {
+		return {
+			recording_id: recordingId,
+			quality_analysis_id: null,
+			timestamp: new Date().toISOString(),
+			provider: {
+				type: 'user',
+				model: 'operator',
+			},
+			message,
+		}
 	}
 }

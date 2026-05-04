@@ -6,17 +6,20 @@ export type ApiTime = {
 }
 
 export type ApiError = {
+	http_status?: number
 	code: string
 	message: string
 }
 
 export type ApiSuccessMeta = {
-	time: ApiTime
+	time?: ApiTime
+	timestamp?: string
 	status: 'success'
 }
 
 export type ApiErrorMeta = {
-	time: ApiTime
+	time?: ApiTime
+	timestamp?: string
 	status: 'error'
 	error: ApiError
 }

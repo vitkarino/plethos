@@ -1,4 +1,5 @@
 import type { BPMChartData, PulseSample } from '~/types/components/bpm-block'
+import type { EntityId, RecordingSample } from '~/types/shared/entities'
 
 export function createChartDataFromPulseSamples(samples: PulseSample[]): BPMChartData {
 	return {
@@ -30,4 +31,18 @@ export function createChartDataFromPulseSamples(samples: PulseSample[]): BPMChar
 			},
 		],
 	}
+}
+
+export function createChartDataFromRecordingSamples(recordingId: EntityId, samples: RecordingSample[]): BPMChartData {
+	return createChartDataFromPulseSamples(samples.map((sample) => {
+		return {
+			recording_id: recordingId,
+			sample_index: sample.index,
+			raw_data: {
+				r: sample.red_filtered ?? sample.red,
+				ir: sample.ir_filtered ?? sample.ir,
+			},
+			created_at: new Date(Date.now() + sample.index).toISOString(),
+		}
+	}))
 }

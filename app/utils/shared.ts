@@ -1,5 +1,5 @@
 import type { ApiResponse } from '~/types/shared/api'
-import type { Project, ProjectUser, Sex } from '~/types/shared/entities'
+import type { EntityId, Project, ProjectUser, Sex } from '~/types/shared/entities'
 
 export const SELECTED_PROJECT_STORAGE_KEY = 'pulso.selectedProjectId'
 
@@ -10,15 +10,37 @@ const dateFormatter = new Intl.DateTimeFormat('uk-UA', {
 })
 
 export function formatDateValue(value: string) {
-	return dateFormatter.format(new Date(value))
+	const date = new Date(value)
+
+	return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date)
 }
 
 export function getSexLabel(sex: Sex) {
-	return sex === 'female' ? 'Жіноча' : 'Чоловіча'
+	if (sex === 'female') {
+		return 'Жіноча'
+	}
+
+	if (sex === 'male') {
+		return 'Чоловіча'
+	}
+
+	if (sex === 'other') {
+		return 'Інше'
+	}
+
+	return 'Не вказано'
 }
 
 export function getSexIcon(sex: Sex) {
-	return sex === 'female' ? '♀' : '♂'
+	if (sex === 'female') {
+		return '♀'
+	}
+
+	if (sex === 'male') {
+		return '♂'
+	}
+
+	return '•'
 }
 
 export function getUserInitials(name: string) {
@@ -32,7 +54,7 @@ export function getUserInitials(name: string) {
 	return initials || 'К'
 }
 
-export function getUserProjectTitles(projects: Project[], projectUsers: ProjectUser[], userId: number) {
+export function getUserProjectTitles(projects: Project[], projectUsers: ProjectUser[], userId: EntityId) {
 	const projectIds = projectUsers
 		.filter((projectUser) => projectUser.user_id === userId)
 		.map((projectUser) => projectUser.project_id)
@@ -71,12 +93,11 @@ export function readSelectedProjectId() {
 	}
 
 	const rawValue = window.localStorage.getItem(SELECTED_PROJECT_STORAGE_KEY)
-	const projectId = Number(rawValue)
 
-	return Number.isInteger(projectId) && projectId > 0 ? projectId : null
+	return rawValue?.trim() || null
 }
 
-export function setSelectedProjectId(projectId: number) {
+export function setSelectedProjectId(projectId: EntityId) {
 	if (typeof window === 'undefined') {
 		return
 	}

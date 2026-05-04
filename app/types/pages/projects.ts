@@ -1,4 +1,4 @@
-import type { Project, ProjectUser, User } from '../shared/entities'
+import type { EntityId, Project, ProjectUser, User } from '../shared/entities'
 import type { UserFormState } from './users'
 
 export type ProjectFormState = {
@@ -6,7 +6,7 @@ export type ProjectFormState = {
 	description: string
 }
 
-export type ProjectAssignmentForms = Record<number, number | ''>
+export type ProjectAssignmentForms = Record<EntityId, EntityId | ''>
 
 export type ProjectsPageState = {
 	projects: Project[]
@@ -15,8 +15,8 @@ export type ProjectsPageState = {
 	projectUsers: ProjectUser[]
 	projectForm: ProjectFormState
 	userForm: UserFormState
-	editingProjectId: number | null
-	editingUserId: number | null
+	editingProjectId: EntityId | null
+	editingUserId: EntityId | null
 	isProjectModalOpen: boolean
 	isUserModalOpen: boolean
 	isProjectSaving: boolean
