@@ -1,15 +1,5 @@
 <template>
 	<section class="users-page">
-		<header class="users-page__header">
-			<h1>Користувачі <span>· {{ viewModel.state.users.length }}</span></h1>
-
-			<div class="users-page__header-actions">
-				<button class="users-page__button users-page__button_primary users-page__button_add" type="button" @click="viewModel.openCreateUserModal()">
-					Додати користувача
-				</button>
-			</div>
-		</header>
-
 		<p v-if="viewModel.state.pageError" class="users-page__form-error">
 			{{ viewModel.state.pageError }}
 		</p>
@@ -102,6 +92,18 @@ const sexOptions = [
 	{ label: 'Жіноча', value: 'female' },
 	{ label: 'Інше', value: 'other' },
 ];
+
+usePageHeader({
+	title: computed(() => `Користувачі · ${viewModel.state.users.length}`),
+	actions: [
+		{
+			label: 'Додати користувача',
+			variant: 'primary',
+			icon: 'user-add',
+			onClick: () => viewModel.openCreateUserModal(),
+		},
+	],
+});
 
 viewModel.initialize();
 </script>

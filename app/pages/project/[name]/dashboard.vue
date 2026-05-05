@@ -1,16 +1,5 @@
 <template>
 	<section v-if="viewModel.state.project" class="project-dashboard-page">
-		<header class="project-dashboard-page__header">
-			<div>
-				<p>Дашборд проєкту</p>
-				<h1>{{ viewModel.state.project.title }}</h1>
-			</div>
-
-			<NuxtLink class="project-dashboard-page__back" to="/projects">
-				Усі проєкти
-			</NuxtLink>
-		</header>
-
 		<div class="project-dashboard-page__layout">
 			<Block class="project-dashboard-page__summary">
 				<p>{{ viewModel.state.project.description }}</p>
@@ -54,16 +43,6 @@
 	</section>
 
 	<section v-else-if="!viewModel.state.isLoading" class="project-dashboard-page">
-		<header class="project-dashboard-page__header">
-			<div>
-				<p>Дашборд проєкту</p>
-				<h1>{{ viewModel.state.pageError }}</h1>
-			</div>
-
-			<NuxtLink class="project-dashboard-page__back" to="/projects">
-				Усі проєкти
-			</NuxtLink>
-		</header>
 	</section>
 </template>
 
@@ -74,6 +53,17 @@ import { ProjectDashboardPageViewModel } from '~/controllers/pages/ProjectDashbo
 const route = useRoute();
 const projectName = Array.isArray(route.params.name) ? route.params.name[0] : route.params.name;
 const viewModel = new ProjectDashboardPageViewModel(projectName ?? '');
+
+usePageHeader({
+	title: computed(() => viewModel.state.project?.title || viewModel.state.pageError || 'Проєкт'),
+	subtitle: 'Дашборд проєкту',
+	actions: [
+		{
+			label: 'Усі проєкти',
+			to: '/projects',
+		},
+	],
+});
 
 viewModel.initialize();
 </script>

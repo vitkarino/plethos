@@ -8,11 +8,7 @@
 				:show-recording-markers="false"
 				:show-recording-select="true"
 				quality-metric-mode="analysis"
-			>
-				<template #header>
-					Записи
-				</template>
-			</BPMBlock>
+			/>
 		</template>
 	</BlocksGrid>
 </template>
@@ -25,6 +21,10 @@ import { ProjectDashboardPageViewModel } from '~/controllers/pages/ProjectDashbo
 const route = useRoute();
 const projectName = Array.isArray(route.params.name) ? route.params.name[0] : route.params.name;
 const viewModel = new ProjectDashboardPageViewModel(projectName ?? '');
+
+usePageHeader({
+	title: 'Записи',
+});
 
 viewModel.initialize();
 </script>

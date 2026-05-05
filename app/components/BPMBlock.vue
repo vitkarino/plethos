@@ -1,9 +1,5 @@
 <template>
 	<Block class="bpm-block">
-		<template #header>
-			<slot name="header">Графік сигналу</slot>
-		</template>
-
 		<div class="bpm-block__action-bar" role="toolbar" aria-label="Керування графіком">
 			<div v-if="showControls" class="bpm-block__bar-group bpm-block__bar-group_cta">
 				<button
@@ -296,6 +292,10 @@ type SparklineShape = {
 	line: string
 	area: string
 };
+type SparklineDomain = {
+	min: number
+	max: number
+};
 const BASE_VISIBLE_SAMPLE_COUNT = 480;
 const MIN_CHART_ZOOM = 0.5;
 const MAX_CHART_ZOOM = 4;
@@ -370,12 +370,17 @@ const horizontalYAxisTitlePlugin: Plugin<'line'> = {
 			return;
 		}
 
+		const titleX = Math.max(14, chartArea.left - 34);
+		const titleY = (chartArea.top + chartArea.bottom) / 2;
+
 		ctx.save();
 		ctx.fillStyle = '#aeb7c8';
 		ctx.font = '700 11px sans-serif';
-		ctx.textBaseline = 'top';
-		ctx.textAlign = 'left';
-		ctx.fillText('Амплітуда PPG', chartArea.left, Math.max(0, chartArea.top - 18));
+		ctx.textBaseline = 'middle';
+		ctx.textAlign = 'center';
+		ctx.translate(titleX, titleY);
+		ctx.rotate(-Math.PI / 2);
+		ctx.fillText('Амплітуда PPG', 0, 0);
 		ctx.restore();
 	},
 };
@@ -488,7 +493,8 @@ function getChartOptions(data: number[], usesSampleObjects: boolean, xRange: { m
 		animation: false,
 		layout: {
 			padding: {
-				top: 22,
+				top: 8,
+				left: 12,
 			},
 		},
 		interaction: {
@@ -586,7 +592,7 @@ function createMetricCard(key: BPMMetricKey, label: string, iconClass: string) {
 		iconClass,
 		value: getMetricValue(key),
 		isLoading: isMetricLoading(key),
-		sparkline: getSparkline(viewModel.state.metricHistory[key]),
+		sparkline: getSparkline(key, viewModel.state.metricHistory[key]),
 	};
 }
 
@@ -666,8 +672,40 @@ function hasMetricValue(metric: BPMMetricKey, value: number | null) {
 	return true;
 }
 
-function getSparkline(values: number[]): SparklineShape | null {
-	const normalizedValues = values.filter((value) => Number.isFinite(value));
+function getMetricSparklineMinimumRange(metric: BPMMetricKey) {
+	if (metric === 'spo2') {
+		return 4;
+	}
+
+	if (metric === 'signalReadiness') {
+		return 12;
+	}
+
+	return 14;
+}
+
+function getMetricSparklineDomain(metric: BPMMetricKey, values: number[]): SparklineDomain {
+	const baseline = viewModel.state.metricBaseline[metric];
+	const hasBaseline = hasMetricValue(metric, baseline);
+	const anchors = hasBaseline
+		? [...values, Number(baseline)]
+		: values;
+	const min = Math.min(...anchors);
+	const max = Math.max(...anchors);
+	const center = hasBaseline
+		? Number(baseline)
+		: (min + max) / 2;
+	const minimumRange = getMetricSparklineMinimumRange(metric);
+	const halfRange = Math.max(minimumRange / 2, Math.abs(max - center), Math.abs(center - min));
+
+	return {
+		min: center - halfRange,
+		max: center + halfRange,
+	};
+}
+
+function getSparkline(metric: BPMMetricKey, values: number[]): SparklineShape | null {
+	const normalizedValues = values.filter((value) => hasMetricValue(metric, value));
 
 	if (!normalizedValues.length) {
 		return null;
@@ -680,12 +718,11 @@ function getSparkline(values: number[]): SparklineShape | null {
 	const height = 28;
 	const bottom = height - 2;
 	const top = 2;
-	const min = Math.min(...plotValues);
-	const max = Math.max(...plotValues);
-	const range = max - min || 1;
+	const domain = getMetricSparklineDomain(metric, plotValues);
+	const range = domain.max - domain.min || 1;
 	const points = plotValues.map((value, index) => {
 		const x = plotValues.length === 1 ? width / 2 : (index / (plotValues.length - 1)) * width;
-		const y = bottom - ((value - min) / range) * (bottom - top);
+		const y = bottom - ((value - domain.min) / range) * (bottom - top);
 
 		return {
 			x,

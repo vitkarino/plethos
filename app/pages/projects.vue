@@ -1,133 +1,134 @@
 <template>
 	<section class="projects-page">
-		<Block class="projects-page__panel">
-			<template #header>
-				Активні проєкти
-			</template>
+		<p v-if="viewModel.state.pageError" class="projects-page__form-error">
+			{{ viewModel.state.pageError }}
+		</p>
 
-			<p v-if="viewModel.state.pageError" class="projects-page__form-error">
-				{{ viewModel.state.pageError }}
+		<div v-if="!viewModel.state.projects.length" class="projects-page__empty-state">
+			<h2>Проєктів ще немає</h2>
+			<p>
+				Створіть перший проєкт, щоб прив'язати користувачів і почати вимірювання.
 			</p>
+		</div>
 
-			<div class="projects-page__toolbar">
-				<button
-					class="projects-page__button projects-page__button_primary"
-					type="button"
-					@click="viewModel.openCreateProjectModal()"
-				>
-					Створити проєкт
-				</button>
+		<div v-if="viewModel.state.projects.length" class="projects-page__table">
+			<div class="projects-page__row projects-page__row_head" aria-hidden="true">
+				<span>Проєкт</span>
+				<span>Учасники</span>
+				<span>Активність</span>
+				<span></span>
 			</div>
 
-			<p v-if="!viewModel.state.projects.length" class="projects-page__empty">
-				Проєктів ще немає
-			</p>
+			<article
+				v-for="project in viewModel.state.projects"
+				:key="project.id"
+				class="projects-page__row"
+				:class="{ 'projects-page__row_selected': viewModel.isProjectSelected(project) }"
+			>
+				<div class="projects-page__project-main">
+					<div class="projects-page__title-line">
+						<h2>{{ project.title }}</h2>
+						<span v-if="viewModel.isProjectSelected(project)" class="projects-page__status">Активний</span>
+					</div>
+					<p class="projects-page__description">{{ project.description }}</p>
+				</div>
 
-			<div v-if="viewModel.state.projects.length" class="projects-page__grid">
-				<Block
-					v-for="project in viewModel.state.projects"
-					:key="project.id"
-					class="projects-page__project"
-				>
-					<div class="projects-page__project-header">
-						<div>
-							<h2>{{ project.title }}</h2>
-						</div>
+				<div class="projects-page__assignments">
+					<div class="projects-page__section-title">
+						<span>{{ project.users_count ?? viewModel.projectUserCount(project.id) }} користувачів</span>
 					</div>
 
-					<p class="projects-page__description">{{ project.description }}</p>
-
-					<div class="projects-page__assignments">
-						<div class="projects-page__section-title">
-							<span>Користувачі</span>
-							<span>{{ project.users_count ?? viewModel.projectUserCount(project.id) }}</span>
-						</div>
-
-						<div class="projects-page__chips">
-							<template v-if="viewModel.assignedUsers(project.id).length">
-								<ToolTip
-									v-for="assignment in viewModel.assignedUsers(project.id)"
-									:key="assignment.user.id"
-									class="projects-page__chip-menu"
-									placement="left"
-									min-width="12em"
-									@click.stop
-								>
-									<template #trigger>
-										<span class="projects-page__chip">
-											<span class="projects-page__avatar" aria-hidden="true">{{ viewModel.userInitials(assignment.user.name) }}</span>
-											<span>{{ assignment.user.name }}</span>
-										</span>
-									</template>
-
-									<button type="button" @click="viewModel.openEditUserModal(assignment.user)">
-										Редагувати користувача
-									</button>
-									<button type="button" class="tool-tip__menu-danger" @click="viewModel.unassignUser(project.id, assignment.user.id)">
-										Прибрати з проєкту
-									</button>
-								</ToolTip>
-							</template>
-
-							<span v-else class="projects-page__empty">Немає призначених користувачів</span>
-
+					<div class="projects-page__chips">
+						<template v-if="viewModel.assignedUsers(project.id).length">
 							<ToolTip
-								class="projects-page__assign-panel"
+								v-for="assignment in viewModel.assignedUsers(project.id)"
+								:key="assignment.user.id"
+								class="projects-page__chip-menu"
 								placement="left"
-								min-width="18em"
-								aria-label="Призначити користувача"
+								min-width="12em"
 								@click.stop
 							>
 								<template #trigger>
-									<span class="projects-page__assign-trigger" aria-hidden="true"></span>
+									<span class="projects-page__chip">
+										<span class="projects-page__avatar" aria-hidden="true">{{ viewModel.userInitials(assignment.user.name) }}</span>
+										<span>{{ assignment.user.name }}</span>
+									</span>
 								</template>
 
-								<form class="projects-page__assign-form" @submit.prevent="viewModel.assignUser(project.id)">
-									<SelectBox
-										v-model="viewModel.state.assignmentForms[project.id]"
-										:items="viewModel.unassignedUsers(project.id)"
-										label-key="name"
-										value-key="id"
-										:placeholder="viewModel.unassignedUsers(project.id).length === 0 ? 'Усі користувачі призначені' : 'Оберіть користувача'"
-										:disabled="viewModel.unassignedUsers(project.id).length === 0"
-									/>
-
-									<button
-										class="projects-page__button"
-										type="submit"
-										:disabled="viewModel.unassignedUsers(project.id).length === 0"
-									>
-										Призначити
-									</button>
-								</form>
+								<button type="button" @click="viewModel.openEditUserModal(assignment.user)">
+									Редагувати користувача
+								</button>
+								<button type="button" class="tool-tip__menu-danger" @click="viewModel.unassignUser(project.id, assignment.user.id)">
+									Прибрати з проєкту
+								</button>
 							</ToolTip>
-						</div>
-					</div>
+						</template>
 
-					<p class="projects-page__meta">
-						Створено {{ viewModel.formatDate(project.created_at) }} · Оновлено {{ viewModel.formatDate(project.updated_at) }}
-					</p>
+						<span v-else class="projects-page__empty">Немає призначених користувачів</span>
 
-					<div class="projects-page__project-actions">
-						<NuxtLink
-							class="projects-page__button projects-page__button_primary"
-							:to="viewModel.projectDashboardPath(project)"
-							@click.stop="viewModel.selectProject(project)"
+						<ToolTip
+							class="projects-page__assign-panel"
+							placement="left"
+							min-width="18em"
+							aria-label="Призначити користувача"
+							@click.stop
 						>
-							Відкрити
-						</NuxtLink>
-						<ToolTip class="projects-page__menu" aria-label="Дії з проєктом" @click.stop>
-							<button type="button" @click="viewModel.openEditProjectModal(project)">
-								Редагувати
-							</button>
-							<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteProject(project)">
-								Видалити
-							</button>
+							<template #trigger>
+								<span class="projects-page__assign-trigger" aria-hidden="true"></span>
+							</template>
+
+							<form class="projects-page__assign-form" @submit.prevent="viewModel.assignUser(project.id)">
+								<SelectBox
+									v-model="viewModel.state.assignmentForms[project.id]"
+									:items="viewModel.unassignedUsers(project.id)"
+									label-key="name"
+									value-key="id"
+									:placeholder="viewModel.unassignedUsers(project.id).length === 0 ? 'Усі користувачі призначені' : 'Оберіть користувача'"
+									:disabled="viewModel.unassignedUsers(project.id).length === 0"
+								/>
+
+								<button
+									class="projects-page__button"
+									type="submit"
+									:disabled="viewModel.unassignedUsers(project.id).length === 0"
+								>
+									Призначити
+								</button>
+							</form>
 						</ToolTip>
 					</div>
-				</Block>
-			</div>
-		</Block>
+				</div>
+
+				<dl class="projects-page__meta">
+					<div>
+						<dt>Створено</dt>
+						<dd>{{ viewModel.formatDate(project.created_at) }}</dd>
+					</div>
+					<div>
+						<dt>Оновлено</dt>
+						<dd>{{ viewModel.formatDate(project.updated_at) }}</dd>
+					</div>
+				</dl>
+
+				<div class="projects-page__project-actions">
+					<NuxtLink
+						class="projects-page__button projects-page__button_primary"
+						:to="viewModel.projectDashboardPath(project)"
+						@click.stop="viewModel.selectProject(project)"
+					>
+						Відкрити
+					</NuxtLink>
+					<ToolTip class="projects-page__menu" aria-label="Дії з проєктом" @click.stop>
+						<button type="button" @click="viewModel.openEditProjectModal(project)">
+							Редагувати
+						</button>
+						<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteProject(project)">
+							Видалити
+						</button>
+					</ToolTip>
+				</div>
+			</article>
+		</div>
 
 		<Modal
 			:is-open="viewModel.state.isProjectModalOpen"
@@ -188,7 +189,6 @@
 </template>
 
 <script setup lang="ts">
-import Block from '~/components/Block.vue';
 import Modal from '~/components/Modal.vue';
 import SelectBox from '~/components/SelectBox.vue';
 import ToolTip from '~/components/ToolTip.vue';
@@ -201,6 +201,18 @@ const sexOptions = [
 	{ label: 'Жіноча', value: 'female' },
 	{ label: 'Інше', value: 'other' },
 ];
+
+usePageHeader({
+	title: 'Проєкти',
+	actions: [
+		{
+			label: 'Створити проєкт',
+			variant: 'primary',
+			icon: 'project-add',
+			onClick: () => viewModel.openCreateProjectModal(),
+		},
+	],
+});
 
 viewModel.initialize();
 </script>

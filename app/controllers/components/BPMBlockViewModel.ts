@@ -57,6 +57,11 @@ export class BPMBlockViewModel {
 			spo2: [],
 			signalReadiness: [],
 		},
+		metricBaseline: {
+			bpm: null,
+			spo2: null,
+			signalReadiness: null,
+		},
 		qualityAnalysis: null,
 		recordingMarkers: [],
 		chartData: null,
@@ -909,6 +914,11 @@ export class BPMBlockViewModel {
 			spo2: [],
 			signalReadiness: [],
 		}
+		this.state.metricBaseline = {
+			bpm: null,
+			spo2: null,
+			signalReadiness: null,
+		}
 	}
 
 	private resolveVisualValue(metric: keyof BPMBlockVisualSnapshot, value: number | null | undefined) {
@@ -934,12 +944,21 @@ export class BPMBlockViewModel {
 			return
 		}
 
+		const metricValue = Math.round(Number(value) * 10) / 10
+
 		this.state.metricHistory = {
 			...this.state.metricHistory,
 			[metric]: [
 				...this.state.metricHistory[metric],
-				Math.round(Number(value) * 10) / 10,
+				metricValue,
 			].slice(-METRIC_HISTORY_LIMIT),
+		}
+
+		if (this.state.metricBaseline[metric] === null) {
+			this.state.metricBaseline = {
+				...this.state.metricBaseline,
+				[metric]: metricValue,
+			}
 		}
 	}
 
@@ -957,6 +976,12 @@ export class BPMBlockViewModel {
 		this.state.metricHistory = {
 			...this.state.metricHistory,
 			[metric]: Array.from({ length: 12 }, () => snapshotValue),
+		}
+		if (this.state.metricBaseline[metric] === null) {
+			this.state.metricBaseline = {
+				...this.state.metricBaseline,
+				[metric]: snapshotValue,
+			}
 		}
 	}
 }

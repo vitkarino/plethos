@@ -5,11 +5,7 @@
 				:project-id="viewModel.state.project?.id ?? null"
 				:show-recording-select="false"
 				:auto-load-last-recording="false"
-			>
-				<template #header>
-					Графік сигналу
-				</template>
-			</BPMBlock>
+			/>
 		</template>
 	</BlocksGrid>
 </template>
@@ -22,6 +18,10 @@ import { ProjectDashboardPageViewModel } from '~/controllers/pages/ProjectDashbo
 const route = useRoute();
 const projectName = Array.isArray(route.params.name) ? route.params.name[0] : route.params.name;
 const viewModel = new ProjectDashboardPageViewModel(projectName ?? '');
+
+usePageHeader({
+	title: 'Вимірювання',
+});
 
 viewModel.initialize();
 </script>

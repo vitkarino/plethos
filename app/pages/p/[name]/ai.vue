@@ -69,11 +69,6 @@
 	</section>
 	-->
 	<section class="ai-page">
-		<header class="ai-page__header">
-			<span class="ai-page__mark" aria-hidden="true"></span>
-			<h1>Асистент запису</h1>
-		</header>
-
 		<p v-if="viewModel.state.pageError" class="ai-page__error">
 			{{ viewModel.state.pageError }}
 		</p>
@@ -142,6 +137,10 @@ const route = useRoute();
 const projectName = Array.isArray(route.params.name) ? route.params.name[0] : route.params.name;
 const projectViewModel = new ProjectDashboardPageViewModel(projectName ?? '');
 const viewModel = new AIPageViewModel();
+
+usePageHeader({
+	title: 'Асистент запису',
+});
 
 projectViewModel.initialize().then(() => {
 	return viewModel.initialize(projectViewModel.state.project?.id ?? null);

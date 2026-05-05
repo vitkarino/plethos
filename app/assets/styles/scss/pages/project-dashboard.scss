@@ -9,14 +9,6 @@
 	color: $color-text-primary;
 }
 
-.project-dashboard-page__header {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 1em;
-}
-
-.project-dashboard-page__header p,
 .project-dashboard-page__block-title p {
 	margin: 0 0 0.35em;
 	color: $color-text-secondary;
@@ -24,44 +16,6 @@
 	font-weight: 700;
 	line-height: 1;
 	text-transform: uppercase;
-}
-
-.project-dashboard-page__header h1 {
-	margin: 0;
-	color: $color-text-primary;
-	font-size: 22pt;
-	font-weight: 400;
-	line-height: 1.1;
-	letter-spacing: 0;
-}
-
-.project-dashboard-page__back {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 2.375em;
-	padding: 0 1em;
-	border: $border-default;
-	border-radius: $radius-control;
-	background: $color-button-bg;
-	color: $color-text-primary;
-	font-size: 11pt;
-	font-weight: 700;
-	line-height: 1;
-	text-decoration: none;
-	white-space: nowrap;
-	transition:
-		background-color 160ms ease,
-		border-color 160ms ease,
-		color 160ms ease;
-}
-
-.project-dashboard-page__back:hover,
-.project-dashboard-page__back:focus-visible {
-	border-color: $color-selected;
-	background: $color-button-bg-hover;
-	color: $color-selected;
-	outline: none;
 }
 
 .project-dashboard-page__layout {
@@ -181,13 +135,8 @@
 }
 
 @media (max-width: 42em) {
-	.project-dashboard-page__header,
 	.project-dashboard-page__user {
 		align-items: stretch;
 		flex-direction: column;
-	}
-
-	.project-dashboard-page__back {
-		align-self: flex-start;
 	}
 }

@@ -27,9 +27,9 @@
 					<NuxtLink
 						class="app-layout__link app-layout__link_home"
 						:to="viewModel.workPath('/dashboard')"
-						title="Головна"
+						title="Вимірювання"
 					>
-						<span>Головна</span>
+						<span>Вимірювання</span>
 					</NuxtLink>
 				</div>
 
@@ -169,7 +169,39 @@
 		</Sidebar>
 
 		<main class="app-layout__content">
-			<slot />
+			<header v-if="pageTitle" class="app-layout__page-header">
+				<div class="app-layout__page-heading">
+					<p v-if="pageHeader.subtitle">{{ pageHeader.subtitle }}</p>
+					<h1>{{ pageTitle }}</h1>
+				</div>
+
+				<div v-if="pageHeader.actions.length" class="app-layout__page-actions">
+					<template v-for="action in pageHeader.actions" :key="action.label">
+						<NuxtLink
+							v-if="action.to"
+							class="app-layout__page-action"
+							:class="pageHeaderActionClasses(action)"
+							:to="action.to"
+						>
+							{{ action.label }}
+						</NuxtLink>
+						<button
+							v-else
+							class="app-layout__page-action"
+							:class="pageHeaderActionClasses(action)"
+							type="button"
+							:disabled="pageHeaderActionDisabled(action)"
+							@click="action.onClick?.()"
+						>
+							{{ action.label }}
+						</button>
+					</template>
+				</div>
+			</header>
+
+			<div class="app-layout__page-body">
+				<slot />
+			</div>
 		</main>
 
 		<Modal
@@ -237,11 +269,13 @@ import PreviewToolTip from '~/components/PreviewToolTip.vue';
 import SelectBox from '~/components/SelectBox.vue';
 import Sidebar from '~/components/Sidebar.vue';
 import ToolTip from '~/components/ToolTip.vue';
+import type { PageHeaderAction } from '~/composables/usePageHeader';
 import { PROJECT_DESCRIPTION_MAX_LENGTH } from '~/constants/forms';
 import { DefaultLayoutViewModel } from '~/controllers/layouts/DefaultLayoutViewModel';
 
 const viewModel = new DefaultLayoutViewModel();
 const route = useRoute();
+const pageHeader = providePageHeader();
 const sexOptions = [
 	{ label: 'Чоловіча', value: 'male' },
 	{ label: 'Жіноча', value: 'female' },
@@ -249,6 +283,42 @@ const sexOptions = [
 ];
 
 viewModel.initialize(route.params.name);
+
+const defaultPageTitle = computed(() => {
+	if (route.path === '/projects') {
+		return 'Проєкти';
+	}
+
+	if (route.path.endsWith('/dashboard')) {
+		return 'Вимірювання';
+	}
+
+	if (route.path.endsWith('/records')) {
+		return 'Записи';
+	}
+
+	if (route.path.endsWith('/users')) {
+		return 'Користувачі';
+	}
+
+	if (route.path.endsWith('/ai')) {
+		return 'Асистент запису';
+	}
+
+	return viewModel.selectedProjectLabel();
+});
+const pageTitle = computed(() => pageHeader.title || defaultPageTitle.value);
+
+function pageHeaderActionDisabled(action: PageHeaderAction) {
+	return Boolean(action.disabled === undefined ? false : unref(action.disabled));
+}
+
+function pageHeaderActionClasses(action: PageHeaderAction) {
+	return [
+		action.variant ? `app-layout__page-action_${action.variant}` : '',
+		action.icon ? `app-layout__page-action_${action.icon}` : '',
+	];
+}
 
 watch(
 	() => route.params.name,

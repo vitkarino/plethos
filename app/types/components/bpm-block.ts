@@ -49,6 +49,12 @@ export type BPMMetricHistory = {
 	signalReadiness: number[]
 }
 
+export type BPMMetricBaseline = {
+	bpm: number | null
+	spo2: number | null
+	signalReadiness: number | null
+}
+
 export type BPMBlockState = {
 	status: BPMBlockStatus
 	progress: number
@@ -68,6 +74,7 @@ export type BPMBlockState = {
 	spo2: number | null
 	signalReadiness: number | null
 	metricHistory: BPMMetricHistory
+	metricBaseline: BPMMetricBaseline
 	qualityAnalysis: QualityAnalysis | null
 	recordingMarkers: BPMRecordingMarker[]
 	chartData: BPMChartData | null
