@@ -70,6 +70,10 @@ export type StartRecordingPayload = {
 	duration_s: number
 }
 
+export type ProjectUserDeleteResult = Pick<ProjectUser, 'project_id' | 'user_id'> & {
+	deleted: boolean
+}
+
 export class PulsoApiModel {
 	private readonly apiBaseUrl: string
 
@@ -302,7 +306,7 @@ export class PulsoApiModel {
 	}
 
 	public assignUser(payload: ProjectUserPayload) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'project', Project> | Project>>(
+		return this.request<ApiEnvelope<ApiWrappedItem<'assignment', ProjectUser> | ProjectUser>>(
 			`/projects/${encodeURIComponent(payload.project_id)}/users`,
 			{
 				method: 'POST',
@@ -310,16 +314,16 @@ export class PulsoApiModel {
 					user_id: payload.user_id,
 				},
 			},
-		).then((response) => this.readItem(response, 'project', 'Користувача не призначено'))
+		).then((response) => this.readItem(response, 'assignment', 'Користувача не призначено'))
 	}
 
 	public unassignUser(payload: ProjectUserPayload) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'project', Project> | Project>>(
+		return this.request<ApiEnvelope<ProjectUserDeleteResult>>(
 			`/projects/${encodeURIComponent(payload.project_id)}/users/${encodeURIComponent(payload.user_id)}`,
 			{
 				method: 'DELETE',
 			},
-		).then((response) => this.readItem(response, 'project', 'Користувача не прибрано з проєкту'))
+		).then((response) => readApiResponseData(response, 'Користувача не прибрано з проєкту'))
 	}
 
 	public fetchProjectUsers() {

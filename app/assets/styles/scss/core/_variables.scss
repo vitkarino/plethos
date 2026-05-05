@@ -12,7 +12,8 @@ $color-reflector-border: rgba(255, 255, 255, 0.14);
 $color-border: #393939;
 $color-text-primary: #E8E8E8;
 $color-text-secondary: #B4B4B4;
-$color-selected: #22D3EE;
+// $color-selected: #22D3EE;
+$color-selected: #dadada;
 $color-button-bg: #242424;
 $color-button-bg-hover: #303030;
 
@@ -20,6 +21,6 @@ $font-text: "PT Sans", system-ui, sans-serif;
 $font-data: "PT Mono", "SFMono-Regular", Consolas, monospace;
 
 $border-default: 1px solid $color-border;
-$sidebar-width: 17.5em;
+$sidebar-width: 16em;
 $radius-block: 0.75em;
 $radius-control: 0.5em;

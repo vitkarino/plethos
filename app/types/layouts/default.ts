@@ -22,6 +22,7 @@ export type DefaultLayoutState = {
 	editingUserId: EntityId | null
 	isProjectModalOpen: boolean
 	isUserModalOpen: boolean
+	isSidebarCollapsed: boolean
 	isProjectSaving: boolean
 	isUserSaving: boolean
 	projectFormError: string

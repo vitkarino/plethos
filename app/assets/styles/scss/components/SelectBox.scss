@@ -86,17 +86,44 @@
 	border-radius: $radius-control;
 	background: $color-surface-bg;
 	box-shadow: 0 0.75em 1.5em rgba(0, 0, 0, 0.32);
+	scrollbar-color: rgba($color-selected, 0.65) rgba(255, 255, 255, 0.06);
+	scrollbar-width: thin;
+}
+
+.select-box__menu::-webkit-scrollbar {
+	width: 0.6em;
+}
+
+.select-box__menu::-webkit-scrollbar-track {
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.select-box__menu::-webkit-scrollbar-thumb {
+	border: 2px solid $color-surface-bg;
+	border-radius: 999px;
+	background: rgba($color-selected, 0.7);
+}
+
+.select-box__menu::-webkit-scrollbar-thumb:hover {
+	background: rgba($color-selected, 0.92);
+}
+
+.select-box_menu-top .select-box__menu {
+	top: auto;
+	bottom: calc(100% + 0.35em);
 }
 
 .select-box__option {
 	width: 100%;
 	min-height: 2.25em;
-	padding: 0 0.625em;
+	padding: 0.45em 0.8em;
 	border: 0;
 	border-radius: calc($radius-control - 0.125em);
 	background: transparent;
 	color: $color-text-primary;
 	font: inherit;
+	line-height: 1.35;
 	text-align: left;
 	cursor: pointer;
 }

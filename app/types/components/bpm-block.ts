@@ -37,43 +37,16 @@ export type BPMChartData = {
 	datasets: BPMChartDataset[]
 }
 
-export type BPMMeasurement = {
-	id: string
-	tstmp?: string
-	fname?: string
-	risk?: string
-	riskid?: string
-	p_from?: string
-	p_to?: string
+export type BPMRecordingMarker = {
+	recordingId: string
+	startSampleIndex: number | null
+	endSampleIndex: number | null
 }
 
-export type BPMNowMeasurement = {
-	id: string
-	part: string | number
-	parts: string | number
-	t_start?: string
-	t_finish?: string
-}
-
-export type LegacyPulseChartResponse = {
-	labels: number[]
-	datasets: Array<Record<string, unknown> & { label: string; data: number[] }>
-	bpm?: number
-}
-
-export type PulseSamplesResponse = {
-	data: {
-		measurement_id: string
-		samples: PulseSample[]
-		limit: number
-		offset: number
-	}
-	$meta?: {
-		status?: string
-		time?: {
-			iso?: string
-		}
-	}
+export type BPMMetricHistory = {
+	bpm: number[]
+	spo2: number[]
+	signalReadiness: number[]
 }
 
 export type BPMBlockState = {
@@ -93,8 +66,10 @@ export type BPMBlockState = {
 	sensorTempC: number | null
 	bpm: number | null
 	spo2: number | null
-	signalQuality: number | null
+	signalReadiness: number | null
+	metricHistory: BPMMetricHistory
 	qualityAnalysis: QualityAnalysis | null
+	recordingMarkers: BPMRecordingMarker[]
 	chartData: BPMChartData | null
 	error: string | null
 }

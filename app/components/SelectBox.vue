@@ -1,5 +1,13 @@
 <template>
-	<div ref="rootElement" class="select-box" :class="{ 'select-box_open': isOpen, 'select-box_disabled': disabled }">
+	<div
+		ref="rootElement"
+		class="select-box"
+		:class="{
+			'select-box_open': isOpen,
+			'select-box_disabled': disabled,
+			'select-box_menu-top': menuPlacement === 'top',
+		}"
+	>
 		<span v-if="label" class="select-box__label">{{ label }}</span>
 
 		<button
@@ -13,7 +21,12 @@
 			<span class="select-box__chevron" aria-hidden="true"></span>
 		</button>
 
-		<div v-if="isOpen" class="select-box__menu">
+		<div
+			v-if="isOpen"
+			ref="menuElement"
+			class="select-box__menu"
+			:style="menuStyle"
+		>
 			<button
 				v-for="option in normalizedOptions"
 				:key="option.key"
@@ -61,7 +74,22 @@ const emit = defineEmits<{
 }>()
 
 const rootElement = ref<HTMLElement | null>(null)
+const menuElement = ref<HTMLElement | null>(null)
 const isOpen = ref(false)
+const menuPlacement = ref<'top' | 'bottom'>('bottom')
+const menuMaxHeight = ref('16em')
+const menuTop = ref('0px')
+const menuLeft = ref('0px')
+const menuWidth = ref('0px')
+
+const menuStyle = computed(() => ({
+	position: 'fixed',
+	top: menuTop.value,
+	bottom: 'auto',
+	left: menuLeft.value,
+	width: menuWidth.value,
+	maxHeight: menuMaxHeight.value,
+}))
 
 const normalizedOptions = computed<SelectBoxOption[]>(() => {
 	const entries = Array.isArray(props.items)
@@ -107,10 +135,48 @@ function selectOption(option: SelectBoxOption) {
 	isOpen.value = false
 }
 
-function closeOnOutsideClick(event: MouseEvent) {
+function closeOnOutsidePointerDown(event: PointerEvent) {
 	if (!rootElement.value?.contains(event.target as Node)) {
 		isOpen.value = false
 	}
+}
+
+function closeOnEscape(event: KeyboardEvent) {
+	if (event.key === 'Escape') {
+		isOpen.value = false
+	}
+}
+
+function updateMenuPlacement() {
+	const root = rootElement.value
+	const menu = menuElement.value
+
+	if (!root || !menu || !isOpen.value) {
+		return
+	}
+
+	const rootRect = root.getBoundingClientRect()
+	const menuHeight = menu.offsetHeight
+	const viewportHeight = window.innerHeight
+	const spacing = 8
+	const availableBelow = viewportHeight - rootRect.bottom - spacing
+	const availableAbove = rootRect.top - spacing
+	const shouldOpenTop = availableBelow < menuHeight && availableAbove > availableBelow
+	const availableHeight = shouldOpenTop ? availableAbove : availableBelow
+	const nextMaxHeight = Math.max(availableHeight, 96)
+	const nextMenuHeight = Math.min(menuHeight, nextMaxHeight)
+
+	menuPlacement.value = shouldOpenTop ? 'top' : 'bottom'
+	menuMaxHeight.value = `${nextMaxHeight}px`
+	menuLeft.value = `${rootRect.left}px`
+	menuTop.value = `${shouldOpenTop ? rootRect.top - spacing - nextMenuHeight : rootRect.bottom + spacing}px`
+	menuWidth.value = `${rootRect.width}px`
+}
+
+function syncMenuPlacement() {
+	nextTick(() => {
+		updateMenuPlacement()
+	})
 }
 
 function isOptionRecord(item: SelectBoxItem): item is Record<string, unknown> {
@@ -130,11 +196,31 @@ function serializeValue(value: SelectBoxValue, fallbackKey: string) {
 }
 
 onMounted(() => {
-	document.addEventListener('click', closeOnOutsideClick)
+	document.addEventListener('pointerdown', closeOnOutsidePointerDown)
+	document.addEventListener('keydown', closeOnEscape)
+	window.addEventListener('resize', syncMenuPlacement)
+	window.addEventListener('scroll', syncMenuPlacement, true)
 })
 
 onBeforeUnmount(() => {
-	document.removeEventListener('click', closeOnOutsideClick)
+	document.removeEventListener('pointerdown', closeOnOutsidePointerDown)
+	document.removeEventListener('keydown', closeOnEscape)
+	window.removeEventListener('resize', syncMenuPlacement)
+	window.removeEventListener('scroll', syncMenuPlacement, true)
+})
+
+watch(isOpen, (open) => {
+	if (!open) {
+		menuPlacement.value = 'bottom'
+		menuMaxHeight.value = '16em'
+		menuTop.value = '0px'
+		menuLeft.value = '0px'
+		menuWidth.value = '0px'
+
+		return
+	}
+
+	syncMenuPlacement()
 })
 </script>
 

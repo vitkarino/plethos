@@ -25,19 +25,23 @@ export function createChartDataFromPulseSamples(samples: PulseSample[]): BPMChar
 					xAxisKey: 'sample_index',
 					yAxisKey: 'raw_data.ir',
 				},
-				borderColor: '#4aa8ff',
-				backgroundColor: '#4aa8ff',
+				borderColor: '#8b5cf6',
+				backgroundColor: '#8b5cf6',
 				pointRadius: 0,
 			},
 		],
 	}
 }
 
-export function createChartDataFromRecordingSamples(recordingId: EntityId, samples: RecordingSample[]): BPMChartData {
+export function createChartDataFromRecordingSamples(
+	recordingId: EntityId,
+	samples: RecordingSample[],
+	sampleOriginIndex = 0,
+): BPMChartData {
 	return createChartDataFromPulseSamples(samples.map((sample) => {
 		return {
 			recording_id: recordingId,
-			sample_index: sample.index,
+			sample_index: sample.index - sampleOriginIndex,
 			raw_data: {
 				r: sample.red_filtered ?? sample.red,
 				ir: sample.ir_filtered ?? sample.ir,

@@ -4,7 +4,7 @@ export type MeasurementStreamMetrics = {
 	bpm: number | null
 	spo2: number | null
 	ratio: number | null
-	live_quality?: {
+	signal_readiness?: {
 		level: QualityLevel
 		score: number
 		is_recording_ready: boolean

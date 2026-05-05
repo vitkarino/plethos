@@ -39,6 +39,7 @@ export class DefaultLayoutViewModel {
 		editingUserId: null,
 		isProjectModalOpen: false,
 		isUserModalOpen: false,
+		isSidebarCollapsed: false,
 		isProjectSaving: false,
 		isUserSaving: false,
 		projectFormError: '',
@@ -138,6 +139,10 @@ export class DefaultLayoutViewModel {
 
 	public selectedProjectLabel() {
 		return this.state.selectedProject?.title ?? ''
+	}
+
+	public toggleSidebar() {
+		this.state.isSidebarCollapsed = !this.state.isSidebarCollapsed
 	}
 
 	public userProjectTitles(userId: EntityId) {

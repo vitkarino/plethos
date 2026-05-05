@@ -3,7 +3,10 @@
 		class="app-layout"
 		:class="{ 'app-layout_modal-open': viewModel.state.isProjectModalOpen || viewModel.state.isUserModalOpen }"
 	>
-		<Sidebar>
+		<Sidebar
+			:collapsed="viewModel.state.isSidebarCollapsed"
+			@toggle="viewModel.toggleSidebar()"
+		>
 			<template #top>
 				<div class="app-layout__logo">
 					<img :src="pulsoLogo" alt="Pulso" />
@@ -11,7 +14,11 @@
 			</template>
 
 			<template #nav>
-				<div v-if="viewModel.state.selectedProject" class="app-layout__project-info">
+				<div
+					v-if="viewModel.state.selectedProject"
+					class="app-layout__project-info"
+					:title="viewModel.selectedProjectLabel()"
+				>
 					<span>Поточний проєкт</span>
 					<strong>{{ viewModel.selectedProjectLabel() }}</strong>
 				</div>
@@ -20,14 +27,25 @@
 					<NuxtLink
 						class="app-layout__link app-layout__link_home"
 						:to="viewModel.workPath('/dashboard')"
+						title="Головна"
 					>
-						Головна
+						<span>Головна</span>
+					</NuxtLink>
+				</div>
+
+				<div class="app-layout__nav-item">
+					<NuxtLink
+						class="app-layout__link app-layout__link_records"
+						:to="viewModel.workPath('/records')"
+						title="Записи"
+					>
+						<span>Записи</span>
 					</NuxtLink>
 				</div>
 
 				<div class="app-layout__nav-item app-layout__nav-item_preview">
-					<NuxtLink class="app-layout__link app-layout__link_projects" to="/projects">
-						Проєкти
+					<NuxtLink class="app-layout__link app-layout__link_projects" to="/projects" title="Проєкти">
+						<span>Проєкти</span>
 					</NuxtLink>
 
 					<PreviewToolTip
@@ -70,8 +88,9 @@
 					<NuxtLink
 						class="app-layout__link app-layout__link_users"
 						:to="viewModel.workPath('/users')"
+						title="Користувачі"
 					>
-						Користувачі
+						<span>Користувачі</span>
 					</NuxtLink>
 
 					<PreviewToolTip
@@ -135,18 +154,17 @@
 					<NuxtLink
 						class="app-layout__link app-layout__link_chat"
 						:to="viewModel.workPath('/ai')"
+						title="ШІ Чат"
 					>
-						ШІ Чат
+						<span>ШІ Чат</span>
 					</NuxtLink>
-				</div>
-
-				<div class="app-layout__nav-item">
-					<a class="app-layout__link app-layout__link_signals" href="#">Редактор сигналів</a>
 				</div>
 			</template>
 
 			<template #bottom>
-				<a class="app-layout__link app-layout__link_author" href="https://github.com/vitkarino/pulso.git" target="_blank">GitHub</a>
+				<a class="app-layout__link app-layout__link_author" href="https://github.com/vitkarino/pulso.git" target="_blank" title="GitHub">
+					<span>GitHub</span>
+				</a>
 			</template>
 		</Sidebar>
 

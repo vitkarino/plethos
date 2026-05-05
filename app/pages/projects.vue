@@ -2,7 +2,7 @@
 	<section class="projects-page">
 		<Block class="projects-page__panel">
 			<template #header>
-				<div class="block-header-data">Активні проєкти</div>
+				Активні проєкти
 			</template>
 
 			<p v-if="viewModel.state.pageError" class="projects-page__form-error">
@@ -127,15 +127,6 @@
 					</div>
 				</Block>
 			</div>
-
-			<template #footer>
-				<div class="block-footer-data">
-					<span class="block-footer-data__item">
-						<span class="block-footer-data__label">Проєктів:</span>
-						<span class="block-footer-data__value">{{ viewModel.state.projects.length }}</span>
-					</span>
-				</div>
-			</template>
 		</Block>
 
 		<Modal
