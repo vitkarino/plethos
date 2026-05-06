@@ -123,6 +123,11 @@ export class ProjectsPageViewModel {
 		return getProjectRoutePath(project, '/dashboard')
 	}
 
+	public openProject(project: Project) {
+		this.selectProject(project)
+		return navigateTo(this.projectDashboardPath(project))
+	}
+
 	public userInitials(name: string) {
 		return getUserInitials(name)
 	}

@@ -4,38 +4,31 @@
 			{{ viewModel.state.pageError }}
 		</p>
 
-		<div v-if="!viewModel.state.projects.length" class="projects-page__empty-state">
-			<h2>Проєктів ще немає</h2>
-			<p>
-				Створіть перший проєкт, щоб прив'язати користувачів і почати вимірювання.
-			</p>
-		</div>
-
-		<div v-if="viewModel.state.projects.length" class="projects-page__table">
-			<div class="projects-page__row projects-page__row_head" aria-hidden="true">
-				<span>Проєкт</span>
-				<span>Учасники</span>
-				<span>Активність</span>
-				<span></span>
-			</div>
-
+		<div class="projects-page__grid">
 			<article
 				v-for="project in viewModel.state.projects"
 				:key="project.id"
-				class="projects-page__row"
-				:class="{ 'projects-page__row_selected': viewModel.isProjectSelected(project) }"
+				class="projects-page__card"
+				:class="{ 'projects-page__card_selected': viewModel.isProjectSelected(project) }"
+				role="button"
+				tabindex="0"
+				@click="viewModel.openProject(project)"
+				@keydown.enter.prevent="viewModel.openProject(project)"
+				@keydown.space.prevent="viewModel.openProject(project)"
 			>
-				<div class="projects-page__project-main">
-					<div class="projects-page__title-line">
+				<div class="projects-page__heading">
+					<div class="projects-page__heading-row">
 						<h2>{{ project.title }}</h2>
-						<span v-if="viewModel.isProjectSelected(project)" class="projects-page__status">Активний</span>
+						<span v-if="viewModel.isProjectSelected(project)" class="projects-page__active-badge">Активний</span>
 					</div>
+					<span class="projects-page__project-id">ID {{ project.id }}</span>
 					<p class="projects-page__description">{{ project.description }}</p>
 				</div>
 
 				<div class="projects-page__assignments">
 					<div class="projects-page__section-title">
-						<span>{{ project.users_count ?? viewModel.projectUserCount(project.id) }} користувачів</span>
+						<span>Учасники</span>
+						<strong>{{ project.users_count ?? viewModel.projectUserCount(project.id) }}</strong>
 					</div>
 
 					<div class="projects-page__chips">
@@ -99,35 +92,44 @@
 					</div>
 				</div>
 
-				<dl class="projects-page__meta">
+				<dl class="projects-page__activity">
+					<div>
+						<dt>Активність</dt>
+						<dd>{{ project.recordings_count ?? 0 }} записів</dd>
+					</div>
 					<div>
 						<dt>Створено</dt>
 						<dd>{{ viewModel.formatDate(project.created_at) }}</dd>
 					</div>
-					<div>
-						<dt>Оновлено</dt>
-						<dd>{{ viewModel.formatDate(project.updated_at) }}</dd>
-					</div>
 				</dl>
 
-				<div class="projects-page__project-actions">
-					<NuxtLink
-						class="projects-page__button projects-page__button_primary"
-						:to="viewModel.projectDashboardPath(project)"
-						@click.stop="viewModel.selectProject(project)"
-					>
-						Відкрити
-					</NuxtLink>
-					<ToolTip class="projects-page__menu" aria-label="Дії з проєктом" @click.stop>
-						<button type="button" @click="viewModel.openEditProjectModal(project)">
+				<div class="projects-page__project-actions" @click.stop>
+					<div class="projects-page__project-actions-left">
+						<NuxtLink
+							class="projects-page__button"
+							:to="viewModel.projectDashboardPath(project)"
+							@click="viewModel.selectProject(project)"
+						>
+							Відкрити
+						</NuxtLink>
+						<button class="projects-page__button" type="button" @click="viewModel.openEditProjectModal(project)">
 							Редагувати
 						</button>
-						<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteProject(project)">
-							Видалити
-						</button>
-					</ToolTip>
+					</div>
+					<button class="projects-page__button projects-page__button_delete" type="button" :aria-label="`Видалити ${project.title}`" @click="viewModel.deleteProject(project)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+					</button>
 				</div>
 			</article>
+
+			<button
+				class="projects-page__card projects-page__card_add"
+				type="button"
+				@click="viewModel.openCreateProjectModal()"
+			>
+				<span class="projects-page__add-icon" aria-hidden="true"></span>
+				<span>Створити проєкт</span>
+			</button>
 		</div>
 
 		<Modal
