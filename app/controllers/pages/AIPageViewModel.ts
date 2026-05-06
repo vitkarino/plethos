@@ -50,12 +50,12 @@ export class AIPageViewModel {
 
 		this.state.isSending = true
 		this.state.pageError = ''
+		this.state.message = ''
+		this.state.messages.push(this.createUserMessage(recordingId, message))
 
 		return this.api.sendAssistantMessage(recordingId, message)
 			.then((assistantMessage) => {
-				this.state.messages.push(this.createUserMessage(recordingId, message))
 				this.state.messages.push(assistantMessage)
-				this.state.message = ''
 			})
 			.catch((error) => {
 				this.state.pageError = getRequestErrorMessage(error, 'Асистент не відповів')
@@ -63,6 +63,16 @@ export class AIPageViewModel {
 			.finally(() => {
 				this.state.isSending = false
 			})
+	}
+
+	public startNewChat() {
+		if (this.state.isSending) {
+			return
+		}
+
+		this.state.message = ''
+		this.state.messages = []
+		this.state.pageError = ''
 	}
 
 	private createUserMessage(recordingId: EntityId, message: string): AssistantMessage {

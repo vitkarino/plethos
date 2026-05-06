@@ -5,7 +5,7 @@ export type PageHeaderAction = {
 	label: string
 	to?: string
 	variant?: 'default' | 'primary' | 'ghost'
-	icon?: 'project-add' | 'user-add'
+	icon?: 'project-add' | 'user-add' | 'chat-add'
 	disabled?: MaybeRef<boolean>
 	onClick?: () => void
 }

@@ -156,7 +156,7 @@
 						:to="viewModel.workPath('/ai')"
 						title="ШІ Чат"
 					>
-						<span>ШІ Чат</span>
+						<span>Асистент</span>
 					</NuxtLink>
 				</div>
 			</template>
@@ -302,7 +302,7 @@ const defaultPageTitle = computed(() => {
 	}
 
 	if (route.path.endsWith('/ai')) {
-		return 'Асистент запису';
+		return 'Асистент';
 	}
 
 	return viewModel.selectedProjectLabel();

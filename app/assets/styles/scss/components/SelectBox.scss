@@ -80,13 +80,16 @@
 	flex-direction: column;
 	width: 100%;
 	max-height: 16em;
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
+	overscroll-behavior: contain;
 	padding: 0.35em;
 	border: $border-default;
 	border-radius: $radius-control;
 	background: $color-surface-bg;
 	box-shadow: 0 0.75em 1.5em rgba(0, 0, 0, 0.32);
 	scrollbar-color: rgba($color-selected, 0.65) rgba(255, 255, 255, 0.06);
+	scrollbar-gutter: stable;
 	scrollbar-width: thin;
 }
 
