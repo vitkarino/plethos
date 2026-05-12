@@ -11,6 +11,8 @@ export type LayoutUserFormState = {
 	sex: Sex
 }
 
+export type SidebarPanelKey = 'records' | 'projects' | 'users' | 'ai'
+
 export type DefaultLayoutState = {
 	projects: Project[]
 	selectedProject: Project | null
@@ -23,6 +25,7 @@ export type DefaultLayoutState = {
 	isProjectModalOpen: boolean
 	isUserModalOpen: boolean
 	isSidebarCollapsed: boolean
+	activeSidebarPanel: SidebarPanelKey | null
 	isProjectSaving: boolean
 	isUserSaving: boolean
 	projectFormError: string

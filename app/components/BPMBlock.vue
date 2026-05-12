@@ -1,205 +1,67 @@
 <template>
 	<Block class="bpm-block">
-		<div class="bpm-block__action-bar" role="toolbar" aria-label="Керування графіком">
-			<div v-if="showControls" class="bpm-block__bar-group bpm-block__bar-group_cta">
-				<button
-					class="bpm-block__cta bpm-block__cta_measure"
-					:class="{ 'bpm-block__cta_active': viewModel.isMeasurementActive() }"
-					type="button"
-					:aria-label="measurementToggleLabel"
-					:aria-pressed="viewModel.isMeasurementActive()"
-					:data-tooltip="measurementToggleLabel"
-					:title="measurementToggleLabel"
-					:disabled="viewModel.isMeasurementToggleDisabled()"
-					@click="viewModel.toggleMeasurement()"
-				>
-					<span class="bpm-block__cta-glyph" aria-hidden="true">
-						<span v-if="viewModel.isMeasurementActive()" class="bpm-block__glyph-stop"></span>
-						<span v-else class="bpm-block__glyph-play"></span>
-					</span>
-				</button>
-				<button
-					class="bpm-block__cta bpm-block__cta_record"
-					:class="{ 'bpm-block__cta_active': viewModel.isRecordingActive() }"
-					type="button"
-					:aria-label="recordingToggleLabel"
-					:aria-pressed="viewModel.isRecordingActive()"
-					:data-tooltip="recordingToggleLabel"
-					:title="recordingToggleLabel"
-					:disabled="viewModel.isRecordingToggleDisabled()"
-					@click="viewModel.toggleRecording()"
-				>
-					<span class="bpm-block__cta-glyph" aria-hidden="true">
-						<span v-if="viewModel.isRecordingActive()" class="bpm-block__glyph-stop"></span>
-						<span v-else class="bpm-block__glyph-rec"></span>
-					</span>
-				</button>
-			</div>
+		<Teleport v-if="isPageHeaderActionTargetReady" to=".app-layout__page-header">
+			<div class="bpm-block__action-bar" role="toolbar" aria-label="Керування графіком">
+				<div v-if="showControls" class="bpm-block__bar-group bpm-block__bar-group_cta">
+					<button class="bpm-block__cta bpm-block__cta_measure"
+						:class="{ 'bpm-block__cta_active': viewModel.isMeasurementActive() }" type="button"
+						:aria-label="measurementToggleLabel" :aria-pressed="viewModel.isMeasurementActive()"
+						:data-tooltip="measurementToggleLabel" :title="measurementToggleLabel"
+						:disabled="viewModel.isMeasurementToggleDisabled()" @click="viewModel.toggleMeasurement()">
+						<span class="bpm-block__cta-glyph" aria-hidden="true">
+							<span v-if="viewModel.isMeasurementActive()" class="bpm-block__glyph-stop"></span>
+							<span v-else class="bpm-block__glyph-play"></span>
+						</span>
+					</button>
+					<button class="bpm-block__cta bpm-block__cta_record"
+						:class="{ 'bpm-block__cta_active': viewModel.isRecordingActive() }" type="button"
+						:aria-label="recordingToggleLabel" :aria-pressed="viewModel.isRecordingActive()"
+						:data-tooltip="recordingToggleLabel" :title="recordingToggleLabel"
+						:disabled="viewModel.isRecordingToggleDisabled()" @click="viewModel.toggleRecording()">
+						<span class="bpm-block__cta-glyph" aria-hidden="true">
+							<span v-if="viewModel.isRecordingActive()" class="bpm-block__glyph-stop"></span>
+							<span v-else class="bpm-block__glyph-rec"></span>
+						</span>
+					</button>
+				</div>
 
-			<div class="bpm-block__bar-group bpm-block__bar-group_context">
-				<SelectBox
-					class="bpm-block__bar-select"
-					v-model="viewModel.state.selectedDeviceId"
-					label="Пристрій"
-					:items="viewModel.state.devices"
-					label-key="id"
-					value-key="id"
-					:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
-				/>
-				<SelectBox
-					class="bpm-block__bar-select"
-					v-model="viewModel.state.selectedUserId"
-					label="Користувач"
-					:items="viewModel.state.users"
-					label-key="name"
-					value-key="id"
-					:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
-				/>
-				<SelectBox
-					v-if="showRecordingSelect"
-					class="bpm-block__bar-select"
-					v-model="viewModel.state.recordingId"
-					label="Запис"
-					:items="viewModel.state.recordings"
-					label-key="id"
-					value-key="id"
-					:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
-					@update:model-value="handleRecordingSelect"
-				/>
-			</div>
+				<div class="bpm-block__bar-group bpm-block__bar-group_context">
+					<SelectBox class="bpm-block__bar-select" v-model="viewModel.state.selectedDeviceId" label="Пристрій"
+						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_device"
+						:items="viewModel.state.devices" label-key="id" value-key="id"
+						:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'" />
+					<SelectBox class="bpm-block__bar-select" v-model="viewModel.state.selectedUserId" label="Користувач"
+						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_user"
+						:items="viewModel.state.users" label-key="name" value-key="id"
+						:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'" />
+					<SelectBox v-if="showRecordingSelect" class="bpm-block__bar-select"
+						v-model="viewModel.state.recordingId" label="Запис" :items="viewModel.state.recordings"
+						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_recording"
+						label-key="id" value-key="id"
+						:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
+						@update:model-value="handleRecordingSelect" />
+				</div>
 
-			<div v-if="showExport" class="bpm-block__bar-group bpm-block__bar-group_export">
-				<button
-					class="bpm-block__export-button"
-					type="button"
-					:disabled="isRecordingExportDisabled"
-					@click="downloadSelectedRecording('csv')"
-				>
-					<span class="bpm-block__export-icon" aria-hidden="true"></span>
-					Експорт у CSV
-				</button>
-			</div>
+				<div v-if="showExport" class="bpm-block__bar-group bpm-block__bar-group_export">
+					<button class="bpm-block__export-button" type="button" :disabled="isRecordingExportDisabled"
+						@click="downloadSelectedRecording('csv')">
+						<span class="bpm-block__export-icon" aria-hidden="true"></span>
+						Експорт у CSV
+					</button>
+				</div>
 
-			<div
-				v-if="showControls"
-				class="bpm-block__action-status"
-				:class="`bpm-block__action-status_${statusKey}`"
-				aria-live="polite"
-			>
-				<span class="bpm-block__action-status-dot" aria-hidden="true"></span>
-				<span class="bpm-block__action-status-text">{{ statusLabel }}</span>
+				<div v-if="showControls" class="bpm-block__action-status"
+					:class="`bpm-block__action-status_${statusKey}`" aria-live="polite">
+					<span class="bpm-block__action-status-dot" aria-hidden="true"></span>
+					<span class="bpm-block__action-status-text">{{ statusLabel }}</span>
+				</div>
 			</div>
-		</div>
+		</Teleport>
 
 		<div class="bpm-block__body">
-			<div class="bpm-block__charts-panel">
-				<div class="bpm-block__charts">
-					<div
-						v-if="viewModel.state.chartData"
-						ref="chartsScroll"
-						class="bpm-block__charts-scroll"
-					>
-						<div
-							class="bpm-block__charts-track"
-							:class="`bpm-block__charts-track_${chartViewMode}`"
-							:style="chartTrackStyle"
-						>
-							<div v-if="isIrChartVisible" class="bpm-block__chart bpm-block__chart_primary">
-								<canvas
-									ref="irChartCanvas"
-									class="bpm-block__canvas"
-								/>
-							</div>
-							<div v-if="isRedChartVisible" class="bpm-block__chart bpm-block__chart_secondary">
-								<canvas
-									ref="rChartCanvas"
-									class="bpm-block__canvas"
-								/>
-							</div>
-						</div>
-					</div>
-					<div v-else class="bpm-block__empty-panel">
-						<p class="bpm-block__empty">Графіки відсутні. Почніть вимірювання</p>
-					</div>
-				</div>
-
-				<div
-					v-if="viewModel.state.chartData"
-					class="bpm-block__chart-controls"
-					aria-label="Керування графіком"
-				>
-					<SelectBox
-						class="bpm-block__chart-select bpm-block__bar-select_view"
-						:model-value="chartViewMode"
-						:items="chartViewOptions"
-						label-key="label"
-						value-key="value"
-						@update:model-value="handleChartViewSelect"
-					/>
-					<div class="bpm-block__zoom" aria-label="Масштаб графіка">
-						<button
-							class="bpm-block__zoom-button"
-							type="button"
-							aria-label="Зменшити масштаб"
-							:disabled="!canZoomOut"
-							@click="zoomOutChart()"
-						>
-							−
-						</button>
-						<span class="bpm-block__zoom-value">{{ chartZoomPercent }}</span>
-						<button
-							class="bpm-block__zoom-button"
-							type="button"
-							aria-label="Збільшити масштаб"
-							:disabled="!canZoomIn"
-							@click="zoomInChart()"
-						>
-							+
-						</button>
-					</div>
-					<div
-						class="bpm-block__timeline"
-						aria-label="Прокрутка графіка"
-					>
-						<button
-							class="bpm-block__timeline-button"
-							type="button"
-							aria-label="Прокрутити ліворуч"
-							:disabled="!canScrollLeft"
-							@click="scrollChartBy(-chartScrollStep)"
-						>
-							‹
-						</button>
-						<input
-							class="bpm-block__timeline-track"
-							type="range"
-							min="0"
-							:max="scrollMaxLeft"
-							:value="scrollLeft"
-							step="1"
-							:disabled="isChartScrollDisabled"
-							@input="handleScrollBarInput"
-						>
-						<button
-							class="bpm-block__timeline-button"
-							type="button"
-							aria-label="Прокрутити праворуч"
-							:disabled="!canScrollRight"
-							@click="scrollChartBy(chartScrollStep)"
-						>
-							›
-						</button>
-					</div>
-				</div>
-			</div>
-
 			<div class="bpm-block__metrics">
-				<div
-					v-for="metric in metricCards"
-					:key="metric.key"
-					class="bpm-block__metric"
-					:class="`bpm-block__metric_${metric.key}`"
-				>
+				<div v-for="metric in metricCards" :key="metric.key" class="bpm-block__metric"
+					:class="`bpm-block__metric_${metric.key}`">
 					<div class="bpm-block__metric-head">
 						<span class="bpm-block__metric-label">{{ metric.label }}</span>
 						<span class="bpm-block__metric-icon" :class="metric.iconClass" aria-hidden="true"></span>
@@ -211,16 +73,61 @@
 					</div>
 
 					<div class="bpm-block__metric-chart">
-						<svg
-							v-if="metric.sparkline"
-							class="bpm-block__sparkline"
-							viewBox="0 0 100 28"
-							preserveAspectRatio="none"
-							aria-hidden="true"
-						>
+						<svg v-if="metric.sparkline" class="bpm-block__sparkline" viewBox="0 0 100 28"
+							preserveAspectRatio="none" aria-hidden="true">
 							<path :d="metric.sparkline.area" class="bpm-block__sparkline-area"></path>
 							<polyline :points="metric.sparkline.line" class="bpm-block__sparkline-line"></polyline>
 						</svg>
+					</div>
+				</div>
+			</div>
+
+			<div class="bpm-block__charts-panel">
+				<div class="bpm-block__charts">
+					<div v-if="viewModel.state.chartData" ref="chartsScroll" class="bpm-block__charts-scroll">
+						<div class="bpm-block__charts-track" :class="`bpm-block__charts-track_${chartViewMode}`"
+							:style="chartTrackStyle">
+							<div v-if="isIrChartVisible" class="bpm-block__chart bpm-block__chart_primary">
+								<canvas ref="irChartCanvas" class="bpm-block__canvas" />
+							</div>
+							<div v-if="isRedChartVisible" class="bpm-block__chart bpm-block__chart_secondary">
+								<canvas ref="rChartCanvas" class="bpm-block__canvas" />
+							</div>
+						</div>
+					</div>
+					<div v-else class="bpm-block__empty-panel">
+						<p class="bpm-block__empty">Графіки відсутні. Почніть вимірювання</p>
+					</div>
+				</div>
+
+				<div v-if="viewModel.state.chartData" class="bpm-block__chart-controls" aria-label="Керування графіком">
+					<div class="bpm-block__zoom" aria-label="Масштаб графіка">
+						<button class="bpm-block__zoom-button" type="button" aria-label="Зменшити масштаб"
+							:disabled="!canZoomOut" @click="zoomOutChart()">
+							−
+						</button>
+						<span class="bpm-block__zoom-value">{{ chartZoomPercent }}</span>
+						<button class="bpm-block__zoom-button" type="button" aria-label="Збільшити масштаб"
+							:disabled="!canZoomIn" @click="zoomInChart()">
+							+
+						</button>
+					</div>
+					<SelectBox class="bpm-block__chart-select bpm-block__bar-select_view" :model-value="chartViewMode"
+						:items="chartViewOptions" label-key="label" value-key="value"
+						@update:model-value="handleChartViewSelect" />
+
+					<div class="bpm-block__timeline" aria-label="Прокрутка графіка">
+						<button class="bpm-block__timeline-button" type="button" aria-label="Прокрутити ліворуч"
+							:disabled="!canScrollLeft" @click="scrollChartBy(-chartScrollStep)">
+							‹
+						</button>
+						<input class="bpm-block__timeline-track" type="range" min="0" :max="scrollMaxLeft"
+							:value="scrollLeft" step="1" :disabled="isChartScrollDisabled"
+							@input="handleScrollBarInput">
+						<button class="bpm-block__timeline-button" type="button" aria-label="Прокрутити праворуч"
+							:disabled="!canScrollRight" @click="scrollChartBy(chartScrollStep)">
+							›
+						</button>
 					</div>
 				</div>
 			</div>
@@ -262,6 +169,7 @@ Chart.register(
 
 const props = withDefaults(defineProps<{
 	projectId?: string | null
+	selectedRecordingId?: string | null
 	showControls?: boolean
 	showExport?: boolean
 	showRecordingMarkers?: boolean
@@ -270,6 +178,7 @@ const props = withDefaults(defineProps<{
 	qualityMetricMode?: 'readiness' | 'analysis'
 }>(), {
 	projectId: null,
+	selectedRecordingId: null,
 	showControls: true,
 	showExport: false,
 	showRecordingMarkers: true,
@@ -277,6 +186,10 @@ const props = withDefaults(defineProps<{
 	autoLoadLastRecording: true,
 	qualityMetricMode: 'readiness',
 });
+
+const emit = defineEmits<{
+	recordingSelect: [recordingId: string]
+}>();
 
 const viewModel = new BPMBlockViewModel(props.projectId, {
 	autoLoadLastRecording: props.autoLoadLastRecording,
@@ -303,6 +216,7 @@ const CHART_ZOOM_STEP = 0.25;
 const chartZoom = ref(1);
 const chartViewMode = ref<ChartViewMode>('split');
 const scrollLeft = ref(0);
+const isPageHeaderActionTargetReady = ref(false);
 
 const charts: Record<'ir' | 'r', Chart<'line', BPMChartPoint[], number> | null> = {
 	ir: null,
@@ -988,8 +902,11 @@ function handleRecordingSelect(value: string | number | null) {
 		return;
 	}
 
+	const recordingId = String(value);
+
+	emit('recordingSelect', recordingId);
 	resetChartScrollPosition();
-	void viewModel.loadRecording(String(value));
+	void viewModel.loadRecording(recordingId);
 }
 
 function downloadSelectedRecording(format: RecordingExportFormat) {
@@ -1006,13 +923,26 @@ function downloadSelectedRecording(format: RecordingExportFormat) {
 	link.click();
 }
 
+function syncSelectedRecordingFromProp(recordingId: string | null | undefined) {
+	if (!recordingId || recordingId === viewModel.state.recordingId) {
+		return;
+	}
+
+	resetChartScrollPosition();
+	void viewModel.loadRecording(recordingId);
+}
+
 onMounted(() => {
-	viewModel.initialize();
+	isPageHeaderActionTargetReady.value = true;
+	viewModel.initialize().then(() => {
+		syncSelectedRecordingFromProp(props.selectedRecordingId);
+	});
 	renderCharts();
 	window.addEventListener('resize', syncScrollMetrics);
 });
 
 onBeforeUnmount(() => {
+	isPageHeaderActionTargetReady.value = false;
 	charts.ir?.destroy();
 	charts.r?.destroy();
 	window.removeEventListener('resize', syncScrollMetrics);
@@ -1035,6 +965,13 @@ watch(
 	() => props.projectId,
 	(projectId) => {
 		viewModel.setProjectId(projectId);
+	},
+);
+
+watch(
+	() => props.selectedRecordingId,
+	(recordingId) => {
+		syncSelectedRecordingFromProp(recordingId);
 	},
 );
 

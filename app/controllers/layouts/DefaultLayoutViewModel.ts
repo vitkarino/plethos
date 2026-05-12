@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { PROJECT_DESCRIPTION_MAX_LENGTH } from '~/constants/forms'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
-import type { DefaultLayoutState } from '~/types/layouts/default'
+import type { DefaultLayoutState, SidebarPanelKey } from '~/types/layouts/default'
 import type { EntityId, Project, User } from '~/types/shared/entities'
 import {
 	clearSelectedProjectId,
@@ -40,6 +40,7 @@ export class DefaultLayoutViewModel {
 		isProjectModalOpen: false,
 		isUserModalOpen: false,
 		isSidebarCollapsed: false,
+		activeSidebarPanel: null,
 		isProjectSaving: false,
 		isUserSaving: false,
 		projectFormError: '',
@@ -121,6 +122,17 @@ export class DefaultLayoutViewModel {
 		setSelectedProjectId(project.id)
 	}
 
+	public selectProjectById(projectId: EntityId | number | null) {
+		const id = String(projectId ?? '')
+		const project = this.state.projects.find((item) => item.id === id) ?? null
+
+		if (project) {
+			this.selectProject(project)
+		}
+
+		return project
+	}
+
 	public switchToProject(project: Project) {
 		this.selectProject(project)
 	}
@@ -133,6 +145,16 @@ export class DefaultLayoutViewModel {
 		return getProjectRoutePath(project, '/dashboard')
 	}
 
+	public projectPath(project: Project, section = '/dashboard') {
+		return getProjectRoutePath(project, section)
+	}
+
+	public projectSectionFromPath(path: string) {
+		const match = path.match(/^\/p\/[^/]+(\/(?:dashboard|records|users|ai))\/?$/)
+
+		return match?.[1] ?? ''
+	}
+
 	public workPath(section: string) {
 		return this.state.selectedProject ? getProjectRoutePath(this.state.selectedProject, section) : '/projects'
 	}
@@ -143,6 +165,26 @@ export class DefaultLayoutViewModel {
 
 	public toggleSidebar() {
 		this.state.isSidebarCollapsed = !this.state.isSidebarCollapsed
+	}
+
+	public toggleSidebarPanel(panel: SidebarPanelKey) {
+		this.state.activeSidebarPanel = this.state.activeSidebarPanel === panel ? null : panel
+	}
+
+	public openSidebarPanel(panel: SidebarPanelKey) {
+		this.state.activeSidebarPanel = panel
+	}
+
+	public closeSidebarPanel() {
+		this.state.activeSidebarPanel = null
+	}
+
+	public syncSidebarPanelFromPath(path: string) {
+		const panel = this.sidebarPanelFromPath(path)
+
+		if (panel) {
+			this.openSidebarPanel(panel)
+		}
 	}
 
 	public userProjectTitles(userId: EntityId) {
@@ -317,6 +359,26 @@ export class DefaultLayoutViewModel {
 		}
 
 		return typeof value === 'string' ? value : ''
+	}
+
+	private sidebarPanelFromPath(path: string): SidebarPanelKey | null {
+		if (path === '/projects') {
+			return 'projects'
+		}
+
+		if (path.endsWith('/records')) {
+			return 'records'
+		}
+
+		if (path.endsWith('/users')) {
+			return 'users'
+		}
+
+		if (path.endsWith('/ai')) {
+			return 'ai'
+		}
+
+		return null
 	}
 
 	private resetProjectForm() {

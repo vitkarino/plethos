@@ -1,7 +1,11 @@
 <template>
 	<div
 		class="app-layout"
-		:class="{ 'app-layout_modal-open': viewModel.state.isProjectModalOpen || viewModel.state.isUserModalOpen }"
+		:class="{
+			'app-layout_modal-open': viewModel.state.isProjectModalOpen || viewModel.state.isUserModalOpen,
+			'app-layout_activity-open': viewModel.state.activeSidebarPanel,
+			'app-layout_sidebar-collapsed': viewModel.state.isSidebarCollapsed,
+		}"
 	>
 		<Sidebar
 			:collapsed="viewModel.state.isSidebarCollapsed"
@@ -14,133 +18,6 @@
 			</template>
 
 			<template #nav>
-				<div
-					v-if="viewModel.state.selectedProject"
-					class="app-layout__project-info"
-					:title="viewModel.selectedProjectLabel()"
-				>
-					<span>Поточний проєкт</span>
-					<strong>{{ viewModel.selectedProjectLabel() }}</strong>
-				</div>
-
-				<div class="app-layout__nav-item">
-					<NuxtLink
-						class="app-layout__link app-layout__link_home"
-						:to="viewModel.workPath('/dashboard')"
-						title="Вимірювання"
-					>
-						<span>Вимірювання</span>
-					</NuxtLink>
-				</div>
-
-				<div class="app-layout__nav-item">
-					<NuxtLink
-						class="app-layout__link app-layout__link_records"
-						:to="viewModel.workPath('/records')"
-						title="Записи"
-					>
-						<span>Записи</span>
-					</NuxtLink>
-				</div>
-
-				<div class="app-layout__nav-item app-layout__nav-item_preview">
-					<NuxtLink class="app-layout__link app-layout__link_projects" to="/projects" title="Проєкти">
-						<span>Проєкти</span>
-					</NuxtLink>
-
-					<PreviewToolTip
-						title="Проєкти"
-						:count="viewModel.state.projects.length"
-						count-icon="projects"
-						:error="viewModel.state.pageError"
-						:has-items="viewModel.state.projects.length > 0"
-						empty-label="Немає проєктів"
-					>
-						<ToolTip
-							v-for="project in viewModel.state.projects"
-							:key="project.id"
-							class="preview-tool-tip__item"
-							:class="{ 'preview-tool-tip__item_selected': viewModel.isProjectSelected(project) }"
-							trigger-class="preview-tool-tip__summary"
-						>
-							<template #trigger>
-								<span class="preview-tool-tip__main">
-									<strong>{{ project.title }}</strong>
-									<small>{{ viewModel.projectUserCount(project.id) }} користувачів · {{ viewModel.formatDate(project.updated_at) }}</small>
-								</span>
-								<span class="tool-tip__icon-button" aria-hidden="true"></span>
-							</template>
-
-							<button type="button" @click="viewModel.switchToProject(project)">
-								Перейти до проєкту
-							</button>
-							<button type="button" @click="viewModel.openEditProjectModal(project)">
-								Редагувати
-							</button>
-							<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteProject(project)">
-								Видалити
-							</button>
-						</ToolTip>
-					</PreviewToolTip>
-				</div>
-
-				<div class="app-layout__nav-item app-layout__nav-item_preview">
-					<NuxtLink
-						class="app-layout__link app-layout__link_users"
-						:to="viewModel.workPath('/users')"
-						title="Користувачі"
-					>
-						<span>Користувачі</span>
-					</NuxtLink>
-
-					<PreviewToolTip
-						title="Користувачі"
-						:count="viewModel.state.users.length"
-						count-icon="users"
-						:error="viewModel.state.pageError"
-						:has-items="viewModel.state.users.length > 0"
-						empty-label="Немає користувачів"
-					>
-						<ToolTip
-							v-for="user in viewModel.state.users"
-							:key="user.id"
-							class="preview-tool-tip__item"
-							trigger-class="preview-tool-tip__summary"
-						>
-							<template #trigger>
-								<span class="preview-tool-tip__main preview-tool-tip__main_user">
-									<span class="preview-tool-tip__avatar" aria-hidden="true">{{ viewModel.userInitials(user.name) }}</span>
-									<span>
-										<strong>{{ user.name }} <span>· {{ viewModel.sexIcon(user.sex) }} {{ user.age }}</span></strong>
-										<span class="preview-tool-tip__chips">
-											<template v-if="viewModel.userProjectTitlesList(user.id).length">
-												<small
-													v-for="title in viewModel.userProjectTitlesList(user.id).slice(0, 2)"
-													:key="title"
-												>
-													{{ title }}
-												</small>
-												<small v-if="viewModel.userProjectTitlesList(user.id).length > 2">
-													+{{ viewModel.userProjectTitlesList(user.id).length - 2 }}
-												</small>
-											</template>
-											<small v-else>Проєктів: {{ user.projects_count ?? 0 }}</small>
-										</span>
-									</span>
-								</span>
-								<span class="tool-tip__icon-button" aria-hidden="true"></span>
-							</template>
-
-							<button type="button" @click="viewModel.openEditUserModal(user)">
-								Редагувати
-							</button>
-							<button type="button" class="tool-tip__menu-danger" @click="viewModel.deleteUser(user)">
-								Видалити
-							</button>
-						</ToolTip>
-					</PreviewToolTip>
-				</div>
-
 				<!-- СТРОГО НЕ УДАЛЯТЬ, ОСТАВИТЬ НА БУДУЩЕЕ: функціонал ШІ-чату тимчасово вимкнено. -->
 				<!-- <div class="app-layout__nav-item">
 					<NuxtLink
@@ -150,14 +27,20 @@
 						ШІ Чат
 					</NuxtLink>
 				</div> -->
-				<div class="app-layout__nav-item">
-					<NuxtLink
-						class="app-layout__link app-layout__link_chat"
-						:to="viewModel.workPath('/ai')"
-						title="ШІ Чат"
+
+				<div v-for="item in sidebarNavItems" :key="item.key" class="app-layout__nav-item">
+					<button
+						class="app-layout__link"
+						:class="[
+							item.iconClass,
+							{ 'app-layout__link_panel-active': viewModel.state.activeSidebarPanel === item.key },
+						]"
+						type="button"
+						:title="item.title"
+						@click="viewModel.toggleSidebarPanel(item.key)"
 					>
-						<span>Асистент</span>
-					</NuxtLink>
+						<span>{{ item.label }}</span>
+					</button>
 				</div>
 			</template>
 
@@ -168,11 +51,68 @@
 			</template>
 		</Sidebar>
 
-		<main class="app-layout__content">
+		<Transition name="app-layout-activity">
+			<aside v-if="activeSidebarPanelItem" class="app-layout__activity-panel">
+				<header class="app-layout__activity-header">
+					<div>
+						<Transition name="app-layout-activity-tab-title" mode="out-in">
+							<h2 :key="activeSidebarPanelItem.key">{{ activeSidebarPanelItem.label }}</h2>
+						</Transition>
+					</div>
+					<button
+						class="app-layout__activity-close"
+						type="button"
+						aria-label="Закрити панель"
+						title="Закрити"
+						@click="viewModel.closeSidebarPanel()"
+					></button>
+				</header>
+
+				<div class="app-layout__activity-body">
+					<Transition name="app-layout-activity-tab" mode="out-in">
+						<ActivityRecordsPanel
+							v-if="viewModel.state.activeSidebarPanel === 'records'"
+							key="records"
+							:project-id="viewModel.state.selectedProject?.id ?? null"
+							:records-path="viewModel.workPath('/records')"
+							:active-recording-id="activeRecordingId"
+						/>
+						<ActivityProjectsPanel
+							v-else-if="viewModel.state.activeSidebarPanel === 'projects'"
+							key="projects"
+						/>
+						<ActivityUsersPanel
+							v-else-if="viewModel.state.activeSidebarPanel === 'users'"
+							key="users"
+						/>
+						<ActivityAssistantPanel
+							v-else-if="viewModel.state.activeSidebarPanel === 'ai'"
+							key="ai"
+							:project-id="viewModel.state.selectedProject?.id ?? null"
+						/>
+					</Transition>
+				</div>
+			</aside>
+		</Transition>
+
+		<main class="app-layout__content" @click="viewModel.closeSidebarPanel()">
 			<header v-if="pageTitle" class="app-layout__page-header">
-				<div class="app-layout__page-heading">
-					<p v-if="pageHeader.subtitle">{{ pageHeader.subtitle }}</p>
-					<h1>{{ pageTitle }}</h1>
+				<div class="app-layout__page-intro">
+					<NuxtLink
+						v-if="pageHeader.backTo"
+						class="app-layout__page-back"
+						:to="pageHeader.backTo"
+					>
+						{{ pageHeader.backLabel || 'Повернутися' }}
+					</NuxtLink>
+
+					<div class="app-layout__page-heading">
+						<p v-if="pageHeader.subtitle">{{ pageHeader.subtitle }}</p>
+						<h1>{{ pageTitle }}</h1>
+						<span v-if="pageHeader.modeLabel" class="app-layout__page-mode">
+							{{ pageHeader.modeLabel }}
+						</span>
+					</div>
 				</div>
 
 				<div v-if="pageHeader.actions.length" class="app-layout__page-actions">
@@ -264,14 +204,25 @@
 
 <script setup lang="ts">
 import pulsoLogo from '~/assets/images/pulso_logo.svg';
+import ActivityAssistantPanel from '~/components/activity/ActivityAssistantPanel.vue';
+import ActivityProjectsPanel from '~/components/activity/ActivityProjectsPanel.vue';
+import ActivityRecordsPanel from '~/components/activity/ActivityRecordsPanel.vue';
+import ActivityUsersPanel from '~/components/activity/ActivityUsersPanel.vue';
 import Modal from '~/components/Modal.vue';
-import PreviewToolTip from '~/components/PreviewToolTip.vue';
 import SelectBox from '~/components/SelectBox.vue';
 import Sidebar from '~/components/Sidebar.vue';
-import ToolTip from '~/components/ToolTip.vue';
 import type { PageHeaderAction } from '~/composables/usePageHeader';
 import { PROJECT_DESCRIPTION_MAX_LENGTH } from '~/constants/forms';
 import { DefaultLayoutViewModel } from '~/controllers/layouts/DefaultLayoutViewModel';
+import type { SidebarPanelKey } from '~/types/layouts/default';
+
+type SidebarNavItem = {
+	key: SidebarPanelKey
+	label: string
+	title: string
+	to: string
+	iconClass: string
+}
 
 const viewModel = new DefaultLayoutViewModel();
 const route = useRoute();
@@ -283,6 +234,47 @@ const sexOptions = [
 ];
 
 viewModel.initialize(route.params.name);
+viewModel.syncSidebarPanelFromPath(route.path);
+
+const sidebarNavItems = computed<SidebarNavItem[]>(() => [
+	{
+		key: 'records',
+		label: 'Записи',
+		title: 'Записи',
+		to: viewModel.workPath('/records'),
+		iconClass: 'app-layout__link_records',
+	},
+	{
+		key: 'projects',
+		label: 'Проєкти',
+		title: 'Проєкти',
+		to: '/projects',
+		iconClass: 'app-layout__link_projects',
+	},
+	{
+		key: 'users',
+		label: 'Користувачі',
+		title: 'Користувачі',
+		to: viewModel.workPath('/users'),
+		iconClass: 'app-layout__link_users',
+	},
+	{
+		key: 'ai',
+		label: 'Асистент',
+		title: 'ШІ Чат',
+		to: viewModel.workPath('/ai'),
+		iconClass: 'app-layout__link_chat',
+	},
+]);
+
+const activeSidebarPanelItem = computed(() => {
+	return sidebarNavItems.value.find((item) => item.key === viewModel.state.activeSidebarPanel) ?? null;
+});
+const activeRecordingId = computed(() => {
+	const value = route.query.recording;
+
+	return typeof value === 'string' ? value : null;
+});
 
 const defaultPageTitle = computed(() => {
 	if (route.path === '/projects') {
@@ -323,6 +315,11 @@ function pageHeaderActionClasses(action: PageHeaderAction) {
 watch(
 	() => route.params.name,
 	(value) => viewModel.syncSelectedProjectByRouteParam(value),
+);
+
+watch(
+	() => route.path,
+	(path) => viewModel.syncSidebarPanelFromPath(path),
 );
 
 </script>

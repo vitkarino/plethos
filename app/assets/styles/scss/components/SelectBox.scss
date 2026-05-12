@@ -37,8 +37,36 @@
 		color 160ms ease;
 }
 
-.select-box__control span:first-child {
+.select-box__value {
+	flex: 1 1 auto;
 	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.select-box__inline-label {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 0.35em;
+	min-width: 0;
+	color: $color-text-secondary;
+	font-size: 8pt;
+	font-weight: 700;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.select-box__inline-icon {
+	display: inline-block;
+	flex: 0 0 auto;
+	width: 1.1em;
+	height: 1.1em;
+	background: currentColor;
+}
+
+.select-box__inline-text {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

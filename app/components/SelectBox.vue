@@ -8,16 +8,26 @@
 			'select-box_menu-top': menuPlacement === 'top',
 		}"
 	>
-		<span v-if="label" class="select-box__label">{{ label }}</span>
+		<span v-if="label && !inlineLabel" class="select-box__label">{{ label }}</span>
 
 		<button
 			class="select-box__control"
 			type="button"
 			:disabled="disabled"
 			:aria-expanded="isOpen"
+			:aria-label="controlAriaLabel"
 			@click="toggle"
 		>
-			<span>{{ selectedOption?.label ?? placeholder }}</span>
+			<span v-if="label && inlineLabel" class="select-box__inline-label">
+				<span
+					v-if="labelIconClass"
+					class="select-box__inline-icon"
+					:class="labelIconClass"
+					aria-hidden="true"
+				></span>
+				<span class="select-box__inline-text">{{ label }}</span>
+			</span>
+			<span class="select-box__value">{{ selectedOption?.label ?? placeholder }}</span>
 			<span class="select-box__chevron" aria-hidden="true"></span>
 		</button>
 
@@ -56,6 +66,8 @@ const props = withDefaults(defineProps<{
 	items: SelectBoxItems
 	modelValue?: SelectBoxValue
 	label?: string
+	inlineLabel?: boolean
+	labelIconClass?: string
 	placeholder?: string
 	labelKey?: string
 	valueKey?: string
@@ -63,6 +75,8 @@ const props = withDefaults(defineProps<{
 }>(), {
 	modelValue: '',
 	label: '',
+	inlineLabel: false,
+	labelIconClass: '',
 	placeholder: '',
 	labelKey: 'label',
 	valueKey: 'value',
@@ -100,6 +114,11 @@ const normalizedOptions = computed<SelectBoxOption[]>(() => {
 })
 
 const selectedOption = computed(() => normalizedOptions.value.find((option) => option.value === props.modelValue) ?? null)
+const controlAriaLabel = computed(() => {
+	const value = selectedOption.value?.label ?? props.placeholder
+
+	return props.label && value ? `${props.label}: ${value}` : props.label || undefined
+})
 
 function normalizeOption(fallbackKey: string, item: SelectBoxItem): SelectBoxOption {
 	if (isOptionRecord(item)) {
