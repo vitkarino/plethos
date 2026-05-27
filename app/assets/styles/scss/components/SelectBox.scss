@@ -1,7 +1,6 @@
 @use "../core/variables" as *;
 
 .select-box {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 0.45em;
@@ -15,12 +14,18 @@
 	line-height: 1;
 }
 
-.select-box__control {
+.select-box__native-wrap {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 0.75em;
+	gap: 0.65em;
 	width: 100%;
+	min-width: 0;
+}
+
+.select-box__control {
+	flex: 1 1 auto;
+	width: 100%;
+	min-width: 0;
 	min-height: 2.625em;
 	padding: 0 0.875em;
 	border: $border-default;
@@ -29,20 +34,12 @@
 	color: $color-text-primary;
 	font: inherit;
 	line-height: 1.2;
-	text-align: left;
 	cursor: pointer;
 	transition:
 		background-color 160ms ease,
 		border-color 160ms ease,
 		color 160ms ease;
-}
-
-.select-box__value {
-	flex: 1 1 auto;
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	color-scheme: dark;
 }
 
 .select-box__inline-label {
@@ -73,8 +70,7 @@
 }
 
 .select-box__control:hover:not(:disabled),
-.select-box__control:focus-visible,
-.select-box_open .select-box__control {
+.select-box__control:focus-visible {
 	border-color: $color-selected;
 	background: $color-button-bg-hover;
 	color: $color-selected;
@@ -84,85 +80,4 @@
 .select-box__control:disabled {
 	cursor: not-allowed;
 	opacity: 0.55;
-}
-
-.select-box__chevron {
-	width: 0.5em;
-	height: 0.5em;
-	border-right: 0.125em solid currentColor;
-	border-bottom: 0.125em solid currentColor;
-	transform: translateY(-0.125em) rotate(45deg);
-	transition: transform 160ms ease;
-}
-
-.select-box_open .select-box__chevron {
-	transform: translateY(0.125em) rotate(225deg);
-}
-
-.select-box__menu {
-	position: absolute;
-	top: calc(100% + 0.35em);
-	left: 0;
-	z-index: 20;
-	display: flex;
-	flex-direction: column;
-	width: 100%;
-	max-height: 16em;
-	overflow-x: hidden;
-	overflow-y: auto;
-	overscroll-behavior: contain;
-	padding: 0.35em;
-	border: $border-default;
-	border-radius: $radius-control;
-	background: $color-surface-bg;
-	box-shadow: 0 0.75em 1.5em rgba(0, 0, 0, 0.32);
-	scrollbar-color: rgba($color-selected, 0.65) rgba(255, 255, 255, 0.06);
-	scrollbar-gutter: stable;
-	scrollbar-width: thin;
-}
-
-.select-box__menu::-webkit-scrollbar {
-	width: 0.6em;
-}
-
-.select-box__menu::-webkit-scrollbar-track {
-	border-radius: 999px;
-	background: rgba(255, 255, 255, 0.06);
-}
-
-.select-box__menu::-webkit-scrollbar-thumb {
-	border: 2px solid $color-surface-bg;
-	border-radius: 999px;
-	background: rgba($color-selected, 0.7);
-}
-
-.select-box__menu::-webkit-scrollbar-thumb:hover {
-	background: rgba($color-selected, 0.92);
-}
-
-.select-box_menu-top .select-box__menu {
-	top: auto;
-	bottom: calc(100% + 0.35em);
-}
-
-.select-box__option {
-	width: 100%;
-	min-height: 2.25em;
-	padding: 0.45em 0.8em;
-	border: 0;
-	border-radius: calc($radius-control - 0.125em);
-	background: transparent;
-	color: $color-text-primary;
-	font: inherit;
-	line-height: 1.35;
-	text-align: left;
-	cursor: pointer;
-}
-
-.select-box__option:hover,
-.select-box__option:focus-visible,
-.select-box__option_selected {
-	background: rgba($color-selected, 0.12);
-	color: $color-selected;
-	outline: none;
 }

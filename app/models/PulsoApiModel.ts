@@ -9,12 +9,12 @@ import type {
 	EntityStatus,
 	HealthStatus,
 	Measurement,
-	Project,
-	ProjectUser,
+	Study,
+	StudyParticipant,
 	QualityAnalysis,
 	Recording,
 	RecordingSample,
-	User,
+	Participant,
 } from '~/types/shared/entities'
 import { readApiResponseData } from '~/utils/shared'
 
@@ -32,15 +32,15 @@ export type DateRangeQuery = {
 	date_to?: string
 }
 
-export type ProjectPayload = Pick<Project, 'title' | 'description'>
+export type StudyPayload = Pick<Study, 'title' | 'description'>
 
-export type UserPayload = {
+export type ParticipantPayload = {
 	name: string
 	age: number
-	sex: User['sex']
+	sex: Participant['sex']
 }
 
-export type ProjectUserPayload = Pick<ProjectUser, 'project_id' | 'user_id'>
+export type StudyParticipantPayload = Pick<StudyParticipant, 'study_id' | 'participant_id'>
 
 export type DeviceListQuery = ListQuery & {
 	connection_status?: DeviceConnectionStatus
@@ -48,8 +48,8 @@ export type DeviceListQuery = ListQuery & {
 
 export type MeasurementListQuery = ListQuery & DateRangeQuery & {
 	device_id?: EntityId
-	user_id?: EntityId
-	project_id?: EntityId
+	participant_id?: EntityId
+	study_id?: EntityId
 	status?: EntityStatus
 }
 
@@ -62,15 +62,15 @@ export type RecordingSamplesQuery = {
 
 export type StartMeasurementPayload = {
 	device_id: EntityId
-	user_id: EntityId
-	project_id: EntityId
+	participant_id: EntityId
+	study_id: EntityId
 }
 
 export type StartRecordingPayload = {
 	duration_s: number
 }
 
-export type ProjectUserDeleteResult = Pick<ProjectUser, 'project_id' | 'user_id'> & {
+export type StudyParticipantDeleteResult = Pick<StudyParticipant, 'study_id' | 'participant_id'> & {
 	deleted: boolean
 }
 
@@ -112,8 +112,8 @@ export class PulsoApiModel {
 			{
 				method: 'POST',
 				body: {
-					user_id: payload.user_id,
-					project_id: payload.project_id,
+					participant_id: payload.participant_id,
+					study_id: payload.study_id,
 				},
 			},
 		).then((response) => this.readItem(response, 'measurement', 'Вимірювання не стартувало'))
@@ -219,127 +219,132 @@ export class PulsoApiModel {
 		return this.getItem<'assistant', AssistantStatus>('/assistant/status', 'assistant', 'Статус асистента не завантажено')
 	}
 
-	public sendAssistantMessage(recordingId: EntityId, message: string) {
+	public sendAssistantMessage(
+		recordingId: EntityId,
+		message: string,
+		conversationHistory: Array<{ role: 'user' | 'assistant'; message: string }> = [],
+	) {
 		return this.request<ApiEnvelope<ApiWrappedItem<'assistant', AssistantMessage> | AssistantMessage>>('/assistant/chat', {
 			method: 'POST',
 			body: {
 				recording_id: recordingId,
 				message,
+				conversation_history: conversationHistory,
 			},
 		}).then((response) => this.readItem(response, 'assistant', 'Асистент не відповів'))
 	}
 
-	public fetchProjects(query: ListQuery = {}) {
-		return this.getCollection<'projects', Project>('/projects', 'projects', query, 'Проєкти не завантажено')
+	public fetchStudies(query: ListQuery = {}) {
+		return this.getCollection<'studies', Study>('/studies', 'studies', query, 'Дослідження не завантажено')
 	}
 
-	public fetchProject(projectId: EntityId) {
-		return this.getItem<'project', Project>(
-			`/projects/${encodeURIComponent(projectId)}`,
-			'project',
-			'Проєкт не завантажено',
+	public fetchStudy(studyId: EntityId) {
+		return this.getItem<'study', Study>(
+			`/studies/${encodeURIComponent(studyId)}`,
+			'study',
+			'Дослідження не завантажено',
 		)
 	}
 
-	public createProject(payload: ProjectPayload) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'project', Project> | Project>>('/projects', {
+	public createStudy(payload: StudyPayload) {
+		return this.request<ApiEnvelope<ApiWrappedItem<'study', Study> | Study>>('/studies', {
 			method: 'POST',
 			body: payload,
-		}).then((response) => this.readItem(response, 'project', 'Проєкт не створено'))
+		}).then((response) => this.readItem(response, 'study', 'Дослідження не створено'))
 	}
 
-	public updateProject(projectId: EntityId, payload: Partial<ProjectPayload>) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'project', Project> | Project>>(
-			`/projects/${encodeURIComponent(projectId)}`,
+	public updateStudy(studyId: EntityId, payload: Partial<StudyPayload>) {
+		return this.request<ApiEnvelope<ApiWrappedItem<'study', Study> | Study>>(
+			`/studies/${encodeURIComponent(studyId)}`,
 			{
 				method: 'PATCH',
 				body: payload,
 			},
-		).then((response) => this.readItem(response, 'project', 'Проєкт не збережено'))
+		).then((response) => this.readItem(response, 'study', 'Дослідження не збережено'))
 	}
 
-	public deleteProject(projectId: EntityId) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'project', Project> | Project>>(
-			`/projects/${encodeURIComponent(projectId)}`,
+	public deleteStudy(studyId: EntityId) {
+		return this.request<ApiEnvelope<ApiWrappedItem<'study', Study> | Study>>(
+			`/studies/${encodeURIComponent(studyId)}`,
 			{
 				method: 'DELETE',
 			},
-		).then((response) => this.readItem(response, 'project', 'Проєкт не видалено'))
+		).then((response) => this.readItem(response, 'study', 'Дослідження не видалено'))
 	}
 
-	public fetchUsers(query: ListQuery & { project_id?: EntityId } = {}) {
-		return this.getCollection<'users', User>('/users', 'users', query, 'Користувачів не завантажено')
+	public fetchParticipants(query: ListQuery & { study_id?: EntityId } = {}) {
+		return this.getCollection<'participants', Participant>('/participants', 'participants', query, 'Учасників не завантажено')
 	}
 
-	public fetchUser(userId: EntityId) {
-		return this.getItem<'user', User>(
-			`/users/${encodeURIComponent(userId)}`,
-			'user',
-			'Користувача не завантажено',
+	public fetchParticipant(participantId: EntityId) {
+		return this.getItem<'participant', Participant>(
+			`/participants/${encodeURIComponent(participantId)}`,
+			'participant',
+			'Учасника не завантажено',
 		)
 	}
 
-	public createUser(payload: UserPayload) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'user', User> | User>>('/users', {
+	public createParticipant(payload: ParticipantPayload) {
+		return this.request<ApiEnvelope<ApiWrappedItem<'participant', Participant> | Participant>>('/participants', {
 			method: 'POST',
 			body: payload,
-		}).then((response) => this.readItem(response, 'user', 'Користувача не створено'))
+		}).then((response) => this.readItem(response, 'participant', 'Учасника не створено'))
 	}
 
-	public updateUser(userId: EntityId, payload: Partial<UserPayload>) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'user', User> | User>>(
-			`/users/${encodeURIComponent(userId)}`,
+	public updateParticipant(participantId: EntityId, payload: Partial<ParticipantPayload>) {
+		return this.request<ApiEnvelope<ApiWrappedItem<'participant', Participant> | Participant>>(
+			`/participants/${encodeURIComponent(participantId)}`,
 			{
 				method: 'PATCH',
 				body: payload,
 			},
-		).then((response) => this.readItem(response, 'user', 'Користувача не збережено'))
+		).then((response) => this.readItem(response, 'participant', 'Учасника не збережено'))
 	}
 
-	public deleteUser(userId: EntityId) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'user', User> | User>>(
-			`/users/${encodeURIComponent(userId)}`,
+	public deleteParticipant(participantId: EntityId) {
+		return this.request<ApiEnvelope<ApiWrappedItem<'participant', Participant> | Participant>>(
+			`/participants/${encodeURIComponent(participantId)}`,
 			{
 				method: 'DELETE',
 			},
-		).then((response) => this.readItem(response, 'user', 'Користувача не видалено'))
+		).then((response) => this.readItem(response, 'participant', 'Учасника не видалено'))
 	}
 
-	public assignUser(payload: ProjectUserPayload) {
-		return this.request<ApiEnvelope<ApiWrappedItem<'assignment', ProjectUser> | ProjectUser>>(
-			`/projects/${encodeURIComponent(payload.project_id)}/users`,
+	public assignParticipant(payload: StudyParticipantPayload) {
+		return this.request<ApiEnvelope<ApiWrappedItem<'assignment', StudyParticipant> | StudyParticipant>>(
+			`/studies/${encodeURIComponent(payload.study_id)}/participants`,
 			{
 				method: 'POST',
 				body: {
-					user_id: payload.user_id,
+					participant_id: payload.participant_id,
 				},
 			},
-		).then((response) => this.readItem(response, 'assignment', 'Користувача не призначено'))
+		).then((response) => this.readItem(response, 'assignment', 'Учасника не призначено'))
 	}
 
-	public unassignUser(payload: ProjectUserPayload) {
-		return this.request<ApiEnvelope<ProjectUserDeleteResult>>(
-			`/projects/${encodeURIComponent(payload.project_id)}/users/${encodeURIComponent(payload.user_id)}`,
+	public unassignParticipant(payload: StudyParticipantPayload) {
+		return this.request<ApiEnvelope<StudyParticipantDeleteResult>>(
+			`/studies/${encodeURIComponent(payload.study_id)}/participants/${encodeURIComponent(payload.participant_id)}`,
 			{
 				method: 'DELETE',
 			},
-		).then((response) => readApiResponseData(response, 'Користувача не прибрано з проєкту'))
+		).then((response) => readApiResponseData(response, 'Учасника не прибрано з дослідження'))
 	}
 
-	public fetchProjectUsers() {
-		return this.fetchProjects({
+	public fetchStudyParticipants() {
+		return this.fetchStudies({
 			limit: 1000,
-		}).then((projects) => {
-			return Promise.all(projects.map((project) => {
-				return this.fetchUsers({
-					project_id: project.id,
+		}).then((studies) => {
+			return Promise.all(studies.map((study) => {
+				return this.fetchParticipants({
+					study_id: study.id,
 					limit: 1000,
-				}).then((users) => {
-					return users.map((user) => {
+				}).then((participants) => {
+					return participants.map((participant) => {
 						return {
-							project_id: project.id,
-							user_id: user.id,
-							assigned_at: user.created_at,
+							study_id: study.id,
+							participant_id: participant.id,
+							assigned_at: participant.created_at,
 						}
 					})
 				})

@@ -1,15 +1,20 @@
 @use "../core/variables" as *;
 
-.project-dashboard-page {
+.study-dashboard-page {
 	display: flex;
 	flex-direction: column;
-	gap: 1em;
-	width: min(100%, 68em);
+	width: 100%;
 	height: 100%;
+	min-height: 0;
 	color: $color-text-primary;
 }
 
-.project-dashboard-page__block-title p {
+.study-dashboard-page__grid {
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.study-dashboard-page__block-title p {
 	margin: 0 0 0.35em;
 	color: $color-text-secondary;
 	font-size: 10pt;
@@ -18,49 +23,56 @@
 	text-transform: uppercase;
 }
 
-.project-dashboard-page__layout {
+.study-dashboard-page__message {
+	margin: 0;
+	color: $color-text-secondary;
+	font-size: 11pt;
+	line-height: 1.35;
+}
+
+.study-dashboard-page__layout {
 	display: grid;
 	grid-template-columns: 1.35fr 1fr;
 	gap: 1em;
 	min-height: 0;
 }
 
-.project-dashboard-page__summary,
-.project-dashboard-page__users {
+.study-dashboard-page__summary,
+.study-dashboard-page__participants {
 	display: flex;
 	flex-direction: column;
 	gap: 1.25em;
 }
 
-.project-dashboard-page__summary > p {
+.study-dashboard-page__summary > p {
 	margin: 0;
 	color: $color-text-secondary;
 	font-size: 12pt;
 	line-height: 1.45;
 }
 
-.project-dashboard-page__summary dl {
+.study-dashboard-page__summary dl {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 0.75em;
 	margin: auto 0 0;
 }
 
-.project-dashboard-page__summary dl div {
+.study-dashboard-page__summary dl div {
 	padding: 0.875em;
 	border: $border-default;
 	border-radius: $radius-control;
 	background: $color-page-bg;
 }
 
-.project-dashboard-page__summary dt {
+.study-dashboard-page__summary dt {
 	margin: 0 0 0.35em;
 	color: $color-text-secondary;
 	font-size: 10pt;
 	line-height: 1;
 }
 
-.project-dashboard-page__summary dd {
+.study-dashboard-page__summary dd {
 	margin: 0;
 	color: $color-text-primary;
 	font-family: $font-data;
@@ -68,25 +80,25 @@
 	line-height: 1.2;
 }
 
-.project-dashboard-page__block-title {
+.study-dashboard-page__block-title {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 1em;
 }
 
-.project-dashboard-page__block-title p {
+.study-dashboard-page__block-title p {
 	margin: 0;
 }
 
-.project-dashboard-page__block-title span {
+.study-dashboard-page__block-title span {
 	color: $color-selected;
 	font-family: $font-data;
 	font-size: 13pt;
 	line-height: 1;
 }
 
-.project-dashboard-page__user {
+.study-dashboard-page__participant {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -97,45 +109,45 @@
 	background: $color-page-bg;
 }
 
-.project-dashboard-page__user strong,
-.project-dashboard-page__user small {
+.study-dashboard-page__participant strong,
+.study-dashboard-page__participant small {
 	display: block;
 }
 
-.project-dashboard-page__user strong {
+.study-dashboard-page__participant strong {
 	color: $color-text-primary;
 	font-size: 12pt;
 	font-weight: 400;
 	line-height: 1.2;
 }
 
-.project-dashboard-page__user small {
+.study-dashboard-page__participant small {
 	margin-top: 0.3em;
 	color: $color-text-secondary;
 	font-size: 10pt;
 	line-height: 1.25;
 }
 
-.project-dashboard-page__user > span {
+.study-dashboard-page__participant > span {
 	color: $color-text-secondary;
 	font-family: $font-data;
 	font-size: 10pt;
 	white-space: nowrap;
 }
 
-@media (max-width: 64em) {
-	.project-dashboard-page {
-		height: auto;
-	}
+// @media (max-width: 64em) {
+// 	.study-dashboard-page {
+// 		height: auto;
+// 	}
 
-	.project-dashboard-page__layout,
-	.project-dashboard-page__summary dl {
-		grid-template-columns: 1fr;
-	}
-}
+// 	.study-dashboard-page__layout,
+// 	.study-dashboard-page__summary dl {
+// 		grid-template-columns: 1fr;
+// 	}
+// }
 
 @media (max-width: 42em) {
-	.project-dashboard-page__user {
+	.study-dashboard-page__participant {
 		align-items: stretch;
 		flex-direction: column;
 	}

@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import type { EntityId, Measurement, QualityAnalysis, Recording } from '~/types/shared/entities'
-import { formatDateValue, getRequestErrorMessage } from '~/utils/shared'
+import { formatDateValue, getQualityTone, getRequestErrorMessage } from '~/utils/shared'
 
 const RECORDINGS_PANEL_LIMIT = 24
 
@@ -27,14 +27,14 @@ export class ActivityRecordsPanelViewModel {
 	private readonly api = new PulsoApiModel()
 	private loadToken = 0
 
-	public load(projectId: EntityId | null = null) {
+	public load(studyId: EntityId | null = null) {
 		const token = ++this.loadToken
 
 		this.state.isLoading = true
 		this.state.error = ''
 
 		return this.api.fetchRecordings({
-			project_id: projectId ?? undefined,
+			study_id: studyId ?? undefined,
 			status: 'completed',
 			limit: RECORDINGS_PANEL_LIMIT,
 		}).then((recordings) => {
@@ -42,7 +42,11 @@ export class ActivityRecordsPanelViewModel {
 				return
 			}
 
-			return Promise.all(recordings.map((recording) => this.createRecordingRow(recording)))
+			return Promise.all(
+				recordings
+					.filter((recording) => recording.status === 'completed')
+					.map((recording) => this.createRecordingRow(recording)),
+			)
 		}).then((rows) => {
 			if (!rows || token !== this.loadToken) {
 				return
@@ -64,7 +68,7 @@ export class ActivityRecordsPanelViewModel {
 	}
 
 	public title(row: ActivityRecordingRow) {
-		return `Запис ${row.recording.id}`
+		return row.recording.id
 	}
 
 	public shortRecordingId(recording: Recording) {
@@ -101,22 +105,6 @@ export class ActivityRecordsPanelViewModel {
 		return `${Number(recording.samples_count).toLocaleString('uk-UA')} семплів`
 	}
 
-	public statusLabel(recording: Recording) {
-		if (recording.status === 'completed') {
-			return 'Готово'
-		}
-
-		if (recording.status === 'running') {
-			return 'Триває'
-		}
-
-		if (recording.status === 'failed') {
-			return 'Помилка'
-		}
-
-		return 'Скасовано'
-	}
-
 	public metricValue(row: ActivityRecordingRow, metric: 'bpm' | 'spo2' | 'quality') {
 		if (metric === 'bpm') {
 			return Number.isFinite(row.measurement?.bpm) ? String(Math.round(Number(row.measurement?.bpm))) : '--'
@@ -129,6 +117,12 @@ export class ActivityRecordsPanelViewModel {
 		const score = row.qualityAnalysis?.quality_result.score
 
 		return Number.isFinite(score) ? `${Math.round(Number(score) * 100)}%` : '--'
+	}
+
+	public qualityTone(row: ActivityRecordingRow) {
+		const score = row.qualityAnalysis?.quality_result.score
+
+		return getQualityTone(Number.isFinite(score) ? Number(score) * 100 : null)
 	}
 
 	private createRecordingRow(recording: Recording): Promise<ActivityRecordingRow> {

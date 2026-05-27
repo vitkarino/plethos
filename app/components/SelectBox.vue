@@ -1,23 +1,14 @@
 <template>
-	<div
-		ref="rootElement"
+	<label
 		class="select-box"
 		:class="{
-			'select-box_open': isOpen,
 			'select-box_disabled': disabled,
-			'select-box_menu-top': menuPlacement === 'top',
+			'select-box_inline': inlineLabel,
 		}"
 	>
 		<span v-if="label && !inlineLabel" class="select-box__label">{{ label }}</span>
 
-		<button
-			class="select-box__control"
-			type="button"
-			:disabled="disabled"
-			:aria-expanded="isOpen"
-			:aria-label="controlAriaLabel"
-			@click="toggle"
-		>
+		<span class="select-box__native-wrap">
 			<span v-if="label && inlineLabel" class="select-box__inline-label">
 				<span
 					v-if="labelIconClass"
@@ -27,28 +18,25 @@
 				></span>
 				<span class="select-box__inline-text">{{ label }}</span>
 			</span>
-			<span class="select-box__value">{{ selectedOption?.label ?? placeholder }}</span>
-			<span class="select-box__chevron" aria-hidden="true"></span>
-		</button>
 
-		<div
-			v-if="isOpen"
-			ref="menuElement"
-			class="select-box__menu"
-			:style="menuStyle"
-		>
-			<button
-				v-for="option in normalizedOptions"
-				:key="option.key"
-				class="select-box__option"
-				:class="{ 'select-box__option_selected': option.key === selectedOption?.key }"
-				type="button"
-				@click="selectOption(option)"
+			<select
+				class="select-box__control"
+				:value="selectedDomValue"
+				:disabled="disabled"
+				:aria-label="controlAriaLabel"
+				@change="handleChange"
 			>
-				{{ option.label }}
-			</button>
-		</div>
-	</div>
+				<option v-if="placeholder" :value="placeholderOptionKey" disabled>{{ placeholder }}</option>
+				<option
+					v-for="option in normalizedOptions"
+					:key="option.key"
+					:value="option.key"
+				>
+					{{ option.label }}
+				</option>
+			</select>
+		</span>
+	</label>
 </template>
 
 <script setup lang="ts">
@@ -87,24 +75,6 @@ const emit = defineEmits<{
 	'update:modelValue': [value: SelectBoxValue]
 }>()
 
-const rootElement = ref<HTMLElement | null>(null)
-const menuElement = ref<HTMLElement | null>(null)
-const isOpen = ref(false)
-const menuPlacement = ref<'top' | 'bottom'>('bottom')
-const menuMaxHeight = ref('16em')
-const menuTop = ref('0px')
-const menuLeft = ref('0px')
-const menuWidth = ref('0px')
-
-const menuStyle = computed(() => ({
-	position: 'fixed',
-	top: menuTop.value,
-	bottom: 'auto',
-	left: menuLeft.value,
-	width: menuWidth.value,
-	maxHeight: menuMaxHeight.value,
-}))
-
 const normalizedOptions = computed<SelectBoxOption[]>(() => {
 	const entries = Array.isArray(props.items)
 		? props.items.map((item, index) => [String(index), item] as const)
@@ -114,6 +84,8 @@ const normalizedOptions = computed<SelectBoxOption[]>(() => {
 })
 
 const selectedOption = computed(() => normalizedOptions.value.find((option) => option.value === props.modelValue) ?? null)
+const placeholderOptionKey = '__select-box-placeholder__'
+const selectedDomValue = computed(() => selectedOption.value?.key ?? (props.placeholder ? placeholderOptionKey : ''))
 const controlAriaLabel = computed(() => {
 	const value = selectedOption.value?.label ?? props.placeholder
 
@@ -141,63 +113,6 @@ function normalizeOption(fallbackKey: string, item: SelectBoxItem): SelectBoxOpt
 	}
 }
 
-function toggle() {
-	if (props.disabled) {
-		return
-	}
-
-	isOpen.value = !isOpen.value
-}
-
-function selectOption(option: SelectBoxOption) {
-	emit('update:modelValue', option.value)
-	isOpen.value = false
-}
-
-function closeOnOutsidePointerDown(event: PointerEvent) {
-	if (!rootElement.value?.contains(event.target as Node)) {
-		isOpen.value = false
-	}
-}
-
-function closeOnEscape(event: KeyboardEvent) {
-	if (event.key === 'Escape') {
-		isOpen.value = false
-	}
-}
-
-function updateMenuPlacement() {
-	const root = rootElement.value
-	const menu = menuElement.value
-
-	if (!root || !menu || !isOpen.value) {
-		return
-	}
-
-	const rootRect = root.getBoundingClientRect()
-	const menuHeight = menu.offsetHeight
-	const viewportHeight = window.innerHeight
-	const spacing = 8
-	const availableBelow = viewportHeight - rootRect.bottom - spacing
-	const availableAbove = rootRect.top - spacing
-	const shouldOpenTop = availableBelow < menuHeight && availableAbove > availableBelow
-	const availableHeight = shouldOpenTop ? availableAbove : availableBelow
-	const nextMaxHeight = Math.max(availableHeight, 96)
-	const nextMenuHeight = Math.min(menuHeight, nextMaxHeight)
-
-	menuPlacement.value = shouldOpenTop ? 'top' : 'bottom'
-	menuMaxHeight.value = `${nextMaxHeight}px`
-	menuLeft.value = `${rootRect.left}px`
-	menuTop.value = `${shouldOpenTop ? rootRect.top - spacing - nextMenuHeight : rootRect.bottom + spacing}px`
-	menuWidth.value = `${rootRect.width}px`
-}
-
-function syncMenuPlacement() {
-	nextTick(() => {
-		updateMenuPlacement()
-	})
-}
-
 function isOptionRecord(item: SelectBoxItem): item is Record<string, unknown> {
 	return Boolean(item) && typeof item === 'object'
 }
@@ -214,33 +129,13 @@ function serializeValue(value: SelectBoxValue, fallbackKey: string) {
 	return `${typeof value}:${String(value)}:${fallbackKey}`
 }
 
-onMounted(() => {
-	document.addEventListener('pointerdown', closeOnOutsidePointerDown)
-	document.addEventListener('keydown', closeOnEscape)
-	window.addEventListener('resize', syncMenuPlacement)
-	window.addEventListener('scroll', syncMenuPlacement, true)
-})
+function handleChange(event: Event) {
+	const option = normalizedOptions.value.find((item) => item.key === (event.target as HTMLSelectElement).value)
 
-onBeforeUnmount(() => {
-	document.removeEventListener('pointerdown', closeOnOutsidePointerDown)
-	document.removeEventListener('keydown', closeOnEscape)
-	window.removeEventListener('resize', syncMenuPlacement)
-	window.removeEventListener('scroll', syncMenuPlacement, true)
-})
-
-watch(isOpen, (open) => {
-	if (!open) {
-		menuPlacement.value = 'bottom'
-		menuMaxHeight.value = '16em'
-		menuTop.value = '0px'
-		menuLeft.value = '0px'
-		menuWidth.value = '0px'
-
-		return
+	if (option) {
+		emit('update:modelValue', option.value)
 	}
-
-	syncMenuPlacement()
-})
+}
 </script>
 
 <style scoped lang="scss">

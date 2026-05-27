@@ -6,7 +6,6 @@
 					<button class="bpm-block__cta bpm-block__cta_measure"
 						:class="{ 'bpm-block__cta_active': viewModel.isMeasurementActive() }" type="button"
 						:aria-label="measurementToggleLabel" :aria-pressed="viewModel.isMeasurementActive()"
-						:data-tooltip="measurementToggleLabel" :title="measurementToggleLabel"
 						:disabled="viewModel.isMeasurementToggleDisabled()" @click="viewModel.toggleMeasurement()">
 						<span class="bpm-block__cta-glyph" aria-hidden="true">
 							<span v-if="viewModel.isMeasurementActive()" class="bpm-block__glyph-stop"></span>
@@ -16,7 +15,6 @@
 					<button class="bpm-block__cta bpm-block__cta_record"
 						:class="{ 'bpm-block__cta_active': viewModel.isRecordingActive() }" type="button"
 						:aria-label="recordingToggleLabel" :aria-pressed="viewModel.isRecordingActive()"
-						:data-tooltip="recordingToggleLabel" :title="recordingToggleLabel"
 						:disabled="viewModel.isRecordingToggleDisabled()" @click="viewModel.toggleRecording()">
 						<span class="bpm-block__cta-glyph" aria-hidden="true">
 							<span v-if="viewModel.isRecordingActive()" class="bpm-block__glyph-stop"></span>
@@ -25,14 +23,14 @@
 					</button>
 				</div>
 
-				<div class="bpm-block__bar-group bpm-block__bar-group_context">
+				<div v-if="showContextSelectors" class="bpm-block__bar-group bpm-block__bar-group_context">
 					<SelectBox class="bpm-block__bar-select" v-model="viewModel.state.selectedDeviceId" label="Пристрій"
 						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_device"
 						:items="viewModel.state.devices" label-key="id" value-key="id"
 						:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'" />
-					<SelectBox class="bpm-block__bar-select" v-model="viewModel.state.selectedUserId" label="Користувач"
-						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_user"
-						:items="viewModel.state.users" label-key="name" value-key="id"
+					<SelectBox class="bpm-block__bar-select" v-model="viewModel.state.selectedParticipantId" label="Учасник"
+						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_participant"
+						:items="viewModel.state.participants" label-key="name" value-key="id"
 						:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'" />
 					<SelectBox v-if="showRecordingSelect" class="bpm-block__bar-select"
 						v-model="viewModel.state.recordingId" label="Запис" :items="viewModel.state.recordings"
@@ -43,25 +41,30 @@
 				</div>
 
 				<div v-if="showExport" class="bpm-block__bar-group bpm-block__bar-group_export">
-					<button class="bpm-block__export-button" type="button" :disabled="isRecordingExportDisabled"
+					<button v-if="isRecordingViewMode" class="bpm-block__exit-view-button" type="button"
+						aria-label="Вийти з перегляду"
+						@click="exitRecordingView()">
+						<span class="bpm-block__exit-view-icon" aria-hidden="true"></span>
+					</button>
+					<button class="bpm-block__export-button" type="button" aria-label="Експорт у CSV"
+						:disabled="isRecordingExportDisabled"
 						@click="downloadSelectedRecording('csv')">
 						<span class="bpm-block__export-icon" aria-hidden="true"></span>
-						Експорт у CSV
 					</button>
-				</div>
-
-				<div v-if="showControls" class="bpm-block__action-status"
-					:class="`bpm-block__action-status_${statusKey}`" aria-live="polite">
-					<span class="bpm-block__action-status-dot" aria-hidden="true"></span>
-					<span class="bpm-block__action-status-text">{{ statusLabel }}</span>
 				</div>
 			</div>
 		</Teleport>
 
+		<Teleport v-if="isPageHeaderActionTargetReady" to=".app-layout__status-slot">
+			<div class="bpm-block__status-banner" :class="`bpm-block__status-banner_${statusKey}`" aria-live="polite">
+				<span class="bpm-block__status-banner-text">{{ statusLabel }}</span>
+			</div>
+		</Teleport>
+
 		<div class="bpm-block__body">
-			<div class="bpm-block__metrics">
+			<div v-if="shouldShowMetrics" class="bpm-block__metrics">
 				<div v-for="metric in metricCards" :key="metric.key" class="bpm-block__metric"
-					:class="`bpm-block__metric_${metric.key}`">
+					:class="[`bpm-block__metric_${metric.key}`, metric.toneClass]">
 					<div class="bpm-block__metric-head">
 						<span class="bpm-block__metric-label">{{ metric.label }}</span>
 						<span class="bpm-block__metric-icon" :class="metric.iconClass" aria-hidden="true"></span>
@@ -70,14 +73,6 @@
 					<div class="bpm-block__metric-main">
 						<span v-if="metric.isLoading" class="bpm-block__metric-skeleton" aria-hidden="true"></span>
 						<strong v-else class="bpm-block__metric-value">{{ metric.value }}</strong>
-					</div>
-
-					<div class="bpm-block__metric-chart">
-						<svg v-if="metric.sparkline" class="bpm-block__sparkline" viewBox="0 0 100 28"
-							preserveAspectRatio="none" aria-hidden="true">
-							<path :d="metric.sparkline.area" class="bpm-block__sparkline-area"></path>
-							<polyline :points="metric.sparkline.line" class="bpm-block__sparkline-line"></polyline>
-						</svg>
 					</div>
 				</div>
 			</div>
@@ -96,7 +91,7 @@
 						</div>
 					</div>
 					<div v-else class="bpm-block__empty-panel">
-						<p class="bpm-block__empty">Графіки відсутні. Почніть вимірювання</p>
+						<p class="bpm-block__empty">{{ emptyChartMessage }}</p>
 					</div>
 				</div>
 
@@ -154,7 +149,8 @@ import {
 import Block from '~/components/Block.vue';
 import SelectBox from '~/components/SelectBox.vue';
 import { BPMBlockViewModel } from '~/controllers/components/BPMBlockViewModel';
-import type { BPMBlockState, BPMChartDataset, PulseSample } from '~/types/components/bpm-block';
+import type { BPMChartDataset, PulseSample } from '~/types/components/bpm-block';
+import { getQualityTone } from '~/utils/shared';
 
 Chart.register(
 	CategoryScale,
@@ -168,19 +164,21 @@ Chart.register(
 );
 
 const props = withDefaults(defineProps<{
-	projectId?: string | null
+	studyId?: string | null
 	selectedRecordingId?: string | null
 	showControls?: boolean
 	showExport?: boolean
+	showContextSelectors?: boolean
 	showRecordingMarkers?: boolean
 	showRecordingSelect?: boolean
 	autoLoadLastRecording?: boolean
 	qualityMetricMode?: 'readiness' | 'analysis'
 }>(), {
-	projectId: null,
+	studyId: null,
 	selectedRecordingId: null,
 	showControls: true,
 	showExport: false,
+	showContextSelectors: true,
 	showRecordingMarkers: true,
 	showRecordingSelect: true,
 	autoLoadLastRecording: true,
@@ -191,24 +189,18 @@ const emit = defineEmits<{
 	recordingSelect: [recordingId: string]
 }>();
 
-const viewModel = new BPMBlockViewModel(props.projectId, {
+const route = useRoute();
+const router = useRouter();
+const viewModel = new BPMBlockViewModel(props.studyId, {
 	autoLoadLastRecording: props.autoLoadLastRecording,
 });
 const irChartCanvas = ref<HTMLCanvasElement | null>(null);
 const rChartCanvas = ref<HTMLCanvasElement | null>(null);
 const chartsScroll = ref<HTMLDivElement | null>(null);
 type BPMChartPoint = number | PulseSample;
-type BPMMetricKey = keyof BPMBlockState['metricHistory'];
+type BPMMetricKey = 'bpm' | 'spo2' | 'signalReadiness';
 type RecordingExportFormat = 'json' | 'csv';
 type ChartViewMode = 'split' | 'ir' | 'r' | 'combined';
-type SparklineShape = {
-	line: string
-	area: string
-};
-type SparklineDomain = {
-	min: number
-	max: number
-};
 const BASE_VISIBLE_SAMPLE_COUNT = 480;
 const MIN_CHART_ZOOM = 0.5;
 const MAX_CHART_ZOOM = 4;
@@ -309,10 +301,21 @@ const chartViewValues = new Set<ChartViewMode>(chartViewOptions.map((option) => 
 
 const showControls = computed(() => props.showControls);
 const showExport = computed(() => props.showExport);
+const isRecordingViewMode = computed(() => Boolean(props.selectedRecordingId));
+const shouldShowMetrics = computed(() => viewModel.isMeasurementActive() || isRecordingViewMode.value);
 const measurementToggleLabel = computed(() => viewModel.isMeasurementActive() ? 'Зупинити вимір' : 'Почати вимір');
 const recordingToggleLabel = computed(() => viewModel.isRecordingActive() ? 'Зупинити запис' : 'Почати запис');
+const emptyChartMessage = computed(() => {
+	return isRecordingViewMode.value
+		? 'Графіки запису не завантажено'
+		: 'Графіки відсутні. Почніть вимірювання';
+});
 
 const statusKey = computed(() => {
+	if (isRecordingViewMode.value) {
+		return 'viewing';
+	}
+
 	if (viewModel.isRecordingActive()) {
 		return 'recording';
 	}
@@ -330,6 +333,8 @@ const statusKey = computed(() => {
 
 const statusLabel = computed(() => {
 	switch (statusKey.value) {
+		case 'viewing':
+			return 'Режим перегляду';
 		case 'recording':
 			return 'Запис триває';
 		case 'measuring':
@@ -341,7 +346,7 @@ const statusLabel = computed(() => {
 	}
 });
 const qualityMetricLabel = computed(() => {
-	return props.qualityMetricMode === 'analysis' ? 'Аналіз якості' : 'Стабільність сигналу';
+	return props.qualityMetricMode === 'analysis' ? 'Якість сигналу' : 'Стабільність сигналу';
 });
 
 const metricCards = computed(() => {
@@ -500,13 +505,16 @@ function getChartOptions(data: number[], usesSampleObjects: boolean, xRange: { m
 }
 
 function createMetricCard(key: BPMMetricKey, label: string, iconClass: string) {
+	const value = getMetricRawValue(key);
+	const qualityTone = key === 'signalReadiness' ? getQualityTone(value) : null;
+
 	return {
 		key,
 		label,
 		iconClass,
+		toneClass: qualityTone ? `bpm-block__metric_quality-${qualityTone}` : null,
 		value: getMetricValue(key),
 		isLoading: isMetricLoading(key),
-		sparkline: getSparkline(key, viewModel.state.metricHistory[key]),
 	};
 }
 
@@ -584,77 +592,6 @@ function hasMetricValue(metric: BPMMetricKey, value: number | null) {
 	}
 
 	return true;
-}
-
-function getMetricSparklineMinimumRange(metric: BPMMetricKey) {
-	if (metric === 'spo2') {
-		return 4;
-	}
-
-	if (metric === 'signalReadiness') {
-		return 12;
-	}
-
-	return 14;
-}
-
-function getMetricSparklineDomain(metric: BPMMetricKey, values: number[]): SparklineDomain {
-	const baseline = viewModel.state.metricBaseline[metric];
-	const hasBaseline = hasMetricValue(metric, baseline);
-	const anchors = hasBaseline
-		? [...values, Number(baseline)]
-		: values;
-	const min = Math.min(...anchors);
-	const max = Math.max(...anchors);
-	const center = hasBaseline
-		? Number(baseline)
-		: (min + max) / 2;
-	const minimumRange = getMetricSparklineMinimumRange(metric);
-	const halfRange = Math.max(minimumRange / 2, Math.abs(max - center), Math.abs(center - min));
-
-	return {
-		min: center - halfRange,
-		max: center + halfRange,
-	};
-}
-
-function getSparkline(metric: BPMMetricKey, values: number[]): SparklineShape | null {
-	const normalizedValues = values.filter((value) => hasMetricValue(metric, value));
-
-	if (!normalizedValues.length) {
-		return null;
-	}
-
-	const plotValues = normalizedValues.length === 1
-		? [normalizedValues[0], normalizedValues[0]]
-		: normalizedValues;
-	const width = 100;
-	const height = 28;
-	const bottom = height - 2;
-	const top = 2;
-	const domain = getMetricSparklineDomain(metric, plotValues);
-	const range = domain.max - domain.min || 1;
-	const points = plotValues.map((value, index) => {
-		const x = plotValues.length === 1 ? width / 2 : (index / (plotValues.length - 1)) * width;
-		const y = bottom - ((value - domain.min) / range) * (bottom - top);
-
-		return {
-			x,
-			y,
-		};
-	});
-	const line = points.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
-	const area = [
-		`M ${points[0]?.x.toFixed(2) ?? '0'} ${bottom}`,
-		...points.map((point) => `L ${point.x.toFixed(2)} ${point.y.toFixed(2)}`),
-		`L ${points.at(-1)?.x.toFixed(2) ?? width} ${bottom}`,
-		'Z',
-	].join(' ');
-
-	return {
-		line,
-		area,
-	};
 }
 
 function isPulseSample(point: BPMChartPoint): point is PulseSample {
@@ -858,7 +795,7 @@ function getRecordingBoundaries(): RecordingBoundary[] {
 		if (Number.isFinite(marker.startSampleIndex)) {
 			boundaries.push({
 				key: `${marker.recordingId}:start`,
-				label: `Старт запису ID ${markerId}`,
+				label: `Старт запису ${markerId}`,
 				sampleIndex: Number(marker.startSampleIndex),
 			});
 		}
@@ -866,7 +803,7 @@ function getRecordingBoundaries(): RecordingBoundary[] {
 		if (Number.isFinite(marker.endSampleIndex)) {
 			boundaries.push({
 				key: `${marker.recordingId}:end`,
-				label: `Кінець запису ID ${markerId}`,
+				label: `Кінець запису ${markerId}`,
 				sampleIndex: Number(marker.endSampleIndex),
 			});
 		}
@@ -923,6 +860,16 @@ function downloadSelectedRecording(format: RecordingExportFormat) {
 	link.click();
 }
 
+function exitRecordingView() {
+	const nextQuery = { ...route.query };
+
+	delete nextQuery.recording;
+	void router.replace({
+		path: route.path,
+		query: nextQuery,
+	});
+}
+
 function syncSelectedRecordingFromProp(recordingId: string | null | undefined) {
 	if (!recordingId || recordingId === viewModel.state.recordingId) {
 		return;
@@ -962,9 +909,9 @@ watch(
 );
 
 watch(
-	() => props.projectId,
-	(projectId) => {
-		viewModel.setProjectId(projectId);
+	() => props.studyId,
+	(studyId) => {
+		viewModel.setStudyId(studyId);
 	},
 );
 

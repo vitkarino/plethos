@@ -1,34 +1,33 @@
-import type { EntityId, Project, ProjectUser, Sex, User } from '../shared/entities'
+import type { EntityId, Study, StudyParticipant, Sex, Participant } from '../shared/entities'
 
-export type LayoutProjectFormState = {
+export type LayoutStudyFormState = {
 	title: string
 	description: string
 }
 
-export type LayoutUserFormState = {
+export type LayoutParticipantFormState = {
 	name: string
 	age: number | ''
 	sex: Sex
 }
 
-export type SidebarPanelKey = 'records' | 'projects' | 'users' | 'ai'
+export type SidebarPanelKey = 'records' | 'studies' | 'participants' | 'ai'
 
 export type DefaultLayoutState = {
-	projects: Project[]
-	selectedProject: Project | null
-	users: User[]
-	projectUsers: ProjectUser[]
-	projectForm: LayoutProjectFormState
-	userForm: LayoutUserFormState
-	editingProjectId: EntityId | null
-	editingUserId: EntityId | null
-	isProjectModalOpen: boolean
-	isUserModalOpen: boolean
-	isSidebarCollapsed: boolean
+	studies: Study[]
+	selectedStudy: Study | null
+	participants: Participant[]
+	studyParticipants: StudyParticipant[]
+	studyForm: LayoutStudyFormState
+	participantForm: LayoutParticipantFormState
+	editingStudyId: EntityId | null
+	editingParticipantId: EntityId | null
+	isStudyModalOpen: boolean
+	isParticipantModalOpen: boolean
 	activeSidebarPanel: SidebarPanelKey | null
-	isProjectSaving: boolean
-	isUserSaving: boolean
-	projectFormError: string
-	userFormError: string
+	isStudySaving: boolean
+	isParticipantSaving: boolean
+	studyFormError: string
+	participantFormError: string
 	pageError: string
 }

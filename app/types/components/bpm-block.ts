@@ -1,4 +1,4 @@
-import type { Device, EntityId, QualityAnalysis, Recording, User } from '../shared/entities'
+import type { Device, EntityId, QualityAnalysis, Recording, Participant } from '../shared/entities'
 
 export type BPMBlockStatus = 'idle' | 'measuring' | 'recording' | 'ready' | 'failed'
 
@@ -43,28 +43,16 @@ export type BPMRecordingMarker = {
 	endSampleIndex: number | null
 }
 
-export type BPMMetricHistory = {
-	bpm: number[]
-	spo2: number[]
-	signalReadiness: number[]
-}
-
-export type BPMMetricBaseline = {
-	bpm: number | null
-	spo2: number | null
-	signalReadiness: number | null
-}
-
 export type BPMBlockState = {
 	status: BPMBlockStatus
 	progress: number
 	measurementId: string | null
 	recordingId: string | null
-	projectId: EntityId | null
+	studyId: EntityId | null
 	selectedDeviceId: EntityId | null
-	selectedUserId: EntityId | null
+	selectedParticipantId: EntityId | null
 	devices: Device[]
-	users: User[]
+	participants: Participant[]
 	recordings: Recording[]
 	isLoading: boolean
 	isActionRunning: boolean
@@ -73,8 +61,6 @@ export type BPMBlockState = {
 	bpm: number | null
 	spo2: number | null
 	signalReadiness: number | null
-	metricHistory: BPMMetricHistory
-	metricBaseline: BPMMetricBaseline
 	qualityAnalysis: QualityAnalysis | null
 	recordingMarkers: BPMRecordingMarker[]
 	chartData: BPMChartData | null

@@ -3,5 +3,5 @@
 </template>
 
 <script setup lang="ts">
-navigateTo('/projects', { replace: true });
+navigateTo('/studies', { replace: true });
 </script>

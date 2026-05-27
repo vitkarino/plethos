@@ -4,7 +4,6 @@
 		type="button"
 		:disabled="disabled"
 		:aria-label="label"
-		:title="label"
 		@click="$emit('click')"
 	></button>
 </template>
@@ -40,9 +39,11 @@ $icon-refresh: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vie
 	width: 2.15em;
 	height: 2.15em;
 	padding: 0;
-	border: 1px solid rgba(255, 255, 255, 0.12);
+	// border: 1px solid rgba(255, 255, 255, 0.12);
+	border: none;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.04);
+	background: none;
+	// background: rgba(255, 255, 255, 0.04);
 	color: $color-text-secondary;
 	cursor: pointer;
 	transition:
@@ -64,7 +65,7 @@ $icon-refresh: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vie
 .activity-refresh-button:hover,
 .activity-refresh-button:focus-visible {
 	border-color: rgba($color-selected, 0.4);
-	background: rgba($color-selected, 0.08);
+	background: $color-button-bg-hover;
 	color: $color-selected;
 	outline: none;
 	transform: rotate(-18deg);

@@ -6,19 +6,22 @@
 }
 
 $icon-home: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8'/%3E%3Cpath d='M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3C/g%3E%3C/svg%3E";
+$icon-measurements: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 12h4l2-5l4 10l2-5h6'/%3E%3C/svg%3E";
 $icon-records: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Crect width='16' height='18' x='4' y='3' rx='2'/%3E%3Cpath d='M8 7h8M8 11h8M8 15h5'/%3E%3C/g%3E%3C/svg%3E";
-$icon-projects: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2m4-10v4m4-4v2m4-2v6'/%3E%3C/svg%3E";
-$icon-users: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3C/g%3E%3C/svg%3E";
+$icon-studies: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2m4-10v4m4-4v2m4-2v6'/%3E%3C/svg%3E";
+$icon-participants: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3C/g%3E%3C/svg%3E";
 $icon-chat: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M12 8V4H8'/%3E%3Crect width='16' height='12' x='4' y='8' rx='2'/%3E%3Cpath d='M2 14h2m16 0h2m-7-1v2m-6-2v2'/%3E%3C/g%3E%3C/svg%3E";
 $icon-author: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.3c0 .32.22.69.82.57A12 12 0 0 0 12 .5z'/%3E%3C/svg%3E";
 $icon-external: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M15 3h6v6'/%3E%3Cpath d='M10 14L21 3'/%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3C/g%3E%3C/svg%3E";
 $icon-close: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E";
+$icon-info: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4m0-4h.01'/%3E%3C/g%3E%3C/svg%3E";
 $icon-folder-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M12 10v6m3-3H9'/%3E%3Cpath d='M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'/%3E%3C/g%3E%3C/svg%3E";
-$icon-plus-user: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M19 8v6m3-3h-6'/%3E%3C/g%3E%3C/svg%3E";
+$icon-plus-participant: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M19 8v6m3-3h-6'/%3E%3C/g%3E%3C/svg%3E";
 $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h7'/%3E%3Cpath d='M19 3v6m3-3h-6'/%3E%3C/g%3E%3C/svg%3E";
+$icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z'/%3E%3Cpath d='M8 8h8M8 12h5'/%3E%3C/g%3E%3C/svg%3E";
 
 .app-layout {
-	--app-sidebar-width: #{$sidebar-width};
+	--app-sidebar-width: 3.75em;
 	--app-activity-panel-width: clamp(22em, 30vw, 34em);
 
 	position: relative;
@@ -28,10 +31,6 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	min-height: 100vh;
 	background: transparent;
 	color: $color-text-primary;
-}
-
-.app-layout_sidebar-collapsed {
-	--app-sidebar-width: 4.75em;
 }
 
 .app-layout__content {
@@ -61,7 +60,9 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	flex-direction: column;
 	width: var(--app-activity-panel-width);
 	min-width: 0;
-	padding: 1em;
+	padding-inline: 1em;
+	padding-block: 0.5em;
+	box-sizing: border-box;
 	// border-right: 1px solid $color-reflector-border;
 	// border-radius: 8px;
 	background: #0d0d0d;
@@ -96,9 +97,18 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 
 .app-layout__activity-header {
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	justify-content: space-between;
 	gap: 0.75em;
+}
+
+.app-layout__activity-actions {
+	display: inline-flex;
+	flex: 1 1 auto;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.55em;
+	min-width: 0;
 }
 
 .app-layout__activity-header h2 {
@@ -114,9 +124,52 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 }
 
 .app-layout__activity-header h2 {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55em;
 	font-size: 17pt;
 	font-weight: 400;
 	line-height: 1.1;
+}
+
+.app-layout__assistant-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45em;
+	min-width: 0;
+	max-width: 16em;
+	padding: 0.28em 0.58em;
+	border: 0;
+	border-radius: 999px;
+	background: $color-surface-bg;
+	color: $color-text-secondary;
+	font-family: $font-data;
+	font-size: 9pt;
+	font-weight: 400;
+	line-height: 1;
+	vertical-align: middle;
+}
+
+.app-layout__assistant-status > span:last-child {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.app-layout__assistant-status-dot {
+	flex: 0 0 auto;
+	width: 0.5em;
+	height: 0.5em;
+	border-radius: 50%;
+	background: $color-text-secondary;
+	opacity: 0.5;
+}
+
+.app-layout__assistant-status_active .app-layout__assistant-status-dot {
+	background: #4ade80;
+	opacity: 1;
+	box-shadow: 0 0 0 0.18em rgba(#4ade80, 0.22);
 }
 
 .app-layout-activity-tab-title-enter-active,
@@ -134,7 +187,9 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	opacity: 0;
 }
 
-.app-layout__activity-close {
+.app-layout__activity-close,
+.app-layout__activity-chat-history,
+.app-layout__activity-new-chat {
 	display: inline-flex;
 	flex: 0 0 2em;
 	align-items: center;
@@ -143,7 +198,7 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	height: 2em;
 	padding: 0;
 	border: none;
-	border-radius: 0.5em;
+	border-radius: 99px;
 	background: transparent;
 	color: $color-text-secondary;
 	cursor: pointer;
@@ -152,18 +207,84 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		color 160ms ease;
 }
 
-.app-layout__activity-close::before {
+.app-layout__activity-add-study,
+.app-layout__activity-add-participant {
+	display: inline-flex;
+	flex: 0 0 2em;
+	align-items: center;
+	justify-content: center;
+	width: 2em;
+	height: 2em;
+	padding: 0;
+	// border: $border-default;
+	border-radius: 50%;
+	// background: $color-button-bg;
+	border: none;
+	background: none;
+	color: $color-text-primary;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.app-layout__activity-add-study::before,
+.app-layout__activity-add-participant::before {
 	content: "";
 	display: block;
 	width: 1em;
 	height: 1em;
 	background: currentColor;
+}
+
+.app-layout__activity-add-study::before {
+	@include icon-mask($icon-folder-plus);
+}
+
+.app-layout__activity-add-participant::before {
+	@include icon-mask($icon-plus-participant);
+}
+
+.app-layout__activity-add-study:hover,
+.app-layout__activity-add-study:focus-visible,
+.app-layout__activity-add-participant:hover,
+.app-layout__activity-add-participant:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.app-layout__activity-close::before,
+.app-layout__activity-chat-history::before,
+.app-layout__activity-new-chat::before {
+	content: "";
+	display: block;
+	width: 1em;
+	height: 1em;
+	background: currentColor;
+}
+
+.app-layout__activity-close::before {
 	@include icon-mask($icon-close);
 }
 
+.app-layout__activity-new-chat::before {
+	@include icon-mask($icon-chat-plus);
+}
+
+.app-layout__activity-chat-history::before {
+	@include icon-mask($icon-chat-history);
+}
+
 .app-layout__activity-close:hover,
-.app-layout__activity-close:focus-visible {
-	background: rgba(255, 255, 255, 0.07);
+.app-layout__activity-close:focus-visible,
+.app-layout__activity-chat-history:hover,
+.app-layout__activity-chat-history:focus-visible,
+.app-layout__activity-new-chat:hover,
+.app-layout__activity-new-chat:focus-visible {
+	background: $color-button-bg-hover;
 	color: $color-selected;
 	outline: none;
 }
@@ -351,13 +472,21 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 
 .app-layout__page-header {
 	justify-content: space-between;
-	border-bottom: 1px solid $color-reflector-border;
-	background: #060606;
-	gap: 1em;
 	width: 100%;
-	height: 4em;
-	// padding: 0.65em 1em;
-	// min-height: 2.5em;
+	
+	box-sizing: border-box;
+	background-color: #060606;
+	padding-block: 0.5em;
+	padding-inline: 0.625em;
+}
+
+.app-layout__status-slot {
+	width: 100%;
+	min-width: 0;
+}
+
+.app-layout__status-slot:empty {
+	display: none;
 }
 
 .app-layout__page-intro {
@@ -398,7 +527,7 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 }
 
 .app-layout__page-heading p,
-.app-layout__page-heading h1,
+.app-layout__page-title-row h1,
 .app-layout__page-mode {
 	margin: 0;
 	min-width: 0;
@@ -416,12 +545,43 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	text-transform: uppercase;
 }
 
-.app-layout__page-heading h1 {
+.app-layout__page-title-row {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 0.55em;
+	max-width: 100%;
+	min-width: 0;
+	overflow: visible;
+}
+
+.app-layout__page-title-row h1 {
 	color: $color-text-primary;
 	font-size: 17pt;
 	font-weight: 500;
 	line-height: 1.05;
 	letter-spacing: 0;
+}
+
+.app-layout__page-title_hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	border: 0;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.app-layout__page-info {
+	position: relative;
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
 }
 
 .app-layout__page-mode {
@@ -489,8 +649,8 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	color: $color-button-bg;
 }
 
-.app-layout__page-action_project-add::before,
-.app-layout__page-action_user-add::before,
+.app-layout__page-action_study-add::before,
+.app-layout__page-action_participant-add::before,
 .app-layout__page-action_chat-add::before {
 	content: "";
 	display: block;
@@ -499,12 +659,12 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	background: currentColor;
 }
 
-.app-layout__page-action_project-add::before {
+.app-layout__page-action_study-add::before {
 	@include icon-mask($icon-folder-plus);
 }
 
-.app-layout__page-action_user-add::before {
-	@include icon-mask($icon-plus-user);
+.app-layout__page-action_participant-add::before {
+	@include icon-mask($icon-plus-participant);
 }
 
 .app-layout__page-action_chat-add::before {
@@ -521,30 +681,17 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	overflow: hidden;
 }
 
-.app-layout__logo {
-	display: flex;
-	align-items: center;
-	flex: 1;
-	min-height: 2em;
-	padding-left: 0.25em;
-	transition: opacity 160ms ease;
-}
-
-.app-layout__logo img {
-	display: block;
-	width: min(100%, 6.875em);
-	height: auto;
-}
-
 .app-layout__link {
 	display: flex;
 	align-items: center;
 	gap: 0.75em;
 	width: 100%;
-	min-height: 2.5em;
+	min-height: 2em;
+	width: 2.5em;
+	height: 2.5em;
 	padding: 0 0.875em;
 	border: none;
-	border-radius: $radius-control;
+	border-radius: 99px;
 	background: transparent;
 	color: $color-text-secondary;
 	font-family: $font-text;
@@ -561,18 +708,15 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 
 .app-layout__link span {
 	min-width: 0;
+	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-:deep(.sidebar_collapsed) .app-layout__logo {
-	display: none;
-}
-
 :deep(.sidebar_collapsed) .app-layout__link {
 	justify-content: center;
-	gap: 0;
 	padding-inline: 0;
+	border-radius: 99px;
 }
 
 :deep(.sidebar_collapsed) .app-layout__link span {
@@ -612,8 +756,8 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	background: transparent;
 	color: $color-text-secondary;
 	box-shadow: none;
-	border-top-right-radius: $radius-control;
-	border-bottom-right-radius: $radius-control;
+	border-top-right-radius: 99px;
+	border-bottom-right-radius: 99px;
 }
 
 .app-layout__link:focus-visible {
@@ -633,16 +777,20 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	@include icon-mask($icon-home);
 }
 
+.app-layout__link_measurements::before {
+	@include icon-mask($icon-measurements);
+}
+
 .app-layout__link_records::before {
 	@include icon-mask($icon-records);
 }
 
-.app-layout__link_projects::before {
-	@include icon-mask($icon-projects);
+.app-layout__link_studies::before {
+	@include icon-mask($icon-studies);
 }
 
-.app-layout__link_users::before {
-	@include icon-mask($icon-users);
+.app-layout__link_participants::before {
+	@include icon-mask($icon-participants);
 }
 
 .app-layout__link_chat::before {
@@ -737,10 +885,11 @@ $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	.app-layout {
 		flex-wrap: wrap;
 		--app-sidebar-width: 0em;
-		--app-activity-panel-width: min(100vw, 34em);
+		--app-activity-panel-width: 100vw;
 	}
 
 	.app-layout__activity-panel {
+		z-index: 120;
 		left: 0;
 		width: var(--app-activity-panel-width);
 	}

@@ -1,7 +1,9 @@
 import type { ApiResponse } from '~/types/shared/api'
-import type { EntityId, Project, ProjectUser, Sex } from '~/types/shared/entities'
+import type { EntityId, Study, StudyParticipant, Sex } from '~/types/shared/entities'
 
-export const SELECTED_PROJECT_STORAGE_KEY = 'pulso.selectedProjectId'
+export const SELECTED_STUDY_STORAGE_KEY = 'pulso.selectedStudyId'
+
+export type QualityTone = 'high' | 'medium' | 'low' | 'neutral'
 
 const dateFormatter = new Intl.DateTimeFormat('uk-UA', {
 	day: '2-digit',
@@ -9,10 +11,24 @@ const dateFormatter = new Intl.DateTimeFormat('uk-UA', {
 	year: 'numeric',
 })
 
+const dateTimeFormatter = new Intl.DateTimeFormat('uk-UA', {
+	day: '2-digit',
+	month: '2-digit',
+	year: 'numeric',
+	hour: '2-digit',
+	minute: '2-digit',
+})
+
 export function formatDateValue(value: string) {
 	const date = new Date(value)
 
 	return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date)
+}
+
+export function formatDateTimeValue(value: string) {
+	const date = new Date(value)
+
+	return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date)
 }
 
 export function getSexLabel(sex: Sex) {
@@ -43,7 +59,7 @@ export function getSexIcon(sex: Sex) {
 	return '•'
 }
 
-export function getUserInitials(name: string) {
+export function getParticipantInitials(name: string) {
 	const initials = name
 		.trim()
 		.split(/\s+/)
@@ -54,17 +70,17 @@ export function getUserInitials(name: string) {
 	return initials || 'К'
 }
 
-export function getUserProjectTitles(projects: Project[], projectUsers: ProjectUser[], userId: EntityId) {
-	const projectIds = projectUsers
-		.filter((projectUser) => projectUser.user_id === userId)
-		.map((projectUser) => projectUser.project_id)
+export function getParticipantStudyTitles(studies: Study[], studyParticipants: StudyParticipant[], participantId: EntityId) {
+	const studyIds = studyParticipants
+		.filter((studyParticipant) => studyParticipant.participant_id === participantId)
+		.map((studyParticipant) => studyParticipant.study_id)
 
-	return projects
-		.filter((project) => projectIds.includes(project.id))
-		.map((project) => project.title)
+	return studies
+		.filter((study) => studyIds.includes(study.id))
+		.map((study) => study.title)
 }
 
-export function toProjectSlug(title: string) {
+export function toStudySlug(title: string) {
 	return title
 		.toLowerCase()
 		.trim()
@@ -73,44 +89,58 @@ export function toProjectSlug(title: string) {
 		.replace(/^-+|-+$/g, '')
 }
 
-export function getProjectSlug(project: Pick<Project, 'id' | 'title'>) {
-	return toProjectSlug(project.title) || `project-${project.id}`
+export function getStudySlug(study: Pick<Study, 'id' | 'title'>) {
+	return toStudySlug(study.title) || `study-${study.id}`
 }
 
-export function getProjectRoutePath(project: Pick<Project, 'id' | 'title'>, section = '/dashboard') {
-	const normalizedSection = section.startsWith('/') ? section : `/${section}`
-
-	return `/p/${getProjectSlug(project)}${normalizedSection}`
+export function getStudyRoutePath(study: Pick<Study, 'id' | 'title'>) {
+	return `/study/${getStudySlug(study)}/dashboard`
 }
 
-export function findProjectByRouteName(projects: Project[], projectName: string) {
-	return projects.find((project) => getProjectSlug(project) === projectName) ?? null
+export function getQualityTone(scorePercent: number | null | undefined): QualityTone {
+	if (!Number.isFinite(scorePercent)) {
+		return 'neutral'
+	}
+
+	if (Number(scorePercent) >= 80) {
+		return 'high'
+	}
+
+	if (Number(scorePercent) >= 60) {
+		return 'medium'
+	}
+
+	return 'low'
 }
 
-export function readSelectedProjectId() {
+export function findStudyByRouteName(studies: Study[], studyName: string) {
+	return studies.find((study) => getStudySlug(study) === studyName || String(study.id) === studyName) ?? null
+}
+
+export function readSelectedStudyId() {
 	if (typeof window === 'undefined') {
 		return null
 	}
 
-	const rawValue = window.localStorage.getItem(SELECTED_PROJECT_STORAGE_KEY)
+	const rawValue = window.localStorage.getItem(SELECTED_STUDY_STORAGE_KEY)
 
 	return rawValue?.trim() || null
 }
 
-export function setSelectedProjectId(projectId: EntityId) {
+export function setSelectedStudyId(studyId: EntityId) {
 	if (typeof window === 'undefined') {
 		return
 	}
 
-	window.localStorage.setItem(SELECTED_PROJECT_STORAGE_KEY, String(projectId))
+	window.localStorage.setItem(SELECTED_STUDY_STORAGE_KEY, String(studyId))
 }
 
-export function clearSelectedProjectId() {
+export function clearSelectedStudyId() {
 	if (typeof window === 'undefined') {
 		return
 	}
 
-	window.localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY)
+	window.localStorage.removeItem(SELECTED_STUDY_STORAGE_KEY)
 }
 
 export function getRequestErrorMessage(error: unknown, fallback: string) {

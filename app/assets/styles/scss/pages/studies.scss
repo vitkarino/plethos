@@ -7,7 +7,7 @@
 
 $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 12h14M12 5v14'/%3E%3C/svg%3E";
 
-.projects-page {
+.studies-page {
 	display: flex;
 	flex-direction: column;
 	gap: 1em;
@@ -17,14 +17,41 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	overflow: visible;
 }
 
-.projects-page__form-error {
+.studies-page__form-error {
 	margin: 0;
 	color: $color-selected;
 	font-size: 11pt;
 	line-height: 1.35;
 }
 
-.projects-page__grid {
+.studies-page__empty-selection {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: min(34em, calc(100vh - 8em));
+	padding: 2em;
+	color: $color-text-secondary;
+	text-align: center;
+}
+
+.studies-page__empty-selection h2 {
+	margin: 0 0 0.45em;
+	color: $color-text-primary;
+	font-size: 18pt;
+	font-weight: 500;
+	line-height: 1.2;
+}
+
+.studies-page__empty-selection p {
+	margin: 0;
+	max-width: 24em;
+	font-size: 11pt;
+	line-height: 1.45;
+}
+
+.studies-page__grid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 1.1em;
@@ -32,55 +59,41 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	overflow: visible;
 }
 
-.projects-page__card {
+.studies-page__card {
 	position: relative;
 	display: flex;
+	width: 100%;
 	flex-direction: column;
 	gap: 1em;
 	min-height: 22em;
 	padding: 1.35em 1.35em 1.15em;
-	border: $border-default;
 	border-radius: $radius-block;
 	background: $color-reflector-surface-bg;
 	color: $color-text-primary;
 	text-align: left;
 	box-sizing: border-box;
-	cursor: pointer;
+	cursor: default;
 	overflow: visible;
 	transition:
 		background-color 160ms ease,
-		border-color 160ms ease,
 		box-shadow 160ms ease,
 		transform 160ms ease;
 }
 
-.projects-page__card::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 1.35em;
-	right: 1.35em;
-	height: 1px;
-	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-	pointer-events: none;
-}
-
-.projects-page__card:hover,
-.projects-page__card:focus-visible,
-.projects-page__card:focus-within {
-	border-color: rgba($color-selected, 0.55);
+.studies-page__card:hover,
+.studies-page__card:focus-visible,
+.studies-page__card:focus-within {
 	background: rgba($color-surface-bg, 0.62);
 	box-shadow: 0 1.2em 2.4em rgba(0, 0, 0, 0.32);
 	transform: translateY(-0.18em);
 	outline: none;
 }
 
-.projects-page__card_selected {
-	border-color: rgba($color-selected, 0.5);
+.studies-page__card_selected {
 	background: rgba($color-selected, 0.04);
 }
 
-.projects-page__heading {
+.studies-page__heading {
 	display: flex; 
 	flex-direction: column;
 	gap: 0.35em;
@@ -89,20 +102,21 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.projects-page__heading-row {
+.studies-page__heading-row {
 	display: flex;
 	align-items: center;
 	gap: 0.6em;
 	min-width: 0;
 }
 
-.projects-page__active-badge {
+.studies-page__active-badge {
 	flex: 0 0 auto;
 	display: inline-flex;
+	align-self: flex-start;
 	align-items: center;
 	min-height: 1.65em;
 	padding: 0 0.7em;
-	border: 1px solid rgba($color-selected, 0.25);
+	border: 0;
 	border-radius: 999px;
 	background: rgba($color-selected, 0.08);
 	color: $color-selected;
@@ -114,7 +128,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	text-transform: uppercase;
 }
 
-.projects-page__heading h2 {
+.studies-page__heading h2 {
 	margin: 0;
 	overflow: hidden;
 	color: $color-text-primary;
@@ -126,15 +140,13 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	white-space: nowrap;
 }
 
-.projects-page__project-id {
+.studies-page__study-id {
 	display: inline-flex;
-	align-self: flex-start;
+	flex: 0 1 auto;
 	align-items: center;
 	max-width: 100%;
-	padding: 0.18em 0.55em;
-	border-radius: $radius-control;
-	background: rgba(255, 255, 255, 0.04);
-	color: $color-text-secondary;
+	padding: 0;
+	color: rgba($color-text-secondary, 0.54);
 	font-family: $font-data;
 	font-size: 8.5pt;
 	font-weight: 700;
@@ -146,7 +158,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	overflow: hidden;
 }
 
-.projects-page__description {
+.studies-page__description {
 	display: -webkit-box;
 	margin: 0.15em 0 0;
 	overflow: hidden;
@@ -157,7 +169,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	-webkit-line-clamp: 3;
 }
 
-.projects-page__assignments {
+.studies-page__assignments {
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
@@ -165,15 +177,15 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	min-width: 0;
 }
 
-.projects-page__section-title {
+.studies-page__section-title {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 0.75em;
 }
 
-.projects-page__section-title span,
-.projects-page__activity dt {
+.studies-page__section-title span,
+.studies-page__activity dt {
 	color: $color-text-secondary;
 	font-size: 8.5pt;
 	font-weight: 700;
@@ -182,7 +194,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	text-transform: uppercase;
 }
 
-.projects-page__section-title strong {
+.studies-page__section-title strong {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -198,7 +210,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	line-height: 1;
 }
 
-.projects-page__chips {
+.studies-page__chips {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -206,19 +218,83 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	min-width: 0;
 }
 
-.projects-page__chip-menu,
-.projects-page__menu,
-.projects-page__assign-panel {
+.studies-page__native-menu {
 	position: relative;
 }
 
-.projects-page__chip-menu[open],
-.projects-page__menu[open],
-.projects-page__assign-panel[open] {
+.studies-page__native-menu[open] {
 	z-index: 5;
 }
 
-.projects-page__chip {
+.studies-page__menu-summary {
+	cursor: pointer;
+	list-style: none;
+}
+
+.studies-page__menu-summary::-webkit-details-marker {
+	display: none;
+}
+
+.studies-page__menu-summary::marker {
+	content: "";
+}
+
+.studies-page__menu-summary:focus-visible {
+	outline: none;
+}
+
+.studies-page__menu-summary:focus-visible .studies-page__chip {
+	border-color: rgba($color-selected, 0.5);
+	background: rgba($color-selected, 0.06);
+	color: $color-selected;
+}
+
+.studies-page__menu {
+	position: absolute;
+	top: calc(100% + 0.35em);
+	left: 0;
+	z-index: 5;
+	display: flex;
+	flex-direction: column;
+	min-width: 12em;
+	padding: 0.35em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-surface-bg;
+	box-shadow: 0 0.75em 1.75em rgba(0, 0, 0, 0.3);
+}
+
+.studies-page__menu_assign {
+	min-width: 18em;
+}
+
+.studies-page__menu > button {
+	display: flex;
+	align-items: center;
+	min-height: 2.25em;
+	padding: 0 0.65em;
+	border: 0;
+	border-radius: 0.4em;
+	background: transparent;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 10.5pt;
+	text-align: left;
+	cursor: pointer;
+}
+
+.studies-page__menu > button:hover,
+.studies-page__menu > button:focus-visible {
+	background: rgba($color-selected, 0.1);
+	color: $color-selected;
+	outline: none;
+}
+
+.studies-page__menu .studies-page__menu-danger {
+	color: $color-selected;
+}
+
+.studies-page__chip {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5em;
@@ -237,13 +313,13 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 		color 160ms ease;
 }
 
-.projects-page__chip > span:last-child {
+.studies-page__chip > span:last-child {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.projects-page__avatar {
+.studies-page__avatar {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -260,14 +336,14 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-.projects-page__chip:hover {
+.studies-page__chip:hover {
 	border-color: rgba($color-selected, 0.5);
 	background: rgba($color-selected, 0.06);
 	color: $color-selected;
 	outline: none;
 }
 
-.projects-page__empty {
+.studies-page__empty {
 	color: $color-text-secondary;
 	font-size: 10pt;
 	font-style: italic;
@@ -275,13 +351,13 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	opacity: 0.75;
 }
 
-.projects-page__assign-trigger {
+.studies-page__assign-trigger {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	width: 2.1em;
 	height: 2.1em;
-	border: 1px dashed rgba(255, 255, 255, 0.18);
+	border: 1px solid transparent;
 	border-radius: 50%;
 	background: transparent;
 	color: $color-text-secondary;
@@ -292,7 +368,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 		color 160ms ease;
 }
 
-.projects-page__assign-trigger::before {
+.studies-page__assign-trigger::before {
 	content: "";
 	display: block;
 	width: 0.95em;
@@ -301,22 +377,21 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	@include icon-mask($icon-plus);
 }
 
-.projects-page__assign-trigger:hover,
-.projects-page__assign-panel .tool-tip__trigger:focus-visible .projects-page__assign-trigger {
-	border-style: solid;
-	border-color: $color-selected;
+.studies-page__assign-trigger:hover,
+.studies-page__menu-summary:focus-visible .studies-page__assign-trigger {
+	border-color: transparent;
 	background: rgba($color-selected, 0.08);
 	color: $color-selected;
 }
 
-.projects-page__assign-form {
+.studies-page__assign-form {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
 	gap: 0.5em;
 }
 
-.projects-page__activity {
+.studies-page__activity {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	gap: 0.75em;
@@ -325,19 +400,19 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.projects-page__activity div {
+.studies-page__activity div {
 	display: flex;
 	flex-direction: column;
 	gap: 0.35em;
 	min-width: 0;
 }
 
-.projects-page__activity dt,
-.projects-page__activity dd {
+.studies-page__activity dt,
+.studies-page__activity dd {
 	margin: 0;
 }
 
-.projects-page__activity dd {
+.studies-page__activity dd {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -349,7 +424,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 }
 
 
-.projects-page__project-actions {
+.studies-page__study-actions {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -357,21 +432,24 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	margin-top: auto;
 }
 
-.projects-page__project-actions-left {
+.studies-page__study-actions-left {
 	display: flex;
 	align-items: center;
 	gap: 0.75em;
 }
 
-.projects-page__button {
+.studies-page__button {
 	display: inline-flex;
+	flex: 0 0 auto;
 	align-items: center;
 	justify-content: center;
 	min-height: 2.45em;
 	padding: 0 1.15em;
-	border: $border-default;
+	// border: $border-default;
 	border-radius: $radius-control;
-	background: $color-button-bg;
+	// background: $color-button-bg;
+	border: none;
+	background: none;
 	color: $color-text-primary;
 	font-family: $font-text;
 	font-size: 10.5pt;
@@ -386,38 +464,50 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 		color 160ms ease;
 }
 
-.projects-page__button:hover,
-.projects-page__button:focus-visible {
+.studies-page__button_open {
+	background: rgba(255, 255, 255, 0.08);
+	color: $color-text-primary;
+}
+
+.studies-page__button:hover,
+.studies-page__button:focus-visible {
 	border-color: $color-selected;
 	background: $color-button-bg-hover;
 	color: $color-selected;
 	outline: none;
 }
 
-.projects-page__button:disabled {
+.studies-page__button:disabled {
 	cursor: not-allowed;
 	opacity: 0.48;
 }
 
-.projects-page__button_delete {
-	flex: 0 0 auto;
+.studies-page__button_icon,
+.studies-page__button_delete {
+	width: 2.45em;
+	height: 2.45em;
 	min-height: 2.45em;
-	padding: 0 0.75em;
-	color: $color-text-secondary;
-
-	svg {
-		display: block;
-	}
+	padding: 0;
+	border-radius: 50%;
 }
 
-.projects-page__button_delete:hover,
-.projects-page__button_delete:focus-visible {
+.studies-page__button_icon svg,
+.studies-page__button_delete svg {
+	display: block;
+}
+
+.studies-page__button_delete {
+	color: $color-text-secondary;
+}
+
+.studies-page__button_delete:hover,
+.studies-page__button_delete:focus-visible {
 	border-color: #e05c5c;
 	background: rgba(224, 92, 92, 0.08);
 	color: #e05c5c;
 }
 
-.projects-page__field-hint {
+.studies-page__field-hint {
 	align-self: flex-end;
 	margin-top: -0.65em;
 	color: $color-text-secondary;
@@ -426,7 +516,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	line-height: 1.2;
 }
 
-.projects-page__card_add {
+.studies-page__card_add {
 	align-items: center;
 	justify-content: center;
 	gap: 0.85em;
@@ -438,19 +528,20 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	font-size: 12pt;
 	font-weight: 500;
 	line-height: 1.2;
+	cursor: pointer;
 }
 
-.projects-page__card_add::before {
+.studies-page__card_add::before {
 	content: none;
 }
 
-.projects-page__card_add:hover,
-.projects-page__card_add:focus-visible {
+.studies-page__card_add:hover,
+.studies-page__card_add:focus-visible {
 	border-color: rgba($color-selected, 0.55);
 	color: $color-text-primary;
 }
 
-.projects-page__add-icon {
+.studies-page__add-icon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -466,7 +557,7 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 		transform 160ms ease;
 }
 
-.projects-page__add-icon::before {
+.studies-page__add-icon::before {
 	content: "";
 	display: block;
 	width: 1.4em;
@@ -475,26 +566,26 @@ $icon-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	@include icon-mask($icon-plus);
 }
 
-.projects-page__card_add:hover .projects-page__add-icon,
-.projects-page__card_add:focus-visible .projects-page__add-icon {
+.studies-page__card_add:hover .studies-page__add-icon,
+.studies-page__card_add:focus-visible .studies-page__add-icon {
 	border-color: $color-selected;
 	background: $color-button-bg-hover;
 	transform: scale(1.04);
 }
 
 @media (max-width: 70em) {
-	.projects-page__grid {
+	.studies-page__grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 
 @media (max-width: 46em) {
-	.projects-page {
+	.studies-page {
 		height: auto;
 	}
 
-	.projects-page__grid,
-	.projects-page__activity {
+	.studies-page__grid,
+	.studies-page__activity {
 		grid-template-columns: 1fr;
 	}
 }

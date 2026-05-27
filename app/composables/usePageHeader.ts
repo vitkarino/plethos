@@ -5,7 +5,7 @@ export type PageHeaderAction = {
 	label: string
 	to?: string
 	variant?: 'default' | 'primary' | 'ghost'
-	icon?: 'project-add' | 'user-add' | 'chat-add'
+	icon?: 'study-add' | 'participant-add' | 'chat-add'
 	disabled?: MaybeRef<boolean>
 	onClick?: () => void
 }
@@ -16,6 +16,7 @@ type PageHeaderConfig = {
 	backLabel?: MaybeRef<string>
 	backTo?: MaybeRef<string>
 	modeLabel?: MaybeRef<string>
+	infoTooltip?: MaybeRef<string>
 	actions?: MaybeRef<PageHeaderAction[]>
 }
 
@@ -25,6 +26,7 @@ export type PageHeaderState = {
 	backLabel: string
 	backTo: string
 	modeLabel: string
+	infoTooltip: string
 	actions: PageHeaderAction[]
 	owner: symbol | null
 }
@@ -38,6 +40,7 @@ export function providePageHeader() {
 		backLabel: '',
 		backTo: '',
 		modeLabel: '',
+		infoTooltip: '',
 		actions: [],
 		owner: null,
 	});
@@ -63,6 +66,7 @@ export function usePageHeader(config: PageHeaderConfig) {
 		state.backLabel = config.backLabel ? unref(config.backLabel) : '';
 		state.backTo = config.backTo ? unref(config.backTo) : '';
 		state.modeLabel = config.modeLabel ? unref(config.modeLabel) : '';
+		state.infoTooltip = config.infoTooltip ? unref(config.infoTooltip) : '';
 		state.actions = config.actions ? unref(config.actions) : [];
 	});
 
@@ -77,6 +81,7 @@ export function usePageHeader(config: PageHeaderConfig) {
 		state.backLabel = '';
 		state.backTo = '';
 		state.modeLabel = '';
+		state.infoTooltip = '';
 		state.actions = [];
 		state.owner = null;
 	});

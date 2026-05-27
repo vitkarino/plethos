@@ -20,35 +20,35 @@ export type QualityReason =
 
 export type ApiRecord<T> = Record<string, T>
 
-export type User = {
+export type Participant = {
 	id: EntityId
 	name: string
 	age: number
 	sex: Sex
-	projects_count?: number
+	studies_count?: number
 	recordings_count?: number
 	created_at: string
 	updated_at?: string
 }
 
-export type Project = {
+export type Study = {
 	id: EntityId
 	title: string
 	description: string
-	users_count?: number
+	participants_count?: number
 	recordings_count?: number
 	created_at: string
 	updated_at?: string
 }
 
-export type ProjectUser = {
-	project_id: EntityId
-	user_id: EntityId
+export type StudyParticipant = {
+	study_id: EntityId
+	participant_id: EntityId
 	assigned_at: string
 }
 
-export type AssignedUser = {
-	user: User
+export type AssignedParticipant = {
+	participant: Participant
 	assigned_at: string
 }
 
@@ -70,8 +70,8 @@ export type MeasurementTime = {
 export type Measurement = {
 	id: EntityId
 	is_simulated: boolean
-	user_id: EntityId
-	project_id: EntityId
+	participant_id: EntityId
+	study_id: EntityId
 	active_recording_id: EntityId | null
 	device_id: EntityId
 	time: MeasurementTime
@@ -87,6 +87,8 @@ export type Measurement = {
 export type Recording = {
 	id: EntityId
 	measurement_id: EntityId
+	study_id?: EntityId
+	participant_id?: EntityId
 	quality_analysis_id: EntityId | null
 	use_for_ml_training: boolean
 	status: EntityStatus

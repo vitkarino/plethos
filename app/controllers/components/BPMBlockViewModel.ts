@@ -7,7 +7,6 @@ import type { EntityId, Measurement, Recording, RecordingSample } from '~/types/
 import { getRequestErrorMessage } from '~/utils/shared'
 
 const RECORDING_SAMPLES_PAGE_SIZE = 1000
-const METRIC_HISTORY_LIMIT = 24
 const RECORDINGS_LIST_LIMIT = 12
 const BPM_BLOCK_STORAGE_KEY_PREFIX = 'pulso.bpmBlock'
 
@@ -15,7 +14,7 @@ type BPMBlockPersistedState = {
 	measurementId: EntityId | null
 	recordingId: EntityId | null
 	selectedDeviceId: EntityId | null
-	selectedUserId: EntityId | null
+	selectedParticipantId: EntityId | null
 	sampleOriginIndex: number | null
 }
 
@@ -39,11 +38,11 @@ export class BPMBlockViewModel {
 		progress: 0,
 		measurementId: null,
 		recordingId: null,
-		projectId: null,
+		studyId: null,
 		selectedDeviceId: null,
-		selectedUserId: null,
+		selectedParticipantId: null,
 		devices: [],
-		users: [],
+		participants: [],
 		recordings: [],
 		isLoading: true,
 		isActionRunning: false,
@@ -52,16 +51,6 @@ export class BPMBlockViewModel {
 		bpm: null,
 		spo2: null,
 		signalReadiness: null,
-		metricHistory: {
-			bpm: [],
-			spo2: [],
-			signalReadiness: [],
-		},
-		metricBaseline: {
-			bpm: null,
-			spo2: null,
-			signalReadiness: null,
-		},
 		qualityAnalysis: null,
 		recordingMarkers: [],
 		chartData: null,
@@ -84,28 +73,27 @@ export class BPMBlockViewModel {
 
 	private readonly options: { autoLoadLastRecording: boolean }
 
-	public constructor(projectId: EntityId | null = null, options: { autoLoadLastRecording?: boolean } = {}) {
-		this.state.projectId = projectId
+	public constructor(studyId: EntityId | null = null, options: { autoLoadLastRecording?: boolean } = {}) {
+		this.state.studyId = studyId
 		this.options = {
 			autoLoadLastRecording: options.autoLoadLastRecording ?? true,
 		}
 	}
 
-	public setProjectId(projectId: EntityId | null) {
-		if (this.state.projectId === projectId) {
+	public setStudyId(studyId: EntityId | null) {
+		if (this.state.studyId === studyId) {
 			return Promise.resolve()
 		}
 
-		this.state.projectId = projectId
+		this.state.studyId = studyId
 		this.state.isLoading = true
 		this.state.measurementId = null
-		this.state.selectedUserId = null
+		this.state.selectedParticipantId = null
 		this.state.recordings = []
 		this.state.recordingId = null
 		this.state.qualityAnalysis = null
 		this.state.recordingMarkers = []
 		this.state.chartData = null
-		this.resetMetricHistory()
 		this.state.error = null
 		this.liveSamples = []
 		this.sampleOriginIndex = null
@@ -113,7 +101,7 @@ export class BPMBlockViewModel {
 		this.restorePersistedState()
 
 		return Promise.all([
-			this.loadUsers(),
+			this.loadParticipants(),
 			this.loadLatestRecordings(),
 		])
 			.then(() => this.restoreRuntimeState())
@@ -128,7 +116,7 @@ export class BPMBlockViewModel {
 
 		return Promise.all([
 			this.loadDevices(),
-			this.loadUsers(),
+			this.loadParticipants(),
 			this.loadLatestRecordings(),
 		])
 			.then(() => this.restoreRuntimeState())
@@ -147,8 +135,8 @@ export class BPMBlockViewModel {
 	}
 
 	public startMeasurement() {
-		if (!this.state.selectedDeviceId || !this.state.selectedUserId || !this.state.projectId) {
-			this.state.error = 'Оберіть пристрій, користувача і проєкт'
+		if (!this.state.selectedDeviceId || !this.state.selectedParticipantId || !this.state.studyId) {
+			this.state.error = 'Оберіть пристрій, учасника і дослідження'
 			this.state.status = 'failed'
 			return Promise.resolve()
 		}
@@ -158,8 +146,8 @@ export class BPMBlockViewModel {
 
 		return this.api.startMeasurement({
 			device_id: this.state.selectedDeviceId,
-			user_id: this.state.selectedUserId,
-			project_id: this.state.projectId,
+			participant_id: this.state.selectedParticipantId,
+			study_id: this.state.studyId,
 		}).then((measurement) => {
 			this.applyMeasurement(measurement)
 			this.state.status = 'measuring'
@@ -262,7 +250,7 @@ export class BPMBlockViewModel {
 	}
 
 	public isMeasurementToggleDisabled() {
-		const isMissingStartTarget = !this.state.selectedDeviceId || !this.state.selectedUserId || !this.state.projectId
+		const isMissingStartTarget = !this.state.selectedDeviceId || !this.state.selectedParticipantId || !this.state.studyId
 
 		return this.state.isActionRunning || (!this.isMeasurementActive() && isMissingStartTarget)
 	}
@@ -316,7 +304,6 @@ export class BPMBlockViewModel {
 					this.state.chartData = null
 					this.state.qualityAnalysis = null
 					this.state.signalReadiness = null
-					this.resetMetricHistory()
 					this.persistState()
 
 					if (this.state.recordingId) {
@@ -380,22 +367,22 @@ export class BPMBlockViewModel {
 		})
 	}
 
-	private loadUsers() {
-		return this.api.fetchUsers({
-			project_id: this.state.projectId ?? undefined,
+	private loadParticipants() {
+		return this.api.fetchParticipants({
+			study_id: this.state.studyId ?? undefined,
 			limit: 100,
-		}).then((users) => {
-			this.state.users = users
-			this.state.selectedUserId = this.state.selectedUserId ?? users[0]?.id ?? null
+		}).then((participants) => {
+			this.state.participants = participants
+			this.state.selectedParticipantId = this.state.selectedParticipantId ?? participants[0]?.id ?? null
 			this.persistState()
 
-			return users
+			return participants
 		})
 	}
 
 	private loadLatestRecordings() {
 		return this.api.fetchRecordings({
-			project_id: this.state.projectId ?? undefined,
+			study_id: this.state.studyId ?? undefined,
 			status: 'completed',
 			limit: RECORDINGS_LIST_LIMIT,
 		}).then((recordings) => {
@@ -434,7 +421,6 @@ export class BPMBlockViewModel {
 		const applyAnalysis = (analysis: { quality_result: { score: number } }) => {
 			this.state.qualityAnalysis = analysis as typeof this.state.qualityAnalysis
 			this.state.signalReadiness = Math.round(analysis.quality_result.score * 100)
-			this.seedMetricHistory('signalReadiness', this.state.signalReadiness)
 		}
 
 		const runAnalysis = () => {
@@ -513,9 +499,6 @@ export class BPMBlockViewModel {
 			)
 			this.state.status = message.active_recording_id ? 'recording' : 'measuring'
 			this.state.error = null
-			this.appendMetricHistory('bpm', this.state.bpm)
-			this.appendMetricHistory('spo2', this.state.spo2)
-			this.appendMetricHistory('signalReadiness', this.state.signalReadiness)
 			this.captureVisualSnapshot()
 
 			if (message.samples.length) {
@@ -566,14 +549,12 @@ export class BPMBlockViewModel {
 			this.state.recordingId = measurement.active_recording_id
 		}
 		this.state.selectedDeviceId = measurement.device_id
-		this.state.selectedUserId = measurement.user_id
-		this.state.projectId = measurement.project_id
+		this.state.selectedParticipantId = measurement.participant_id
+		this.state.studyId = measurement.study_id
 		this.state.sampleRateHz = this.resolveVisualValue('sampleRateHz', measurement.sample_rate_hz)
 		this.state.sensorTempC = this.resolveVisualValue('sensorTempC', measurement.sensor_temp_c)
 		this.state.bpm = this.resolveVisualValue('bpm', measurement.bpm)
 		this.state.spo2 = this.resolveVisualValue('spo2', measurement.spo2)
-		this.seedMetricHistory('bpm', measurement.bpm)
-		this.seedMetricHistory('spo2', measurement.spo2)
 		this.state.error = null
 		this.captureVisualSnapshot()
 		this.persistState()
@@ -581,14 +562,12 @@ export class BPMBlockViewModel {
 
 	private applyMeasurementSnapshot(measurement: Measurement) {
 		this.state.selectedDeviceId = measurement.device_id
-		this.state.selectedUserId = measurement.user_id
-		this.state.projectId = measurement.project_id
+		this.state.selectedParticipantId = measurement.participant_id
+		this.state.studyId = measurement.study_id
 		this.state.sampleRateHz = this.resolveVisualValue('sampleRateHz', measurement.sample_rate_hz)
 		this.state.sensorTempC = this.resolveVisualValue('sensorTempC', measurement.sensor_temp_c)
 		this.state.bpm = this.resolveVisualValue('bpm', measurement.bpm)
 		this.state.spo2 = this.resolveVisualValue('spo2', measurement.spo2)
-		this.seedMetricHistory('bpm', measurement.bpm)
-		this.seedMetricHistory('spo2', measurement.spo2)
 		this.captureVisualSnapshot()
 		this.persistState()
 	}
@@ -652,7 +631,6 @@ export class BPMBlockViewModel {
 		this.state.recordingMarkers = []
 		this.state.progress = 0
 		this.state.chartData = null
-		this.resetMetricHistory()
 		this.liveSamples = []
 		this.sampleOriginIndex = null
 		this.recordingSampleRanges = []
@@ -678,7 +656,6 @@ export class BPMBlockViewModel {
 					this.state.signalReadiness = null
 					this.state.bpm = null
 					this.state.spo2 = null
-					this.resetMetricHistory()
 					this.lastVisualSnapshot = {
 						sampleRateHz: null,
 						sensorTempC: null,
@@ -699,7 +676,6 @@ export class BPMBlockViewModel {
 			this.state.chartData = null
 			this.state.qualityAnalysis = null
 			this.state.signalReadiness = null
-			this.resetMetricHistory()
 			this.persistState()
 			return Promise.resolve()
 		}
@@ -714,7 +690,6 @@ export class BPMBlockViewModel {
 					this.state.chartData = null
 					this.state.qualityAnalysis = null
 					this.state.signalReadiness = null
-					this.resetMetricHistory()
 					this.persistState()
 					return
 				}
@@ -725,7 +700,7 @@ export class BPMBlockViewModel {
 
 	private restoreActiveMeasurement() {
 		return this.api.fetchMeasurements({
-			project_id: this.state.projectId ?? undefined,
+			study_id: this.state.studyId ?? undefined,
 			status: 'running',
 			limit: 50,
 		}).then((measurements) => {
@@ -763,7 +738,6 @@ export class BPMBlockViewModel {
 			this.state.qualityAnalysis = null
 			this.state.chartData = null
 			this.state.progress = 0
-			this.resetMetricHistory()
 			this.liveSamples = []
 			this.connectStream(measurement.id)
 			this.persistState()
@@ -779,7 +753,7 @@ export class BPMBlockViewModel {
 
 		return measurements.find((measurement) => measurement.id === this.state.measurementId)
 			?? measurements.find((measurement) => measurement.device_id === this.state.selectedDeviceId)
-			?? measurements.find((measurement) => measurement.user_id === this.state.selectedUserId)
+			?? measurements.find((measurement) => measurement.participant_id === this.state.selectedParticipantId)
 			?? measurements[0]
 			?? null
 	}
@@ -825,7 +799,7 @@ export class BPMBlockViewModel {
 		this.state.measurementId = persistedState.measurementId
 		this.state.recordingId = persistedState.recordingId
 		this.state.selectedDeviceId = persistedState.selectedDeviceId
-		this.state.selectedUserId = persistedState.selectedUserId
+		this.state.selectedParticipantId = persistedState.selectedParticipantId
 		this.sampleOriginIndex = persistedState.sampleOriginIndex
 	}
 
@@ -839,7 +813,7 @@ export class BPMBlockViewModel {
 			measurementId: this.state.measurementId,
 			recordingId: this.state.recordingId,
 			selectedDeviceId: this.state.selectedDeviceId,
-			selectedUserId: this.state.selectedUserId,
+			selectedParticipantId: this.state.selectedParticipantId,
 			sampleOriginIndex: this.sampleOriginIndex,
 		}
 
@@ -865,7 +839,7 @@ export class BPMBlockViewModel {
 	}
 
 	private getStorageKey() {
-		return `${BPM_BLOCK_STORAGE_KEY_PREFIX}:${this.state.projectId ?? 'global'}`
+		return `${BPM_BLOCK_STORAGE_KEY_PREFIX}:${this.state.studyId ?? 'global'}`
 	}
 
 	private resolveSampleOriginIndex(samples: RecordingSample[]) {
@@ -908,19 +882,6 @@ export class BPMBlockViewModel {
 		})
 	}
 
-	private resetMetricHistory() {
-		this.state.metricHistory = {
-			bpm: [],
-			spo2: [],
-			signalReadiness: [],
-		}
-		this.state.metricBaseline = {
-			bpm: null,
-			spo2: null,
-			signalReadiness: null,
-		}
-	}
-
 	private resolveVisualValue(metric: keyof BPMBlockVisualSnapshot, value: number | null | undefined) {
 		if (Number.isFinite(value)) {
 			return Number(value)
@@ -939,49 +900,4 @@ export class BPMBlockViewModel {
 		}
 	}
 
-	private appendMetricHistory(metric: keyof BPMBlockState['metricHistory'], value: number | null) {
-		if (!Number.isFinite(value)) {
-			return
-		}
-
-		const metricValue = Math.round(Number(value) * 10) / 10
-
-		this.state.metricHistory = {
-			...this.state.metricHistory,
-			[metric]: [
-				...this.state.metricHistory[metric],
-				metricValue,
-			].slice(-METRIC_HISTORY_LIMIT),
-		}
-
-		if (this.state.metricBaseline[metric] === null) {
-			this.state.metricBaseline = {
-				...this.state.metricBaseline,
-				[metric]: metricValue,
-			}
-		}
-	}
-
-	private seedMetricHistory(metric: keyof BPMBlockState['metricHistory'], value: number | null) {
-		if (!Number.isFinite(value)) {
-			return
-		}
-
-		if (this.state.metricHistory[metric].length > 1) {
-			return
-		}
-
-		const snapshotValue = Math.round(Number(value) * 10) / 10
-
-		this.state.metricHistory = {
-			...this.state.metricHistory,
-			[metric]: Array.from({ length: 12 }, () => snapshotValue),
-		}
-		if (this.state.metricBaseline[metric] === null) {
-			this.state.metricBaseline = {
-				...this.state.metricBaseline,
-				[metric]: snapshotValue,
-			}
-		}
-	}
 }
