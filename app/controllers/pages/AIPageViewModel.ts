@@ -63,7 +63,7 @@ export class AIPageViewModel {
 	}
 
 	public title(row: AIRecordingRow) {
-		return row.recording.id
+		return row.recording.name || row.recording.id
 	}
 
 	public formatDate(value?: string | null) {

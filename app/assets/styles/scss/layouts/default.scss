@@ -19,6 +19,8 @@ $icon-folder-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 $icon-plus-participant: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M19 8v6m3-3h-6'/%3E%3C/g%3E%3C/svg%3E";
 $icon-chat-plus: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h7'/%3E%3Cpath d='M19 3v6m3-3h-6'/%3E%3C/g%3E%3C/svg%3E";
 $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z'/%3E%3Cpath d='M8 8h8M8 12h5'/%3E%3C/g%3E%3C/svg%3E";
+$icon-download: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3'/%3E%3C/svg%3E";
+$icon-refresh: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M3 12a9 9 0 0 1 15.5-6.2'/%3E%3Cpath d='M18 2v4h-4'/%3E%3Cpath d='M21 12a9 9 0 0 1-15.5 6.2'/%3E%3Cpath d='M6 22v-4h4'/%3E%3C/g%3E%3C/svg%3E";
 
 .app-layout {
 	--app-sidebar-width: 3.75em;
@@ -107,7 +109,7 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	flex: 1 1 auto;
 	align-items: center;
 	justify-content: flex-end;
-	gap: 0.55em;
+	// gap: 0.55em;
 	min-width: 0;
 }
 
@@ -172,24 +174,13 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	box-shadow: 0 0 0 0.18em rgba(#4ade80, 0.22);
 }
 
-.app-layout-activity-tab-title-enter-active,
-.app-layout-activity-tab-title-leave-active {
-	transition:
-		opacity 160ms cubic-bezier(0.4, 0, 0.15, 1),
-		filter 180ms cubic-bezier(0.4, 0, 0.15, 1),
-		transform 180ms cubic-bezier(0.4, 0, 0.15, 1);
-}
-
-.app-layout-activity-tab-title-enter-from,
-.app-layout-activity-tab-title-leave-to {
-	transform: translateY(0.25em);
-	filter: blur(6px);
-	opacity: 0;
-}
-
 .app-layout__activity-close,
 .app-layout__activity-chat-history,
-.app-layout__activity-new-chat {
+.app-layout__activity-chat-history-picker,
+.app-layout__activity-new-chat,
+.app-layout__activity-export,
+.app-layout__activity-refresh {
+	position: relative;
 	display: inline-flex;
 	flex: 0 0 2em;
 	align-items: center;
@@ -258,7 +249,10 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 
 .app-layout__activity-close::before,
 .app-layout__activity-chat-history::before,
-.app-layout__activity-new-chat::before {
+.app-layout__activity-chat-history-picker > span,
+.app-layout__activity-new-chat::before,
+.app-layout__activity-export::before,
+.app-layout__activity-refresh::before {
 	content: "";
 	display: block;
 	width: 1em;
@@ -278,12 +272,45 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	@include icon-mask($icon-chat-history);
 }
 
+.app-layout__activity-chat-history-picker > span {
+	@include icon-mask($icon-chat-history);
+	pointer-events: none;
+}
+
+.app-layout__activity-chat-history-picker select {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.app-layout__activity-chat-history-picker select:disabled {
+	cursor: not-allowed;
+}
+
+.app-layout__activity-export::before {
+	@include icon-mask($icon-download);
+}
+
+.app-layout__activity-refresh::before {
+	@include icon-mask($icon-refresh);
+}
+
 .app-layout__activity-close:hover,
 .app-layout__activity-close:focus-visible,
 .app-layout__activity-chat-history:hover,
 .app-layout__activity-chat-history:focus-visible,
+.app-layout__activity-chat-history-picker:hover,
+.app-layout__activity-chat-history-picker:focus-within,
 .app-layout__activity-new-chat:hover,
-.app-layout__activity-new-chat:focus-visible {
+.app-layout__activity-new-chat:focus-visible,
+.app-layout__activity-export:hover,
+.app-layout__activity-export:focus-visible,
+.app-layout__activity-refresh:hover,
+.app-layout__activity-refresh:focus-visible {
 	background: $color-button-bg-hover;
 	color: $color-selected;
 	outline: none;
@@ -300,28 +327,6 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	scrollbar-color: rgba($color-selected, 0.35) transparent;
 	scrollbar-gutter: stable;
 	scrollbar-width: thin;
-}
-
-.app-layout-activity-tab-enter-active,
-.app-layout-activity-tab-leave-active {
-	transition:
-		opacity 180ms cubic-bezier(0.4, 0, 0.15, 1),
-		filter 220ms cubic-bezier(0.4, 0, 0.15, 1),
-		transform 220ms cubic-bezier(0.4, 0, 0.15, 1);
-}
-
-.app-layout-activity-tab-enter-from,
-.app-layout-activity-tab-leave-to {
-	transform: translateY(0.375em);
-	filter: blur(8px);
-	opacity: 0;
-}
-
-.app-layout-activity-tab-enter-active,
-.app-layout-activity-tab-leave-active,
-.app-layout-activity-tab-title-enter-active,
-.app-layout-activity-tab-title-leave-active {
-	pointer-events: none;
 }
 
 .app-layout__activity-section {
@@ -471,13 +476,47 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 }
 
 .app-layout__page-header {
+	gap: 0.85em;
 	justify-content: space-between;
 	width: 100%;
-	
 	box-sizing: border-box;
 	background-color: #060606;
 	padding-block: 0.5em;
 	padding-inline: 0.625em;
+}
+
+.app-layout__page-info {
+	display: inline-flex;
+	flex: 0 0 2em;
+	align-items: center;
+	justify-content: center;
+	width: 2em;
+	height: 2em;
+	padding: 0;
+	border: none;
+	border-radius: 99px;
+	background: transparent;
+	color: $color-text-secondary;
+	cursor: help;
+	transition:
+		background-color 160ms ease,
+		color 160ms ease;
+}
+
+.app-layout__page-info::before {
+	content: "";
+	display: block;
+	width: 1em;
+	height: 1em;
+	background: currentColor;
+	@include icon-mask($icon-info);
+}
+
+.app-layout__page-info:hover,
+.app-layout__page-info:focus-visible {
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
 }
 
 .app-layout__status-slot {
@@ -574,14 +613,6 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	clip-path: inset(50%);
 	overflow: hidden;
 	white-space: nowrap;
-}
-
-.app-layout__page-info {
-	position: relative;
-	display: inline-flex;
-	flex: 0 0 auto;
-	align-items: center;
-	justify-content: center;
 }
 
 .app-layout__page-mode {
@@ -701,9 +732,9 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	white-space: nowrap;
 	cursor: pointer;
 	transition:
-		background-color 160ms ease,
-		box-shadow 160ms ease,
-		color 160ms ease;
+		background-color 100ms ease-out,
+		box-shadow 100ms ease-out,
+		color 100ms ease-out;
 }
 
 .app-layout__link span {
@@ -726,10 +757,6 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	overflow: hidden;
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
-}
-
-:deep(.sidebar_collapsed) .app-layout__link_author::after {
-	display: none;
 }
 
 .app-layout__link:focus-visible,
@@ -795,27 +822,6 @@ $icon-chat-history: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 
 .app-layout__link_chat::before {
 	@include icon-mask($icon-chat);
-}
-
-.app-layout__link_author::before {
-	@include icon-mask($icon-author);
-}
-
-.app-layout__link_author {
-	border-radius: 0.75em;
-
-	color: $color-text-primary;
-}
-
-.app-layout__link_author::after {
-	content: "";
-	display: block;
-	flex: 0 0 1.15em;
-	width: 1.15em;
-	height: 1.15em;
-	margin-left: auto;
-	background: currentColor;
-	@include icon-mask($icon-external);
 }
 
 .app-layout__form-error {

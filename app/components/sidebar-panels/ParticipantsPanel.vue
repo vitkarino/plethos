@@ -1,5 +1,5 @@
 <template>
-	<section class="participants-page participants-page_panel">
+	<Panel content-class="participants-page">
 		<p v-if="viewModel.state.pageError" class="participants-page__form-error">
 			{{ viewModel.state.pageError }}
 		</p>
@@ -9,6 +9,12 @@
 				v-for="participant in viewModel.state.participants"
 				:key="participant.id"
 				class="participants-page__card"
+				:class="{ 'participants-page__card_selected': participant.id === viewModel.state.selectedParticipantId }"
+				role="button"
+				tabindex="0"
+				@click="viewModel.toggleParticipantDetails(participant.id)"
+				@keydown.enter.prevent="viewModel.toggleParticipantDetails(participant.id)"
+				@keydown.space.prevent="viewModel.toggleParticipantDetails(participant.id)"
 			>
 				<div class="participants-page__identity">
 					<span class="participants-page__avatar" aria-hidden="true">{{ viewModel.participantInitials(participant.name) }}</span>
@@ -24,25 +30,6 @@
 					</div>
 				</div>
 
-				<div class="participants-page__studies">
-					<span class="participants-page__section-label">Дослідження</span>
-					<div class="participants-page__chips">
-						<template v-if="viewModel.participantStudyTitlesList(participant.id).length">
-							<span
-								v-for="title in viewModel.participantStudyTitlesList(participant.id).slice(0, 3)"
-								:key="title"
-								class="participants-page__chip"
-							>
-								{{ title }}
-							</span>
-							<span v-if="viewModel.participantStudyTitlesList(participant.id).length > 3" class="participants-page__chip participants-page__chip_more">
-								+{{ viewModel.participantStudyTitlesList(participant.id).length - 3 }}
-							</span>
-						</template>
-						<span v-else class="participants-page__empty">Немає досліджень</span>
-					</div>
-				</div>
-
 				<div class="participants-page__actions" @click.stop>
 					<button class="participants-page__button" type="button" :aria-label="`Редагувати ${participant.name}`" @click="viewModel.openEditParticipantModal(participant)">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -55,7 +42,25 @@
 
 		</div>
 
-		<Modal
+		<div v-if="selectedParticipant" class="participants-page__study-details">
+			<span class="participants-page__section-label">
+				{{ selectedParticipant.name }}
+			</span>
+			<div class="participants-page__chips">
+				<template v-if="selectedParticipantStudyTitles.length">
+					<span
+						v-for="title in selectedParticipantStudyTitles"
+						:key="title"
+						class="participants-page__chip"
+					>
+						{{ title }}
+					</span>
+				</template>
+				<span v-else class="participants-page__empty">Немає досліджень</span>
+			</div>
+		</div>
+
+		<AppDialog
 			:is-open="viewModel.state.isParticipantModalOpen"
 			:title="viewModel.state.editingParticipantId ? 'Редагувати учасника' : 'Новий учасник'"
 			:submit-label="viewModel.state.editingParticipantId ? 'Зберегти зміни' : 'Створити учасника'"
@@ -74,21 +79,32 @@
 				<input v-model.number="viewModel.state.participantForm.age" min="0" type="number" required />
 			</label>
 
-			<SelectBox v-model="viewModel.state.participantForm.sex" label="Стать" :items="sexOptions" />
+			<label class="native-field">
+				<span class="native-field__label">Стать</span>
+				<select v-model="viewModel.state.participantForm.sex" class="native-field__select" required>
+					<option v-for="option in sexOptions" :key="option.value" :value="option.value">
+						{{ option.label }}
+					</option>
+				</select>
+			</label>
 
 			<p v-if="viewModel.state.participantFormError" class="participants-page__form-error">
 				{{ viewModel.state.participantFormError }}
 			</p>
-		</Modal>
-	</section>
+		</AppDialog>
+	</Panel>
 </template>
 
 <script setup lang="ts">
-import Modal from '~/components/Modal.vue';
-import SelectBox from '~/components/SelectBox.vue';
+import AppDialog from '~/components/AppDialog.vue';
+import Panel from '~/components/Panel.vue';
 import { ParticipantsPageViewModel } from '~/controllers/pages/ParticipantsPageViewModel';
 
 const viewModel = new ParticipantsPageViewModel();
+const selectedParticipant = computed(() => viewModel.selectedParticipant());
+const selectedParticipantStudyTitles = computed(() => (
+	selectedParticipant.value ? viewModel.participantStudyTitlesList(selectedParticipant.value.id) : []
+));
 const sexOptions = [
 	{ label: 'Чоловіча', value: 'male' },
 	{ label: 'Жіноча', value: 'female' },
@@ -112,23 +128,17 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use "~/assets/styles/scss/components/NativeField";
 @use "~/assets/styles/scss/pages/participants";
 @use "~/assets/styles/scss/core/variables" as *;
 
-.participants-page_panel {
-	width: 100%;
-	height: auto;
-	min-height: 100%;
-}
-
-.participants-page_panel .participants-page__grid {
-	grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
-	gap: 0.875em;
-}
-
-.participants-page_panel .participants-page__card:hover,
-.participants-page_panel .participants-page__card:focus-visible,
-.participants-page_panel .participants-page__card:focus-within {
-	transform: none;
+.participants-page__study-details {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65em;
+	min-height: 5.5em;
+	padding: 0.85em;
+	border-radius: $radius-block;
+	background: rgba(255, 255, 255, 0.035);
 }
 </style>

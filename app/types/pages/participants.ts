@@ -11,6 +11,7 @@ export type ParticipantsPageState = {
 	studies: Study[]
 	studyParticipants: StudyParticipant[]
 	participantForm: ParticipantFormState
+	selectedParticipantId: EntityId | null
 	editingParticipantId: EntityId | null
 	isParticipantModalOpen: boolean
 	isParticipantSaving: boolean

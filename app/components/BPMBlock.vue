@@ -1,6 +1,15 @@
 <template>
 	<Block class="bpm-block">
 		<Teleport v-if="isPageHeaderActionTargetReady" to=".app-layout__page-header">
+			<div v-if="shouldShowMetrics" class="bpm-block__header-metrics" aria-label="Показники запису">
+				<div v-for="metric in metricCards" :key="metric.key" class="bpm-block__header-metric"
+					:class="[`bpm-block__header-metric_${metric.key}`, metric.toneClass]">
+					<span class="bpm-block__header-metric-label">{{ metric.label }}</span>
+					<span v-if="metric.isLoading" class="bpm-block__header-metric-skeleton" aria-hidden="true"></span>
+					<strong v-else class="bpm-block__header-metric-value">{{ metric.value }}</strong>
+				</div>
+			</div>
+
 			<div class="bpm-block__action-bar" role="toolbar" aria-label="Керування графіком">
 				<div v-if="showControls" class="bpm-block__bar-group bpm-block__bar-group_cta">
 					<button class="bpm-block__cta bpm-block__cta_measure"
@@ -24,33 +33,90 @@
 				</div>
 
 				<div v-if="showContextSelectors" class="bpm-block__bar-group bpm-block__bar-group_context">
-					<SelectBox class="bpm-block__bar-select" v-model="viewModel.state.selectedDeviceId" label="Пристрій"
-						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_device"
-						:items="viewModel.state.devices" label-key="id" value-key="id"
-						:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'" />
-					<SelectBox class="bpm-block__bar-select" v-model="viewModel.state.selectedParticipantId" label="Учасник"
-						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_participant"
-						:items="viewModel.state.participants" label-key="name" value-key="id"
-						:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'" />
-					<SelectBox v-if="showRecordingSelect" class="bpm-block__bar-select"
-						v-model="viewModel.state.recordingId" label="Запис" :items="viewModel.state.recordings"
-						inline-label label-icon-class="bpm-block__select-icon bpm-block__select-icon_recording"
-						label-key="id" value-key="id"
-						:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
-						@update:model-value="handleRecordingSelect" />
+					<label class="bpm-block__bar-select bpm-block__bar-select_inline">
+						<span class="bpm-block__bar-select-heading" aria-hidden="true">
+							<span class="bpm-block__select-icon bpm-block__select-icon_device"></span>
+							<span class="bpm-block__bar-select-label">Пристрій</span>
+						</span>
+						<select
+							v-model="viewModel.state.selectedDeviceId"
+							class="bpm-block__native-select"
+							aria-label="Пристрій"
+							:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
+						>
+							<option v-for="device in viewModel.state.devices" :key="device.id" :value="device.id">
+								{{ device.id }}
+							</option>
+						</select>
+					</label>
+					<label class="bpm-block__bar-select bpm-block__bar-select_inline">
+						<span class="bpm-block__bar-select-heading" aria-hidden="true">
+							<span class="bpm-block__select-icon bpm-block__select-icon_participant"></span>
+							<span class="bpm-block__bar-select-label">Учасник</span>
+						</span>
+						<select
+							v-model="viewModel.state.selectedParticipantId"
+							class="bpm-block__native-select"
+							aria-label="Учасник"
+							:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
+						>
+							<option
+								v-for="participant in viewModel.state.participants"
+								:key="participant.id"
+								:value="participant.id"
+							>
+								{{ participant.name }}
+							</option>
+						</select>
+					</label>
+					<label v-if="showRecordingSelect" class="bpm-block__bar-select bpm-block__bar-select_inline">
+						<span class="bpm-block__bar-select-heading" aria-hidden="true">
+							<span class="bpm-block__select-icon bpm-block__select-icon_recording"></span>
+							<span class="bpm-block__bar-select-label">Запис</span>
+						</span>
+						<select
+							class="bpm-block__native-select"
+							:value="viewModel.state.recordingId ?? ''"
+							aria-label="Запис"
+							:disabled="viewModel.state.status === 'measuring' || viewModel.state.status === 'recording'"
+							@change="handleRecordingNativeSelect"
+						>
+							<option
+								v-for="recording in viewModel.state.recordings"
+								:key="recording.id"
+								:value="recording.id"
+							>
+								{{ recording.name }}
+							</option>
+						</select>
+					</label>
 				</div>
 
-				<div v-if="showExport" class="bpm-block__bar-group bpm-block__bar-group_export">
-					<button v-if="isRecordingViewMode" class="bpm-block__exit-view-button" type="button"
-						aria-label="Вийти з перегляду"
-						@click="exitRecordingView()">
-						<span class="bpm-block__exit-view-icon" aria-hidden="true"></span>
-					</button>
-					<button class="bpm-block__export-button" type="button" aria-label="Експорт у CSV"
-						:disabled="isRecordingExportDisabled"
-						@click="downloadSelectedRecording('csv')">
-						<span class="bpm-block__export-icon" aria-hidden="true"></span>
-					</button>
+				<div
+					v-if="showContextSelectors || showExport"
+					class="bpm-block__bar-group bpm-block__bar-group_end"
+				>
+					<label v-if="showContextSelectors" class="bpm-block__ml-checkbox">
+						<input
+							v-model="mlTrainingChecked"
+							type="checkbox"
+							:disabled="viewModel.state.status === 'recording'"
+						/>
+						<span class="bpm-block__ml-box" aria-hidden="true"></span>
+						<span>Додати в датасет</span>
+					</label>
+					<template v-if="showExport">
+						<button class="bpm-block__export-button" type="button" aria-label="Експорт у CSV"
+							:disabled="isRecordingExportDisabled"
+							@click="downloadSelectedRecording('csv')">
+							<span class="bpm-block__export-icon" aria-hidden="true"></span>
+						</button>
+						<button v-if="isRecordingViewMode" class="bpm-block__exit-view-button" type="button"
+							aria-label="Вийти з перегляду"
+							@click="exitRecordingView()">
+							<span class="bpm-block__exit-view-icon" aria-hidden="true"></span>
+						</button>
+					</template>
 				</div>
 			</div>
 		</Teleport>
@@ -62,24 +128,9 @@
 		</Teleport>
 
 		<div class="bpm-block__body">
-			<div v-if="shouldShowMetrics" class="bpm-block__metrics">
-				<div v-for="metric in metricCards" :key="metric.key" class="bpm-block__metric"
-					:class="[`bpm-block__metric_${metric.key}`, metric.toneClass]">
-					<div class="bpm-block__metric-head">
-						<span class="bpm-block__metric-label">{{ metric.label }}</span>
-						<span class="bpm-block__metric-icon" :class="metric.iconClass" aria-hidden="true"></span>
-					</div>
-
-					<div class="bpm-block__metric-main">
-						<span v-if="metric.isLoading" class="bpm-block__metric-skeleton" aria-hidden="true"></span>
-						<strong v-else class="bpm-block__metric-value">{{ metric.value }}</strong>
-					</div>
-				</div>
-			</div>
-
 			<div class="bpm-block__charts-panel">
 				<div class="bpm-block__charts">
-					<div v-if="viewModel.state.chartData" ref="chartsScroll" class="bpm-block__charts-scroll">
+					<div v-if="viewModel.state.chartData" ref="chartsScroll" class="bpm-block__charts-scroll" @wheel="handleChartWheel">
 						<div class="bpm-block__charts-track" :class="`bpm-block__charts-track_${chartViewMode}`"
 							:style="chartTrackStyle">
 							<div v-if="isIrChartVisible" class="bpm-block__chart bpm-block__chart_primary">
@@ -107,9 +158,22 @@
 							+
 						</button>
 					</div>
-					<SelectBox class="bpm-block__chart-select bpm-block__bar-select_view" :model-value="chartViewMode"
-						:items="chartViewOptions" label-key="label" value-key="value"
-						@update:model-value="handleChartViewSelect" />
+					<label class="bpm-block__chart-select">
+						<select
+							class="bpm-block__native-select"
+							:value="chartViewMode"
+							aria-label="Вигляд графіка"
+							@change="handleChartViewNativeSelect"
+						>
+							<option
+								v-for="option in chartViewOptions"
+								:key="option.value"
+								:value="option.value"
+							>
+								{{ option.label }}
+							</option>
+						</select>
+					</label>
 
 					<div class="bpm-block__timeline" aria-label="Прокрутка графіка">
 						<button class="bpm-block__timeline-button" type="button" aria-label="Прокрутити ліворуч"
@@ -147,10 +211,10 @@ import {
 	type Plugin,
 } from 'chart.js';
 import Block from '~/components/Block.vue';
-import SelectBox from '~/components/SelectBox.vue';
 import { BPMBlockViewModel } from '~/controllers/components/BPMBlockViewModel';
 import type { BPMChartDataset, PulseSample } from '~/types/components/bpm-block';
-import { getQualityTone } from '~/utils/shared';
+import { formatQualityLevelLabel, getQualityToneFromLevel } from '~/utils/shared';
+import type { QualityLevel } from '~/types/shared/entities';
 
 Chart.register(
 	CategoryScale,
@@ -202,7 +266,7 @@ type BPMMetricKey = 'bpm' | 'spo2' | 'signalReadiness';
 type RecordingExportFormat = 'json' | 'csv';
 type ChartViewMode = 'split' | 'ir' | 'r' | 'combined';
 const BASE_VISIBLE_SAMPLE_COUNT = 480;
-const MIN_CHART_ZOOM = 0.5;
+const MIN_CHART_ZOOM = 0.25;
 const MAX_CHART_ZOOM = 4;
 const CHART_ZOOM_STEP = 0.25;
 const chartZoom = ref(1);
@@ -303,6 +367,12 @@ const showControls = computed(() => props.showControls);
 const showExport = computed(() => props.showExport);
 const isRecordingViewMode = computed(() => Boolean(props.selectedRecordingId));
 const shouldShowMetrics = computed(() => viewModel.isMeasurementActive() || isRecordingViewMode.value);
+const mlTrainingChecked = computed({
+	get: () => viewModel.state.useRecordingsForMlTraining === 'true',
+	set: (value: boolean) => {
+		viewModel.state.useRecordingsForMlTraining = value ? 'true' : 'false';
+	},
+});
 const measurementToggleLabel = computed(() => viewModel.isMeasurementActive() ? 'Зупинити вимір' : 'Почати вимір');
 const recordingToggleLabel = computed(() => viewModel.isRecordingActive() ? 'Зупинити запис' : 'Почати запис');
 const emptyChartMessage = computed(() => {
@@ -346,7 +416,7 @@ const statusLabel = computed(() => {
 	}
 });
 const qualityMetricLabel = computed(() => {
-	return props.qualityMetricMode === 'analysis' ? 'Якість сигналу' : 'Стабільність сигналу';
+	return props.qualityMetricMode === 'analysis' ? 'Якість' : 'Стабільність';
 });
 
 const metricCards = computed(() => {
@@ -506,7 +576,7 @@ function getChartOptions(data: number[], usesSampleObjects: boolean, xRange: { m
 
 function createMetricCard(key: BPMMetricKey, label: string, iconClass: string) {
 	const value = getMetricRawValue(key);
-	const qualityTone = key === 'signalReadiness' ? getQualityTone(value) : null;
+	const qualityTone = key === 'signalReadiness' ? getQualityToneFromLevel(value as QualityLevel | null) : null;
 
 	return {
 		key,
@@ -557,7 +627,11 @@ function getMetricValue(metric: BPMMetricKey) {
 		return '--';
 	}
 
-	if (metric === 'spo2' || metric === 'signalReadiness') {
+	if (metric === 'signalReadiness') {
+		return formatQualityLevelLabel(value as QualityLevel);
+	}
+
+	if (metric === 'spo2') {
 		return `${Math.round(Number(value))}%`;
 	}
 
@@ -582,16 +656,12 @@ function isMetricLoading(metric: BPMMetricKey) {
 	return Boolean(viewModel.state.recordingId && !viewModel.state.chartData && !viewModel.state.error);
 }
 
-function hasMetricValue(metric: BPMMetricKey, value: number | null) {
-	if (!Number.isFinite(value)) {
-		return false;
-	}
-
+function hasMetricValue(metric: BPMMetricKey, value: number | QualityLevel | null) {
 	if (metric === 'signalReadiness') {
-		return Number(value) > 0;
+		return value === 'high' || value === 'medium' || value === 'low';
 	}
 
-	return true;
+	return Number.isFinite(value);
 }
 
 function isPulseSample(point: BPMChartPoint): point is PulseSample {
@@ -768,12 +838,33 @@ function handleChartViewSelect(value: string | number | null) {
 	setChartViewMode(value as ChartViewMode);
 }
 
+function handleChartViewNativeSelect(event: Event) {
+	handleChartViewSelect((event.target as HTMLSelectElement).value);
+}
+
+function handleRecordingNativeSelect(event: Event) {
+	const recordingId = (event.target as HTMLSelectElement).value;
+
+	viewModel.state.recordingId = recordingId;
+	handleRecordingSelect(recordingId);
+}
+
 function scrollChartBy(delta: number) {
 	if (isChartScrollDisabled.value) {
 		return;
 	}
 
 	scrollLeft.value = Math.min(scrollMaxLeft.value, Math.max(0, scrollLeft.value + delta));
+}
+
+function handleChartWheel(event: WheelEvent) {
+	if (isChartScrollDisabled.value) {
+		return;
+	}
+
+	event.preventDefault();
+	const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+	scrollChartBy(Math.round(delta));
 }
 
 function getRecordingBoundaries(): RecordingBoundary[] {

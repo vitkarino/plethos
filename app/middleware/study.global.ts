@@ -21,10 +21,6 @@ export default defineNuxtRouteMiddleware((to) => {
 
 	const path = normalizePath(to.path)
 
-	if (path === '/studies' || path === '/participants') {
-		return
-	}
-
 	const api = new PulsoApiModel()
 
 	return api.fetchStudies()
@@ -36,7 +32,7 @@ function resolveStudyRoute(to: { params: Record<string, unknown>, query?: Record
 	if (studies.length === 0) {
 		clearSelectedStudyId()
 
-		return navigateTo('/studies', { replace: true })
+		return path === '/' ? undefined : navigateTo('/', { replace: true })
 	}
 
 	const routeStudyName = getRouteStudyName(to.params.name)
@@ -61,7 +57,7 @@ function resolveStudyRoute(to: { params: Record<string, unknown>, query?: Record
 	if (!selectedStudy) {
 		clearSelectedStudyId()
 
-		return navigateTo('/studies', { replace: true })
+		return path === '/' ? undefined : navigateTo('/', { replace: true })
 	}
 
 	if (path === '/') {

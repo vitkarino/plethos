@@ -27,24 +27,28 @@ import BlocksGrid from '~/components/BlocksGrid.vue';
 import BPMBlock from '~/components/BPMBlock.vue';
 import { StudyDashboardPageViewModel } from '~/controllers/pages/StudyDashboardPageViewModel';
 import { PulsoApiModel } from '~/models/PulsoApiModel';
-import type { Recording } from '~/types/shared/entities';
+import type { QualityAnalysis, Recording } from '~/types/shared/entities';
+import { formatQualityLevelLabel } from '~/utils/shared';
 
 const route = useRoute();
 const studyName = Array.isArray(route.params.name) ? route.params.name[0] : route.params.name;
 const viewModel = new StudyDashboardPageViewModel(studyName ?? '');
 const api = new PulsoApiModel();
 const recording = ref<Recording | null>(null);
+const qualityAnalysis = ref<QualityAnalysis | null>(null);
 const recordingId = computed(() => typeof route.query.recording === 'string' ? route.query.recording : '');
 const isRecordingViewMode = computed(() => Boolean(recordingId.value));
 
 usePageHeader({
 	title: 'Вимірювання',
-	infoTooltip: computed(() => {
+	infoTitle: computed(() => {
 		if (!isRecordingViewMode.value) {
 			return '';
 		}
 
-		return recording.value ? formatRecordingMetadata(recording.value) : 'Метадані запису завантажуються...';
+		return recording.value
+			? formatRecordingMetadata(recording.value, qualityAnalysis.value)
+			: 'Метадані запису завантажуються...';
 	}),
 });
 
@@ -54,6 +58,7 @@ watch(
 	recordingId,
 	(value) => {
 		recording.value = null;
+		qualityAnalysis.value = null;
 
 		if (!value) {
 			return;
@@ -62,38 +67,64 @@ watch(
 		api.fetchRecording(value)
 			.then((nextRecording) => {
 				recording.value = nextRecording;
+				return loadQualityAnalysis(value, nextRecording);
 			})
 			.catch(() => {
 				recording.value = null;
+				qualityAnalysis.value = null;
 			});
 	},
 	{ immediate: true },
 );
 
-function formatRecordingMetadata(value: Recording) {
+function loadQualityAnalysis(recordingId: string, nextRecording: Recording) {
+	const applyAnalysis = (analysis: QualityAnalysis) => {
+		qualityAnalysis.value = analysis;
+	};
+
+	if (nextRecording.quality_analysis_id) {
+		return api.fetchQualityAnalysis(recordingId)
+			.then(applyAnalysis)
+			.catch(() => api.runQualityAnalysis(recordingId).then(applyAnalysis).catch(() => undefined));
+	}
+
+	return api.runQualityAnalysis(recordingId).then(applyAnalysis).catch(() => undefined);
+}
+
+function formatRecordingMetadata(value: Recording, analysis: QualityAnalysis | null) {
 	return [
-		`ID: ${value.id}`,
-		`Вимірювання: ${value.measurement_id}`,
-		`Статус: ${formatStatus(value.status)}`,
+		`Назва запису: ${value.name || value.id}`,
+		`ID запису: ${value.id}`,
 		`Початок: ${formatDateTime(value.time.started_at)}`,
 		`Завершення: ${value.time.finished_at ? formatDateTime(value.time.finished_at) : '--'}`,
 		`Тривалість: ${formatDuration(value.time.duration_ms)}`,
 		`Семпли: ${formatNumber(value.samples_count)}`,
-		`Діапазон: ${value.sample_range.start_index}-${value.sample_range.end_index ?? '--'}`,
-		`Аналіз якості: ${value.quality_analysis_id ?? '--'}`,
-		`ML training: ${value.use_for_ml_training ? 'так' : 'ні'}`,
+		`ML-аналіз: ${formatMlAnalysisStatus(value)}`,
+		`Якість ML: ${formatMlQualityLevel(value, analysis)}`,
+		`Впевненість ML: ${formatMlQualityConfidence(value, analysis)}`,
 	].join('\n');
 }
 
-function formatStatus(status: Recording['status']) {
-	const labels: Record<Recording['status'], string> = {
-		active: 'активний',
-		completed: 'готовий',
-		failed: 'помилка',
-		cancelled: 'скасований',
-	};
+function formatMlQualityLevel(value: Recording, analysis: QualityAnalysis | null) {
+	if (!analysis) {
+		return value.quality_analysis_id ? 'завантажується...' : '--';
+	}
 
-	return labels[status] ?? status;
+	return formatQualityLevelLabel(analysis.quality_result.level);
+}
+
+function formatMlQualityConfidence(value: Recording, analysis: QualityAnalysis | null) {
+	const score = analysis?.quality_result.score;
+
+	if (!Number.isFinite(score)) {
+		return value.quality_analysis_id ? 'завантажується...' : '--';
+	}
+
+	return `${Math.round(Number(score) * 100)}%`;
+}
+
+function formatMlAnalysisStatus(value: Recording) {
+	return value.quality_analysis_id ? 'готовий' : 'не виконано';
 }
 
 function formatDateTime(value: string) {

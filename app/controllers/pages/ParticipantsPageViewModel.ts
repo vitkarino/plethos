@@ -18,6 +18,7 @@ export class ParticipantsPageViewModel {
 		participants: [],
 		studies: [],
 		studyParticipants: [],
+		selectedParticipantId: null,
 		participantForm: {
 			name: '',
 			age: '',
@@ -44,6 +45,9 @@ export class ParticipantsPageViewModel {
 		return this.api.fetchParticipants()
 			.then((participants) => {
 				this.state.participants = participants
+				if (this.state.selectedParticipantId && !participants.some((participant) => participant.id === this.state.selectedParticipantId)) {
+					this.state.selectedParticipantId = null
+				}
 				return participants
 			})
 	}
@@ -83,6 +87,14 @@ export class ParticipantsPageViewModel {
 	public participantStudyTitles(participantId: EntityId) {
 		const titles = this.participantStudyTitlesList(participantId)
 		return titles.length > 0 ? titles.join(', ') : 'Немає досліджень'
+	}
+
+	public selectedParticipant() {
+		return this.state.participants.find((participant) => participant.id === this.state.selectedParticipantId) ?? null
+	}
+
+	public toggleParticipantDetails(participantId: EntityId) {
+		this.state.selectedParticipantId = this.state.selectedParticipantId === participantId ? null : participantId
 	}
 
 	public openCreateParticipantModal() {

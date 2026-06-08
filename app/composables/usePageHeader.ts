@@ -16,7 +16,7 @@ type PageHeaderConfig = {
 	backLabel?: MaybeRef<string>
 	backTo?: MaybeRef<string>
 	modeLabel?: MaybeRef<string>
-	infoTooltip?: MaybeRef<string>
+	infoTitle?: MaybeRef<string>
 	actions?: MaybeRef<PageHeaderAction[]>
 }
 
@@ -26,7 +26,7 @@ export type PageHeaderState = {
 	backLabel: string
 	backTo: string
 	modeLabel: string
-	infoTooltip: string
+	infoTitle: string
 	actions: PageHeaderAction[]
 	owner: symbol | null
 }
@@ -40,7 +40,7 @@ export function providePageHeader() {
 		backLabel: '',
 		backTo: '',
 		modeLabel: '',
-		infoTooltip: '',
+		infoTitle: '',
 		actions: [],
 		owner: null,
 	});
@@ -66,7 +66,7 @@ export function usePageHeader(config: PageHeaderConfig) {
 		state.backLabel = config.backLabel ? unref(config.backLabel) : '';
 		state.backTo = config.backTo ? unref(config.backTo) : '';
 		state.modeLabel = config.modeLabel ? unref(config.modeLabel) : '';
-		state.infoTooltip = config.infoTooltip ? unref(config.infoTooltip) : '';
+		state.infoTitle = config.infoTitle ? unref(config.infoTitle) : '';
 		state.actions = config.actions ? unref(config.actions) : [];
 	});
 
@@ -81,7 +81,7 @@ export function usePageHeader(config: PageHeaderConfig) {
 		state.backLabel = '';
 		state.backTo = '';
 		state.modeLabel = '';
-		state.infoTooltip = '';
+		state.infoTitle = '';
 		state.actions = [];
 		state.owner = null;
 	});

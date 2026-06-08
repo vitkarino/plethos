@@ -3,7 +3,7 @@ import { createChartDataFromRecordingSamples } from '~/controllers/components/pu
 import { PulsoApiModel } from '~/models/PulsoApiModel'
 import { PulsoMeasurementStreamModel, type MeasurementStreamMessage } from '~/models/PulsoMeasurementStreamModel'
 import type { BPMBlockState } from '~/types/components/bpm-block'
-import type { EntityId, Measurement, Recording, RecordingSample } from '~/types/shared/entities'
+import type { EntityId, Measurement, QualityLevel, Recording, RecordingSample } from '~/types/shared/entities'
 import { getRequestErrorMessage } from '~/utils/shared'
 
 const RECORDING_SAMPLES_PAGE_SIZE = 1000
@@ -15,6 +15,7 @@ type BPMBlockPersistedState = {
 	recordingId: EntityId | null
 	selectedDeviceId: EntityId | null
 	selectedParticipantId: EntityId | null
+	useRecordingsForMlTraining: 'false' | 'true'
 	sampleOriginIndex: number | null
 }
 
@@ -23,7 +24,7 @@ type BPMBlockVisualSnapshot = {
 	sensorTempC: number | null
 	bpm: number | null
 	spo2: number | null
-	signalReadiness: number | null
+	signalReadiness: QualityLevel | null
 }
 
 type RecordingSampleRange = {
@@ -41,6 +42,7 @@ export class BPMBlockViewModel {
 		studyId: null,
 		selectedDeviceId: null,
 		selectedParticipantId: null,
+		useRecordingsForMlTraining: 'false',
 		devices: [],
 		participants: [],
 		recordings: [],
@@ -199,6 +201,7 @@ export class BPMBlockViewModel {
 
 		return this.api.startRecording(this.state.measurementId, {
 			duration_s: durationSeconds,
+			use_for_ml_training: this.state.useRecordingsForMlTraining === 'true',
 		}).then((recording) => {
 			this.applyRecording(recording)
 			this.state.status = 'recording'
@@ -281,7 +284,7 @@ export class BPMBlockViewModel {
 		return this.api.runQualityAnalysis(recordingId)
 			.then((analysis) => {
 				this.state.qualityAnalysis = analysis
-				this.state.signalReadiness = Math.round(analysis.quality_result.score * 100)
+				this.state.signalReadiness = analysis.quality_result.level
 			})
 			.catch((error) => {
 				this.handleError(error, 'Аналіз якості не виконано')
@@ -418,9 +421,9 @@ export class BPMBlockViewModel {
 	}
 
 	private loadRecordingQuality(recording: Recording) {
-		const applyAnalysis = (analysis: { quality_result: { score: number } }) => {
+		const applyAnalysis = (analysis: { quality_result: { level: QualityLevel } }) => {
 			this.state.qualityAnalysis = analysis as typeof this.state.qualityAnalysis
-			this.state.signalReadiness = Math.round(analysis.quality_result.score * 100)
+			this.state.signalReadiness = analysis.quality_result.level
 		}
 
 		const runAnalysis = () => {
@@ -491,11 +494,8 @@ export class BPMBlockViewModel {
 			this.state.sensorTempC = this.resolveVisualValue('sensorTempC', message.sensor_temp_c)
 			this.state.bpm = this.resolveVisualValue('bpm', message.metrics.bpm)
 			this.state.spo2 = this.resolveVisualValue('spo2', message.metrics.spo2)
-			this.state.signalReadiness = this.resolveVisualValue(
-				'signalReadiness',
-				message.metrics.signal_readiness
-					? Math.round(message.metrics.signal_readiness.score * 100)
-					: null,
+			this.state.signalReadiness = this.resolveVisualLevel(
+				message.metrics.signal_readiness?.level ?? null,
 			)
 			this.state.status = message.active_recording_id ? 'recording' : 'measuring'
 			this.state.error = null
@@ -800,6 +800,7 @@ export class BPMBlockViewModel {
 		this.state.recordingId = persistedState.recordingId
 		this.state.selectedDeviceId = persistedState.selectedDeviceId
 		this.state.selectedParticipantId = persistedState.selectedParticipantId
+		this.state.useRecordingsForMlTraining = persistedState.useRecordingsForMlTraining === 'true' ? 'true' : 'false'
 		this.sampleOriginIndex = persistedState.sampleOriginIndex
 	}
 
@@ -814,6 +815,7 @@ export class BPMBlockViewModel {
 			recordingId: this.state.recordingId,
 			selectedDeviceId: this.state.selectedDeviceId,
 			selectedParticipantId: this.state.selectedParticipantId,
+			useRecordingsForMlTraining: this.state.useRecordingsForMlTraining,
 			sampleOriginIndex: this.sampleOriginIndex,
 		}
 
@@ -882,12 +884,20 @@ export class BPMBlockViewModel {
 		})
 	}
 
-	private resolveVisualValue(metric: keyof BPMBlockVisualSnapshot, value: number | null | undefined) {
+	private resolveVisualValue(metric: Exclude<keyof BPMBlockVisualSnapshot, 'signalReadiness'>, value: number | null | undefined) {
 		if (Number.isFinite(value)) {
 			return Number(value)
 		}
 
 		return this.lastVisualSnapshot[metric]
+	}
+
+	private resolveVisualLevel(value: QualityLevel | null | undefined) {
+		if (value === 'high' || value === 'medium' || value === 'low') {
+			return value
+		}
+
+		return this.lastVisualSnapshot.signalReadiness
 	}
 
 	private captureVisualSnapshot() {
@@ -896,7 +906,7 @@ export class BPMBlockViewModel {
 			sensorTempC: this.resolveVisualValue('sensorTempC', this.state.sensorTempC),
 			bpm: this.resolveVisualValue('bpm', this.state.bpm),
 			spo2: this.resolveVisualValue('spo2', this.state.spo2),
-			signalReadiness: this.resolveVisualValue('signalReadiness', this.state.signalReadiness),
+			signalReadiness: this.resolveVisualLevel(this.state.signalReadiness),
 		}
 	}
 

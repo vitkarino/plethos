@@ -1,15 +1,10 @@
 <template>
-	<section class="studies-page">
+	<Panel content-class="studies-page">
 		<p v-if="viewModel.state.pageError" class="studies-page__form-error">
 			{{ viewModel.state.pageError }}
 		</p>
 
-		<div v-if="!viewModel.state.selectedStudy" class="studies-page__empty-selection">
-			<h2>Дослідження не вибрано</h2>
-			<p>Оберіть дослідження у боковій панелі, щоб відкрити робочу область.</p>
-		</div>
-
-		<div v-else class="studies-page__grid">
+		<div class="studies-page__grid">
 			<article
 				v-for="study in viewModel.state.studies"
 				:key="study.id"
@@ -30,69 +25,66 @@
 					</div>
 
 					<div class="studies-page__chips">
-						<template v-if="viewModel.assignedParticipants(study.id).length">
-							<details
-								v-for="assignment in viewModel.assignedParticipants(study.id)"
-								:key="assignment.participant.id"
-								class="studies-page__native-menu studies-page__chip-menu"
-								@click.stop
-							>
-								<summary class="studies-page__menu-summary">
-									<span class="studies-page__chip">
-										<span class="studies-page__avatar" aria-hidden="true">{{ viewModel.participantInitials(assignment.participant.name) }}</span>
-										<span>{{ assignment.participant.name }}</span>
-									</span>
-								</summary>
-
-								<div class="studies-page__menu studies-page__menu_chip">
-									<button type="button" @click="viewModel.openEditParticipantModal(assignment.participant)">
-										Редагувати учасника
-									</button>
-									<button type="button" class="studies-page__menu-danger" @click="viewModel.unassignParticipant(study.id, assignment.participant.id)">
-										Прибрати з дослідження
-									</button>
-								</div>
-							</details>
-						</template>
-
-						<span v-else class="studies-page__empty">Немає призначених учасників</span>
-
-						<details
-							class="studies-page__native-menu studies-page__assign-panel"
+						<label
+							v-for="assignment in viewModel.assignedParticipants(study.id)"
+							:key="assignment.participant.id"
+							class="studies-page__chip-select"
+							:aria-label="`Дії для ${assignment.participant.name}`"
 							@click.stop
 						>
-							<summary class="studies-page__menu-summary" aria-label="Призначити учасника">
-								<span class="studies-page__assign-trigger" aria-hidden="true"></span>
-							</summary>
+							<span class="studies-page__chip">
+								<span class="studies-page__avatar" aria-hidden="true">{{ viewModel.participantInitials(assignment.participant.name) }}</span>
+								<span>{{ assignment.participant.name }}</span>
+							</span>
+							<select
+								class="studies-page__chip-native-select"
+								@change="handleParticipantChipAction(study.id, assignment, $event)"
+							>
+								<option value="" selected disabled>
+									{{ assignment.participant.name }}
+								</option>
+								<option value="edit">Редагувати учасника</option>
+								<option value="unassign">Прибрати з дослідження</option>
+							</select>
+						</label>
 
-							<div class="studies-page__menu studies-page__menu_assign">
-								<form class="studies-page__assign-form" @submit.prevent="viewModel.assignParticipant(study.id)">
-									<SelectBox
-										v-model="viewModel.state.assignmentForms[study.id]"
-										:items="viewModel.unassignedParticipants(study.id)"
-										label-key="name"
-										value-key="id"
-										:placeholder="viewModel.unassignedParticipants(study.id).length === 0 ? 'Усі учасники призначені' : 'Оберіть учасника'"
-										:disabled="viewModel.unassignedParticipants(study.id).length === 0"
-									/>
-
-									<button
-										class="studies-page__button"
-										type="submit"
-										:disabled="viewModel.unassignedParticipants(study.id).length === 0"
-									>
-										Призначити
-									</button>
-								</form>
-							</div>
-						</details>
+						<label
+							v-if="viewModel.unassignedParticipants(study.id).length"
+							class="studies-page__assign-select"
+							:aria-label="`Призначити учасника до ${study.title}`"
+							@click.stop
+						>
+							<span class="studies-page__assign-trigger" aria-hidden="true"></span>
+							<select
+								class="studies-page__assign-native-select"
+								:value="viewModel.state.assignmentForms[study.id] || ''"
+								@change="handleAssignParticipant(study.id, $event)"
+							>
+								<option value="" disabled>
+									Оберіть учасника
+								</option>
+								<option
+									v-for="participant in viewModel.unassignedParticipants(study.id)"
+									:key="participant.id"
+									:value="participant.id"
+								>
+									{{ participant.name }}
+								</option>
+							</select>
+						</label>
+						<span
+							v-else
+							class="studies-page__assign-trigger studies-page__assign-trigger_disabled"
+							aria-hidden="true"
+							title="Усі учасники призначені"
+						></span>
 					</div>
 				</div>
 
 				<dl class="studies-page__activity">
 					<div>
-						<dt>Записи</dt>
-						<dd>{{ study.recordings_count ?? 0 }} записів</dd>
+						<dt>Записів</dt>
+						<dd>{{ study.recordings_count ?? 0 }}</dd>
 					</div>
 					<div>
 						<dt>Створено</dt>
@@ -110,7 +102,7 @@
 							v-if="!viewModel.isStudySelected(study)"
 							class="studies-page__button studies-page__button_open"
 							:to="viewModel.studyDashboardPath(study)"
-							@click="viewModel.selectStudy(study)"
+							@click="selectStudy(study)"
 						>
 							Відкрити
 						</NuxtLink>
@@ -124,17 +116,9 @@
 				</div>
 			</article>
 
-			<button
-				class="studies-page__card studies-page__card_add"
-				type="button"
-				@click="viewModel.openCreateStudyModal()"
-			>
-				<span class="studies-page__add-icon" aria-hidden="true"></span>
-				<span>Створити дослідження</span>
-			</button>
 		</div>
 
-		<Modal
+		<AppDialog
 			:is-open="viewModel.state.isStudyModalOpen"
 			:title="viewModel.state.editingStudyId ? 'Редагувати дослідження' : 'Нове дослідження'"
 			:submit-label="viewModel.state.editingStudyId ? 'Зберегти зміни' : 'Створити дослідження'"
@@ -163,9 +147,9 @@
 			<p v-if="viewModel.state.studyFormError" class="studies-page__form-error">
 				{{ viewModel.state.studyFormError }}
 			</p>
-		</Modal>
+		</AppDialog>
 
-		<Modal
+		<AppDialog
 			:is-open="viewModel.state.isParticipantModalOpen"
 			title="Редагувати учасника"
 			submit-label="Зберегти зміни"
@@ -183,43 +167,92 @@
 				<input v-model.number="viewModel.state.participantForm.age" min="0" type="number" required />
 			</label>
 
-			<SelectBox v-model="viewModel.state.participantForm.sex" label="Стать" :items="sexOptions" />
+			<label class="native-field">
+				<span class="native-field__label">Стать</span>
+				<select v-model="viewModel.state.participantForm.sex" class="native-field__select" required>
+					<option v-for="option in sexOptions" :key="option.value" :value="option.value">
+						{{ option.label }}
+					</option>
+				</select>
+			</label>
 
 			<p v-if="viewModel.state.participantFormError" class="studies-page__form-error">
 				{{ viewModel.state.participantFormError }}
 			</p>
-		</Modal>
-	</section>
+		</AppDialog>
+	</Panel>
 </template>
 
 <script setup lang="ts">
-import Modal from '~/components/Modal.vue';
-import SelectBox from '~/components/SelectBox.vue';
+import AppDialog from '~/components/AppDialog.vue';
+import Panel from '~/components/Panel.vue';
 import { STUDY_DESCRIPTION_MAX_LENGTH } from '~/constants/forms';
 import { StudiesPageViewModel } from '~/controllers/pages/StudiesPageViewModel';
+import type { AssignedParticipant, EntityId } from '~/types/shared/entities';
 
 const viewModel = new StudiesPageViewModel();
+const emit = defineEmits<{
+	select: []
+}>();
 const sexOptions = [
 	{ label: 'Чоловіча', value: 'male' },
 	{ label: 'Жіноча', value: 'female' },
 	{ label: 'Інше', value: 'other' },
 ];
 
-usePageHeader({
-	title: 'Дослідження',
-	actions: [
-		{
-			label: 'Створити дослідження',
-			variant: 'primary',
-			icon: 'study-add',
-			onClick: () => viewModel.openCreateStudyModal(),
-		},
-	],
-});
-
 viewModel.initialize();
+
+function reload() {
+	void viewModel.initialize();
+}
+
+function selectStudy(study: Parameters<typeof viewModel.selectStudy>[0]) {
+	emit('select');
+	viewModel.selectStudy(study);
+}
+
+function openCreateStudyModal() {
+	viewModel.openCreateStudyModal();
+}
+
+function handleParticipantChipAction(studyId: EntityId, assignment: AssignedParticipant, event: Event) {
+	const select = event.target as HTMLSelectElement;
+	const action = select.value;
+
+	select.value = '';
+
+	if (action === 'edit') {
+		viewModel.openEditParticipantModal(assignment.participant);
+		return;
+	}
+
+	if (action === 'unassign') {
+		void viewModel.unassignParticipant(studyId, assignment.participant.id);
+	}
+}
+
+function handleAssignParticipant(studyId: EntityId, event: Event) {
+	const select = event.target as HTMLSelectElement;
+	const participantId = select.value;
+
+	if (!participantId) {
+		return;
+	}
+
+	viewModel.state.assignmentForms[studyId] = participantId;
+
+	void viewModel.assignParticipant(studyId).finally(() => {
+		select.value = '';
+	});
+}
+
+defineExpose({
+	openCreateStudyModal,
+	reload,
+});
 </script>
 
 <style scoped lang="scss">
+@use "~/assets/styles/scss/components/NativeField";
 @use "~/assets/styles/scss/pages/studies";
 </style>

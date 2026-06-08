@@ -1,5 +1,5 @@
 import type { ApiResponse } from '~/types/shared/api'
-import type { EntityId, Study, StudyParticipant, Sex } from '~/types/shared/entities'
+import type { EntityId, QualityLevel, Study, StudyParticipant, Sex } from '~/types/shared/entities'
 
 export const SELECTED_STUDY_STORAGE_KEY = 'pulso.selectedStudyId'
 
@@ -111,6 +111,30 @@ export function getQualityTone(scorePercent: number | null | undefined): Quality
 	}
 
 	return 'low'
+}
+
+export function formatQualityLevelLabel(level: QualityLevel | null | undefined) {
+	if (level === 'high') {
+		return 'Висока'
+	}
+
+	if (level === 'medium' || level === 'low') {
+		return 'Низька'
+	}
+
+	return '--'
+}
+
+export function getQualityToneFromLevel(level: QualityLevel | null | undefined): QualityTone {
+	if (level === 'high') {
+		return 'high'
+	}
+
+	if (level === 'medium' || level === 'low') {
+		return 'low'
+	}
+
+	return 'neutral'
 }
 
 export function findStudyByRouteName(studies: Study[], studyName: string) {

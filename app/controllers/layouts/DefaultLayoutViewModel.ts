@@ -145,7 +145,7 @@ export class DefaultLayoutViewModel {
 	}
 
 	public selectedStudyDashboardPath() {
-		return this.state.selectedStudy ? getStudyRoutePath(this.state.selectedStudy) : '/studies'
+		return this.state.selectedStudy ? getStudyRoutePath(this.state.selectedStudy) : '/'
 	}
 
 	public selectedStudyLabel() {
@@ -347,13 +347,6 @@ export class DefaultLayoutViewModel {
 	}
 
 	private sidebarPanelFromPath(path: string): SidebarPanelKey | null {
-		if (path === '/studies') {
-			return 'studies'
-		}
-		if (path === '/participants') {
-			return 'participants'
-		}
-
 		return null
 	}
 

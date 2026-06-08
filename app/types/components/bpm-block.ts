@@ -1,4 +1,4 @@
-import type { Device, EntityId, QualityAnalysis, Recording, Participant } from '../shared/entities'
+import type { Device, EntityId, QualityAnalysis, QualityLevel, Recording, Participant } from '../shared/entities'
 
 export type BPMBlockStatus = 'idle' | 'measuring' | 'recording' | 'ready' | 'failed'
 
@@ -51,6 +51,7 @@ export type BPMBlockState = {
 	studyId: EntityId | null
 	selectedDeviceId: EntityId | null
 	selectedParticipantId: EntityId | null
+	useRecordingsForMlTraining: 'false' | 'true'
 	devices: Device[]
 	participants: Participant[]
 	recordings: Recording[]
@@ -60,7 +61,7 @@ export type BPMBlockState = {
 	sensorTempC: number | null
 	bpm: number | null
 	spo2: number | null
-	signalReadiness: number | null
+	signalReadiness: QualityLevel | null
 	qualityAnalysis: QualityAnalysis | null
 	recordingMarkers: BPMRecordingMarker[]
 	chartData: BPMChartData | null

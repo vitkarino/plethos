@@ -23,35 +23,31 @@
 					</button>
 				</div>
 			</template>
-
-			<template #bottom>
-				<a class="app-layout__link app-layout__link_author" href="https://github.com/vitkarino/pulso.git" target="_blank" aria-label="GitHub">
-					<span>GitHub</span>
-				</a>
-			</template>
 		</Sidebar>
 
 		<Transition name="app-layout-activity">
 			<aside v-if="activeSidebarPanelItem" class="app-layout__activity-panel">
 				<header class="app-layout__activity-header">
 					<div>
-						<Transition name="app-layout-activity-tab-title" mode="out-in">
-							<h2 :key="activeSidebarPanelItem.key">
-								<span>{{ activeSidebarPanelItem.label }}</span>
-							</h2>
-						</Transition>
+						<h2>
+							<span>{{ activeSidebarPanelItem.label }}</span>
+						</h2>
 					</div>
 					<div v-if="viewModel.state.activeSidebarPanel === 'records' || viewModel.state.activeSidebarPanel === 'studies' || viewModel.state.activeSidebarPanel === 'participants' || viewModel.state.activeSidebarPanel === 'ai'" class="app-layout__activity-actions">
-						<ActivityRefreshButton
+						<button
+							v-if="sidebarRefreshAction"
+							class="app-layout__activity-refresh"
+							type="button"
+							:aria-label="sidebarRefreshAction.label"
+							@click="sidebarRefreshAction.reload()"
+						></button>
+						<button
 							v-if="viewModel.state.activeSidebarPanel === 'records'"
-							label="Оновити записи"
-							@click="recordsPanelRef?.reload()"
-						/>
-						<ActivityRefreshButton
-							v-if="viewModel.state.activeSidebarPanel === 'studies'"
-							label="Оновити дослідження"
-							@click="studiesPanelRef?.reload()"
-						/>
+							class="app-layout__activity-export"
+							type="button"
+							aria-label="Експорт усіх записів у CSV"
+							@click="recordsPanelRef?.downloadAllRecordingsCsv()"
+						></button>
 						<button
 							v-if="viewModel.state.activeSidebarPanel === 'studies'"
 							class="app-layout__activity-add-study"
@@ -60,7 +56,6 @@
 							@click="studiesPanelRef?.openCreateStudyModal()"
 						></button>
 						<template v-if="viewModel.state.activeSidebarPanel === 'participants'">
-							<ActivityRefreshButton label="Оновити учасників" @click="participantsPanelRef?.reload()" />
 							<button
 								class="app-layout__activity-add-participant"
 								type="button"
@@ -68,13 +63,27 @@
 								@click="participantsPanelRef?.openCreateParticipantModal()"
 							></button>
 						</template>
-						<button
+						<label
 							v-if="viewModel.state.activeSidebarPanel === 'ai'"
-							class="app-layout__activity-chat-history"
-							type="button"
-							aria-label="Історія чатів"
-							@click="assistantPanelRef?.toggleChatHistory()"
-						></button>
+							class="app-layout__activity-chat-history-picker"
+						>
+							<span aria-hidden="true"></span>
+							<select
+								:value="assistantPanelRef?.state.activeChatId ?? ''"
+								:disabled="assistantHistoryDisabled"
+								aria-label="Історія чатів"
+								@change="handleAssistantChatHistorySelect"
+							>
+								<option value="" disabled>Історія чатів</option>
+								<option
+									v-for="chat in assistantPanelRef?.state.chats ?? []"
+									:key="chat.id"
+									:value="chat.id"
+								>
+									{{ chat.title }} · {{ assistantPanelRef?.formatChatDate(chat.updatedAt) }}
+								</option>
+							</select>
+						</label>
 						<button
 							v-if="viewModel.state.activeSidebarPanel === 'ai'"
 							class="app-layout__activity-new-chat"
@@ -92,41 +101,46 @@
 				</header>
 
 				<div class="app-layout__activity-body">
-					<Transition name="app-layout-activity-tab" mode="out-in">
-						<ActivityRecordsPanel
-							v-if="viewModel.state.activeSidebarPanel === 'records'"
-							key="records"
-							ref="recordsPanelRef"
-							:study-id="viewModel.state.selectedStudy?.id ?? null"
-							:dashboard-path="viewModel.selectedStudyDashboardPath()"
-							:active-recording-id="activeRecordingId"
-							@select="viewModel.closeSidebarPanel()"
-						/>
-						<ActivityStudiesPanel
-							v-else-if="viewModel.state.activeSidebarPanel === 'studies'"
-							key="studies"
-							ref="studiesPanelRef"
-							@select="viewModel.closeSidebarPanel()"
-						/>
-						<ActivityParticipantsPanel
-							v-else-if="viewModel.state.activeSidebarPanel === 'participants'"
-							key="participants"
-							ref="participantsPanelRef"
-						/>
-						<ActivityAssistantPanel
-							v-else-if="viewModel.state.activeSidebarPanel === 'ai'"
-							key="ai"
-							ref="assistantPanelRef"
-							:study-id="viewModel.state.selectedStudy?.id ?? null"
-							:active-recording-id="activeRecordingId"
-						/>
-					</Transition>
+					<RecordsPanel
+						v-if="viewModel.state.activeSidebarPanel === 'records'"
+						key="records"
+						ref="recordsPanelRef"
+						:study-id="viewModel.state.selectedStudy?.id ?? null"
+						:dashboard-path="viewModel.selectedStudyDashboardPath()"
+						:active-recording-id="activeRecordingId"
+						@select="viewModel.closeSidebarPanel()"
+					/>
+					<StudiesPanel
+						v-else-if="viewModel.state.activeSidebarPanel === 'studies'"
+						key="studies"
+						ref="studiesPanelRef"
+						@select="viewModel.closeSidebarPanel()"
+					/>
+					<ParticipantsPanel
+						v-else-if="viewModel.state.activeSidebarPanel === 'participants'"
+						key="participants"
+						ref="participantsPanelRef"
+					/>
+					<AssistantPanel
+						v-else-if="viewModel.state.activeSidebarPanel === 'ai'"
+						key="ai"
+						ref="assistantPanelRef"
+						:study-id="viewModel.state.selectedStudy?.id ?? null"
+						:active-recording-id="activeRecordingId"
+					/>
 				</div>
 			</aside>
 		</Transition>
 
 		<main class="app-layout__content" @click="viewModel.closeSidebarPanel()">
-			<header v-if="pageTitle" class="app-layout__page-header">
+			<header v-if="pageTitle || pageHeaderInfoItems.length" class="app-layout__page-header">
+				<button
+					v-if="pageHeaderInfoItems.length"
+					class="app-layout__page-info"
+					type="button"
+					:title="pageHeaderMetadataLabel"
+					:aria-label="pageHeaderMetadataLabel"
+				></button>
 				<div v-if="pageHeader.actions.length" class="app-layout__page-actions">
 					<template v-for="action in pageHeader.actions" :key="action.label">
 						<NuxtLink
@@ -159,7 +173,7 @@
 			</div>
 		</main>
 
-		<Modal
+		<AppDialog
 			:is-open="viewModel.state.isStudyModalOpen"
 			title="Редагувати дослідження"
 			submit-label="Зберегти зміни"
@@ -188,9 +202,9 @@
 			<p v-if="viewModel.state.studyFormError" class="app-layout__form-error">
 				{{ viewModel.state.studyFormError }}
 			</p>
-		</Modal>
+		</AppDialog>
 
-		<Modal
+		<AppDialog
 			:is-open="viewModel.state.isParticipantModalOpen"
 			title="Редагувати учасника"
 			submit-label="Зберегти зміни"
@@ -208,23 +222,28 @@
 				<input v-model.number="viewModel.state.participantForm.age" min="0" type="number" required />
 			</label>
 
-			<SelectBox v-model="viewModel.state.participantForm.sex" label="Стать" :items="sexOptions" />
+			<label class="native-field">
+				<span class="native-field__label">Стать</span>
+				<select v-model="viewModel.state.participantForm.sex" class="native-field__select" required>
+					<option v-for="option in sexOptions" :key="option.value" :value="option.value">
+						{{ option.label }}
+					</option>
+				</select>
+			</label>
 
 			<p v-if="viewModel.state.participantFormError" class="app-layout__form-error">
 				{{ viewModel.state.participantFormError }}
 			</p>
-		</Modal>
+		</AppDialog>
 	</div>
 </template>
 
 <script setup lang="ts">
-import ActivityAssistantPanel from '~/components/activity/ActivityAssistantPanel.vue';
-import ActivityParticipantsPanel from '~/components/activity/ActivityParticipantsPanel.vue';
-import ActivityRecordsPanel from '~/components/activity/ActivityRecordsPanel.vue';
-import ActivityRefreshButton from '~/components/activity/ActivityRefreshButton.vue';
-import ActivityStudiesPanel from '~/components/activity/ActivityStudiesPanel.vue';
-import Modal from '~/components/Modal.vue';
-import SelectBox from '~/components/SelectBox.vue';
+import AssistantPanel from '~/components/sidebar-panels/AssistantPanel.vue';
+import ParticipantsPanel from '~/components/sidebar-panels/ParticipantsPanel.vue';
+import RecordsPanel from '~/components/sidebar-panels/RecordsPanel.vue';
+import StudiesPanel from '~/components/sidebar-panels/StudiesPanel.vue';
+import AppDialog from '~/components/AppDialog.vue';
 import Sidebar from '~/components/Sidebar.vue';
 import type { PageHeaderAction } from '~/composables/usePageHeader';
 import { STUDY_DESCRIPTION_MAX_LENGTH } from '~/constants/forms';
@@ -241,10 +260,10 @@ type SidebarNavItem = {
 const viewModel = new DefaultLayoutViewModel();
 const route = useRoute();
 const pageHeader = providePageHeader();
-const recordsPanelRef = ref<InstanceType<typeof ActivityRecordsPanel> | null>(null);
-const studiesPanelRef = ref<InstanceType<typeof ActivityStudiesPanel> | null>(null);
-const participantsPanelRef = ref<InstanceType<typeof ActivityParticipantsPanel> | null>(null);
-const assistantPanelRef = ref<InstanceType<typeof ActivityAssistantPanel> | null>(null);
+const recordsPanelRef = ref<InstanceType<typeof RecordsPanel> | null>(null);
+const studiesPanelRef = ref<InstanceType<typeof StudiesPanel> | null>(null);
+const participantsPanelRef = ref<InstanceType<typeof ParticipantsPanel> | null>(null);
+const assistantPanelRef = ref<InstanceType<typeof AssistantPanel> | null>(null);
 const sexOptions = [
 	{ label: 'Чоловіча', value: 'male' },
 	{ label: 'Жіноча', value: 'female' },
@@ -284,23 +303,44 @@ const sidebarNavItems = computed<SidebarNavItem[]>(() => [
 const activeSidebarPanelItem = computed(() => {
 	return sidebarNavItems.value.find((item) => item.key === viewModel.state.activeSidebarPanel) ?? null;
 });
+
+const sidebarRefreshAction = computed(() => {
+	const panel = viewModel.state.activeSidebarPanel;
+
+	if (panel === 'records') {
+		return {
+			label: 'Оновити записи',
+			reload: () => recordsPanelRef.value?.reload(),
+		};
+	}
+
+	if (panel === 'studies') {
+		return {
+			label: 'Оновити дослідження',
+			reload: () => studiesPanelRef.value?.reload(),
+		};
+	}
+
+	if (panel === 'participants') {
+		return {
+			label: 'Оновити учасників',
+			reload: () => participantsPanelRef.value?.reload(),
+		};
+	}
+
+	return null;
+});
+
 const activeRecordingId = computed(() => {
 	const value = route.params.recordingId ?? route.query.recording;
 
 	return typeof value === 'string' ? value : null;
 });
-const isStudySelectionFallback = computed(() => route.path === '/studies' && !viewModel.state.selectedStudy);
+const isStudySelectionFallback = computed(() => route.path === '/' && !viewModel.state.selectedStudy);
 
 const defaultPageTitle = computed(() => {
 	if (isStudySelectionFallback.value) {
 		return '';
-	}
-
-	if (route.path === '/studies') {
-		return 'Дослідження';
-	}
-	if (route.path === '/participants') {
-		return 'Учасники';
 	}
 
 	if (route.path.endsWith('/dashboard')) {
@@ -310,6 +350,11 @@ const defaultPageTitle = computed(() => {
 	return viewModel.selectedStudyLabel();
 });
 const pageTitle = computed(() => isStudySelectionFallback.value ? '' : pageHeader.title || defaultPageTitle.value);
+const pageHeaderInfoItems = computed(() => pageHeader.infoTitle.split('\n').filter(Boolean));
+const pageHeaderMetadataLabel = computed(() => pageHeaderInfoItems.value.join('\n'));
+const assistantHistoryDisabled = computed(() => (
+	!assistantPanelRef.value?.state.chats.length || Boolean(assistantPanelRef.value?.state.isSending)
+));
 
 function pageHeaderActionDisabled(action: PageHeaderAction) {
 	return Boolean(action.disabled === undefined ? false : unref(action.disabled));
@@ -320,6 +365,10 @@ function pageHeaderActionClasses(action: PageHeaderAction) {
 		action.variant ? `app-layout__page-action_${action.variant}` : '',
 		action.icon ? `app-layout__page-action_${action.icon}` : '',
 	];
+}
+
+function handleAssistantChatHistorySelect(event: Event) {
+	assistantPanelRef.value?.selectChatHistory((event.target as HTMLSelectElement).value);
 }
 
 watch(
@@ -344,7 +393,7 @@ watch(
 );
 
 function syncStudySelectionFallback() {
-	if (route.path === '/studies' && !viewModel.state.selectedStudy) {
+	if (route.path === '/' && !viewModel.state.selectedStudy) {
 		viewModel.openSidebarPanel('studies');
 	}
 }

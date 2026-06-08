@@ -4,7 +4,7 @@
 			<slot name="nav" />
 		</nav>
 
-		<div class="sidebar__bottom">
+		<div v-if="$slots.bottom" class="sidebar__bottom">
 			<slot name="bottom" />
 		</div>
 	</aside>

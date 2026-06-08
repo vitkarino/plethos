@@ -5,20 +5,20 @@ import { formatDateValue, getQualityTone, getRequestErrorMessage } from '~/utils
 
 const RECORDINGS_PANEL_LIMIT = 24
 
-export type ActivityRecordingRow = {
+export type RecordsPanelRow = {
 	recording: Recording
 	measurement: Measurement | null
 	qualityAnalysis: QualityAnalysis | null
 }
 
-type ActivityRecordsPanelState = {
-	rows: ActivityRecordingRow[]
+type RecordsPanelState = {
+	rows: RecordsPanelRow[]
 	isLoading: boolean
 	error: string
 }
 
-export class ActivityRecordsPanelViewModel {
-	public readonly state = reactive<ActivityRecordsPanelState>({
+export class RecordsPanelViewModel {
+	public readonly state = reactive<RecordsPanelState>({
 		rows: [],
 		isLoading: false,
 		error: '',
@@ -67,8 +67,8 @@ export class ActivityRecordsPanelViewModel {
 		})
 	}
 
-	public title(row: ActivityRecordingRow) {
-		return row.recording.id
+	public title(row: RecordsPanelRow) {
+		return row.recording.name || row.recording.id
 	}
 
 	public shortRecordingId(recording: Recording) {
@@ -105,7 +105,7 @@ export class ActivityRecordsPanelViewModel {
 		return `${Number(recording.samples_count).toLocaleString('uk-UA')} семплів`
 	}
 
-	public metricValue(row: ActivityRecordingRow, metric: 'bpm' | 'spo2' | 'quality') {
+	public metricValue(row: RecordsPanelRow, metric: 'bpm' | 'spo2' | 'quality') {
 		if (metric === 'bpm') {
 			return Number.isFinite(row.measurement?.bpm) ? String(Math.round(Number(row.measurement?.bpm))) : '--'
 		}
@@ -119,13 +119,17 @@ export class ActivityRecordsPanelViewModel {
 		return Number.isFinite(score) ? `${Math.round(Number(score) * 100)}%` : '--'
 	}
 
-	public qualityTone(row: ActivityRecordingRow) {
+	public qualityTone(row: RecordsPanelRow) {
 		const score = row.qualityAnalysis?.quality_result.score
 
 		return getQualityTone(Number.isFinite(score) ? Number(score) * 100 : null)
 	}
 
-	private createRecordingRow(recording: Recording): Promise<ActivityRecordingRow> {
+	public trainingLabel(recording: Recording) {
+		return recording.use_for_ml_training ? 'Так' : 'Ні'
+	}
+
+	private createRecordingRow(recording: Recording): Promise<RecordsPanelRow> {
 		return Promise.all([
 			this.api.fetchMeasurement(recording.measurement_id).catch(() => null),
 			recording.quality_analysis_id

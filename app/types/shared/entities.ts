@@ -86,6 +86,7 @@ export type Measurement = {
 
 export type Recording = {
 	id: EntityId
+	name: string
 	measurement_id: EntityId
 	study_id?: EntityId
 	participant_id?: EntityId

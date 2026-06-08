@@ -68,6 +68,8 @@ export type StartMeasurementPayload = {
 
 export type StartRecordingPayload = {
 	duration_s: number
+	name?: string
+	use_for_ml_training?: boolean
 }
 
 export type StudyParticipantDeleteResult = Pick<StudyParticipant, 'study_id' | 'participant_id'> & {
@@ -196,6 +198,13 @@ export class PulsoApiModel {
 
 	public getRecordingExportUrl(recordingId: EntityId, format: 'csv' | 'json') {
 		return this.absoluteUrl(`/recordings/${encodeURIComponent(recordingId)}/export?format=${encodeURIComponent(format)}`)
+	}
+
+	public getRecordingsExportUrl(query: RecordingListQuery = {}, format: 'csv' = 'csv') {
+		return this.absoluteUrl(this.withQuery('/recordings/export', {
+			...query,
+			format,
+		}))
 	}
 
 	public runQualityAnalysis(recordingId: EntityId) {
