@@ -4,7 +4,8 @@ import numpy as np
 from scipy import signal
 
 from app.core.config import AppConfig
-from app.schemas.metrics import SignalQuality
+from app.processing.morphology import analyze_waveform_morphology
+from app.schemas.metrics import SignalQuality, WaveformMorphology
 
 
 @dataclass(frozen=True)
@@ -13,6 +14,7 @@ class CalculationResult:
     spo2: float | None
     ratio: float | None
     quality: SignalQuality
+    waveform_morphology: WaveformMorphology
 
 
 @dataclass(frozen=True)
@@ -45,11 +47,13 @@ class VitalSignsCalculator:
     ) -> CalculationResult:
         window_seconds = len(raw_ir) / fs
         if window_seconds < self._config.min_window_seconds:
+            morphology = self._analyze_morphology(raw_ir, filtered_ir, np.empty(0, dtype=int), fs)
             quality = SignalQuality(
                 level="warming_up",
                 score=0.0,
                 samples_in_window=len(raw_ir),
                 window_seconds=round(window_seconds, 2),
+                shape_score=morphology.shape_score,
                 reason="collecting enough samples for a stable window",
             )
             return CalculationResult(
@@ -57,6 +61,7 @@ class VitalSignsCalculator:
                 spo2=None,
                 ratio=None,
                 quality=quality,
+                waveform_morphology=morphology,
             )
 
         peaks = self._find_peaks(filtered_ir, fs)
@@ -68,6 +73,7 @@ class VitalSignsCalculator:
             window_seconds=window_seconds,
             fs=fs,
         )
+        morphology = self._analyze_morphology(raw_ir, filtered_ir, peaks, fs)
         contact_problem = self._contact_problem(raw_ir, raw_red, spo2_estimate.perfusion_index)
         if contact_problem is not None:
             quality = SignalQuality(
@@ -79,6 +85,7 @@ class VitalSignsCalculator:
                 if spo2_estimate.perfusion_index is not None
                 else None,
                 peak_count=0,
+                shape_score=morphology.shape_score,
                 reason=contact_problem,
             )
             return CalculationResult(
@@ -86,6 +93,7 @@ class VitalSignsCalculator:
                 spo2=None,
                 ratio=None,
                 quality=quality,
+                waveform_morphology=morphology,
             )
 
         bpm_estimate = self._estimate_bpm(filtered_ir, fs, peaks)
@@ -97,6 +105,7 @@ class VitalSignsCalculator:
             peak_count=bpm_estimate.peak_count,
             regularity_score=bpm_estimate.regularity_score,
             perfusion_index=spo2_estimate.perfusion_index,
+            shape_score=morphology.shape_score,
         )
         level = self._quality_level(
             bpm=bpm_estimate.bpm,
@@ -116,6 +125,7 @@ class VitalSignsCalculator:
             if spo2_estimate.perfusion_index is not None
             else None,
             peak_count=bpm_estimate.peak_count,
+            shape_score=morphology.shape_score,
             reason=reason,
         )
         return CalculationResult(
@@ -123,6 +133,23 @@ class VitalSignsCalculator:
             spo2=spo2_estimate.spo2,
             ratio=spo2_estimate.ratio,
             quality=quality,
+            waveform_morphology=morphology,
+        )
+
+    def _analyze_morphology(
+        self,
+        raw_ir: np.ndarray,
+        filtered_ir: np.ndarray,
+        peaks: np.ndarray,
+        fs: float,
+    ) -> WaveformMorphology:
+        return analyze_waveform_morphology(
+            raw_ir=raw_ir,
+            filtered_ir=filtered_ir,
+            peaks=peaks,
+            fs=fs,
+            min_bpm=self._config.min_bpm,
+            max_bpm=self._config.max_bpm,
         )
 
     def _find_peaks(self, filtered_ir: np.ndarray, fs: float) -> np.ndarray:
@@ -348,6 +375,7 @@ class VitalSignsCalculator:
         peak_count: int,
         regularity_score: float,
         perfusion_index: float | None,
+        shape_score: float | None,
     ) -> float:
         window_score = self._clamp(window_seconds / self._config.min_window_seconds)
         pi_score = 0.0
@@ -368,6 +396,8 @@ class VitalSignsCalculator:
             confidence *= 0.45
         if spo2 is None:
             confidence *= 0.70
+        if shape_score is not None:
+            confidence = confidence * 0.85 + shape_score * 0.15
         return self._clamp(confidence)
 
     @classmethod

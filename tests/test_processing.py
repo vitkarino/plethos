@@ -182,6 +182,10 @@ class ProcessingTests(unittest.TestCase):
         self.assertIsNotNone(metrics.bpm)
         self.assertIsNotNone(metrics.spo2)
         self.assertIn(metrics.signal_quality.level, {"medium", "high"})
+        self.assertIsNotNone(metrics.waveform_morphology)
+        assert metrics.waveform_morphology is not None
+        self.assertEqual(metrics.waveform_morphology.shape_quality, "stable")
+        self.assertIsNotNone(metrics.waveform_morphology.shape_score)
 
     def test_start_measurement_stays_running_without_duration(self) -> None:
         service = PPGProcessingService(AppConfig(), MetricsStore())
