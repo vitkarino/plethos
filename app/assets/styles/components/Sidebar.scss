@@ -1,0 +1,43 @@
+@use "../core/variables" as *;
+
+.sidebar {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	width: $sidebar-width;
+	min-width: $sidebar-width;
+	z-index: 99;
+	// height: 100vh;
+	padding-block: 0.5em;
+	padding-inline: 1em;
+	border-right: 1px solid rgba(26, 26, 26, 1);
+	// border-radius: 8px;
+	background: #060606;
+	color: $color-text-secondary;
+	transition:
+		width 180ms ease,
+		min-width 180ms ease,
+		padding-inline 180ms ease;
+}
+
+.sidebar_collapsed {
+	width: 3.75em;
+	min-width: 3.75em;
+}
+
+.sidebar__nav {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex: 1;
+	width: fit-content;
+	min-height: 0;
+}
+
+.sidebar__bottom {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.375em;
+}

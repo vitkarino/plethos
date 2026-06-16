@@ -1,0 +1,238 @@
+@use "../core/variables" as *;
+
+@mixin icon-mask($svg) {
+	-webkit-mask: url($svg) center / contain no-repeat;
+	mask: url($svg) center / contain no-repeat;
+}
+
+$icon-x: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M18 6 6 18M6 6l12 12'/%3E%3C/svg%3E";
+$icon-check: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m20 6-11 11-5-5'/%3E%3C/svg%3E";
+
+.app-dialog:not([open]) {
+	display: none;
+}
+
+.app-dialog[open] {
+	position: fixed;
+	inset: 0;
+	z-index: var(--dialog-z-index);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	max-width: none;
+	height: 100%;
+	max-height: none;
+	margin: 0;
+	padding: 1.25em;
+	border: 0;
+	background: transparent;
+	color: $color-text-primary;
+}
+
+.app-dialog::backdrop {
+	background: rgba(0, 0, 0, 0.62);
+}
+
+.app-dialog__panel {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5em;
+	width: min(100%, var(--dialog-width));
+	padding: 1.5em;
+	border: 0;
+	border-radius: $radius-block;
+	background: $color-surface-bg;
+	box-shadow: 0 1em 2.5em rgba(0, 0, 0, 0.38);
+}
+
+.app-dialog__header,
+.app-dialog__footer {
+	display: flex;
+	gap: 0.75em;
+	min-height: 2.25em;
+	padding: 0.375em 1.5em;
+	border-color: rgba(255, 255, 255, 0.08);
+	background: rgba(21, 28, 36, 0.42);
+	box-sizing: border-box;
+}
+
+.app-dialog__header {
+	align-items: center;
+	justify-content: space-between;
+	margin: -1.5em -1.5em 0;
+	border-bottom: 0;
+}
+
+.app-dialog__header h2 {
+	margin: 0;
+	color: $color-text-secondary;
+	font-family: $font-data;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1.35;
+	letter-spacing: 0;
+	text-transform: uppercase;
+}
+
+.app-dialog__close {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2em;
+	height: 2em;
+	padding: 0;
+	border: 0;
+	border-radius: $radius-control;
+	background: transparent;
+	color: $color-text-secondary;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		color 160ms ease;
+}
+
+.app-dialog__close span {
+	display: block;
+	width: 1em;
+	height: 1em;
+	background: currentColor;
+	@include icon-mask($icon-x);
+}
+
+.app-dialog__close:hover,
+.app-dialog__close:focus-visible {
+	background: rgba($color-selected, 0.1);
+	color: $color-selected;
+	outline: none;
+}
+
+.app-dialog__body {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+}
+
+.app-dialog__body :deep(label) {
+	display: flex;
+	flex-direction: column;
+}
+
+.app-dialog__body :deep(label span) {
+	margin: 0 0 0.35em;
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.app-dialog__body :deep(input),
+.app-dialog__body :deep(select),
+.app-dialog__body :deep(textarea) {
+	width: 100%;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-page-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	outline: none;
+	transition:
+		border-color 160ms ease,
+		background-color 160ms ease;
+}
+
+.app-dialog__body :deep(input),
+.app-dialog__body :deep(select) {
+	min-height: 2.5em;
+	padding: 0 0.75em;
+}
+
+.app-dialog__body :deep(textarea) {
+	min-height: 7em;
+	padding: 0.625em 0.75em;
+	resize: none;
+}
+
+.app-dialog__body :deep(input:focus),
+.app-dialog__body :deep(select:focus),
+.app-dialog__body :deep(textarea:focus) {
+	border-color: $color-selected;
+	background: $color-button-bg;
+}
+
+.app-dialog__footer {
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5em;
+	margin: auto -1.5em -1.5em;
+	border-top: 0;
+}
+
+.app-dialog__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.45em;
+	min-height: 2.5em;
+	padding: 0 1em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 11pt;
+	font-weight: 700;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.app-dialog__button-icon {
+	display: block;
+	width: 1em;
+	height: 1em;
+	background: currentColor;
+}
+
+.app-dialog__button-icon_cancel {
+	@include icon-mask($icon-x);
+}
+
+.app-dialog__button-icon_save {
+	@include icon-mask($icon-check);
+}
+
+.app-dialog__button:hover,
+.app-dialog__button:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.app-dialog__button:disabled {
+	cursor: not-allowed;
+	opacity: 0.48;
+}
+
+.app-dialog__button_primary {
+	background: $color-page-bg;
+}
+
+.app-dialog__button_ghost {
+	background: transparent;
+}
+
+@media (max-width: 46em) {
+	.app-dialog__footer {
+		align-items: stretch;
+		flex-direction: column;
+	}
+}

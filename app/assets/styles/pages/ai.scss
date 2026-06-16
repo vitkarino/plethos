@@ -1,0 +1,383 @@
+@use "../core/variables" as *;
+
+$icon-send: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 12h14m-7-7 7 7-7 7'/%3E%3C/svg%3E";
+$icon-bot: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8V4H8m4 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 0H8m8 0h-4m0 8v4M8 20h8M4 8h4M16 8h4'/%3E%3C/svg%3E";
+@mixin icon-mask($svg) {
+	-webkit-mask: url($svg) center / contain no-repeat;
+	mask: url($svg) center / contain no-repeat;
+}
+
+// ─── Page shell ───────────────────────────────────────────────────────────────
+
+.ai-page {
+	display: flex;
+	flex-direction: column;
+	align-self: stretch;
+	width: 100%;
+	height: calc(100vh - 6.5em);
+	max-height: calc(100vh - 6.5em);
+	min-height: 0;
+	overflow: hidden;
+	color: $color-text-primary;
+}
+
+// ─── Feed (scrollable message area) ──────────────────────────────────────────
+
+.ai-page__feed {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.1em;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 2.25em 2em 1.25em;
+	scrollbar-color: rgba($color-selected, 0.35) transparent;
+	scrollbar-gutter: stable;
+	scrollbar-width: thin;
+}
+
+.ai-page__feed::-webkit-scrollbar {
+	width: 0.55em;
+}
+
+.ai-page__feed::-webkit-scrollbar-track {
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.ai-page__feed::-webkit-scrollbar-thumb {
+	border-radius: 999px;
+	background: rgba($color-selected, 0.42);
+}
+
+.ai-page__feed::-webkit-scrollbar-thumb:hover {
+	background: rgba($color-selected, 0.7);
+}
+
+// ─── Welcome state ────────────────────────────────────────────────────────────
+
+.ai-page__welcome {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75em;
+	flex: 1;
+	width: min(100%, 45em);
+	text-align: center;
+	padding: 2em 1em;
+}
+
+// ─── Message bubbles ──────────────────────────────────────────────────────────
+
+.ai-bubble {
+	display: flex;
+	align-items: flex-start;
+	gap: 0;
+	width: min(100%, 50em);
+}
+
+.ai-bubble_user {
+	justify-content: flex-end;
+}
+
+.ai-bubble__avatar {
+	display: none;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 2.125em;
+	height: 2.125em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-surface-bg;
+	color: $color-text-secondary;
+	font-size: 9pt;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.ai-bubble__avatar-icon {
+	display: block;
+	width: 1.1em;
+	height: 1.1em;
+	background: $color-text-secondary;
+	@include icon-mask($icon-bot);
+}
+
+.ai-bubble_user .ai-bubble__avatar {
+	border-color: rgba($color-selected, 0.35);
+	background: rgba($color-selected, 0.07);
+	color: $color-selected;
+}
+
+.ai-bubble__body {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	width: 100%;
+}
+
+.ai-bubble_user .ai-bubble__body {
+	align-items: flex-end;
+}
+
+.ai-bubble__meta {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+.ai-bubble__text {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: $color-text-primary;
+	font-size: 13pt;
+	line-height: 1.7;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.ai-bubble_user .ai-bubble__text {
+	max-width: min(100%, 32em);
+	padding: 0.75em 1em;
+	border: 1px solid rgba(255, 255, 255, 0.09);
+	border-radius: 99px;
+	background: #2b2b2b;
+	font-size: 12pt;
+	line-height: 1.45;
+}
+
+// Typing indicator
+.ai-bubble__thinking {
+	display: flex;
+	align-items: center;
+	gap: 0.35em;
+	padding: 0.65em 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+
+	span {
+		width: 0.45em;
+		height: 0.45em;
+		border-radius: 50%;
+		background: $color-text-secondary;
+		animation: ai-thinking 1.2s ease-in-out infinite;
+
+		&:nth-child(2) { animation-delay: 0.2s; }
+		&:nth-child(3) { animation-delay: 0.4s; }
+	}
+}
+
+@keyframes ai-thinking {
+	0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+	30% { opacity: 1; transform: translateY(-0.2em); }
+}
+
+// ─── Bottom (composer + error) ────────────────────────────────────────────────
+
+.ai-page__bottom {
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5em;
+	align-items: center;
+	padding: 0 2em 1.25em;
+}
+
+.ai-page__error {
+	width: min(100%, 50em);
+	margin: 0;
+	padding: 0.625em 0.875em;
+	border: 1px solid rgba(#f87171, 0.4);
+	border-radius: $radius-control;
+	background: rgba(#f87171, 0.07);
+	color: #f87171;
+	font-size: 10.5pt;
+	line-height: 1.4;
+}
+
+// ─── Composer ─────────────────────────────────────────────────────────────────
+
+.ai-page__composer {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	width: min(100%, 50em);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 1.6em;
+	background: #242424;
+	box-shadow: 0 0.75em 2.25em rgba(0, 0, 0, 0.28);
+	transition:
+		border-color 160ms ease,
+		background-color 160ms ease;
+
+	&:focus-within {
+		border-color: rgba($color-selected, 0.35);
+		background: #272727;
+	}
+}
+
+.ai-page__composer-input {
+	padding: 0.95em 1.1em 0;
+}
+
+.ai-page__label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+.ai-page__textarea {
+	display: block;
+	width: 100%;
+	min-height: 3.2em;
+	max-height: 14em;
+	padding: 0;
+	resize: none;
+	border: 0;
+	background: transparent;
+	color: $color-text-primary;
+	font-family: $font-text;
+	font-size: 12pt;
+	line-height: 1.45;
+	outline: none;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: rgba($color-selected, 0.3) transparent;
+}
+
+.ai-page__textarea::placeholder {
+	color: $color-text-secondary;
+	opacity: 0.65;
+}
+
+.ai-page__textarea:disabled {
+	opacity: 0.6;
+}
+
+.ai-page__composer-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75em;
+	padding: 0.55em 0.75em 0.75em 1.1em;
+}
+
+.ai-page__recording-native {
+	width: min(15em, calc(100% - 3.5em));
+}
+
+// ─── Send button ──────────────────────────────────────────────────────────────
+
+.ai-page__send {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0;
+	width: 2.25em;
+	min-width: 2.25em;
+	height: 2.25em;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: $color-text-primary;
+	color: $color-page-bg;
+	font-family: $font-text;
+	font-size: 10.5pt;
+	font-weight: 700;
+	cursor: pointer;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease,
+		opacity 160ms ease;
+
+	&:hover:not(:disabled),
+	&:focus-visible:not(:disabled) {
+		background: #ffffff;
+		color: $color-page-bg;
+		outline: none;
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 0.45;
+	}
+}
+
+.ai-page__send-icon {
+	display: block;
+	width: 1em;
+	height: 1em;
+	background: currentColor;
+	@include icon-mask($icon-send);
+}
+
+.ai-page__send span:not(.ai-page__send-icon, .ai-page__send-spinner) {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+.ai-page__send-spinner {
+	display: block;
+	width: 0.9em;
+	height: 0.9em;
+	border: 0.125em solid rgba($color-page-bg, 0.25);
+	border-top-color: $color-page-bg;
+	border-radius: 50%;
+	animation: ai-spin 0.7s linear infinite;
+}
+
+@keyframes ai-spin {
+	to { transform: rotate(360deg); }
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+
+@media (max-width: 54em) {
+	.ai-page {
+		height: calc(100vh - 5.5em);
+		max-height: calc(100vh - 5.5em);
+	}
+
+	.ai-page__feed {
+		padding: 1.25em 1em 0.75em;
+	}
+
+	.ai-page__bottom {
+		padding: 0 1em 1em;
+	}
+}
+
+@media (max-width: 34em) {
+	.ai-bubble {
+		max-width: 100%;
+	}
+
+	.ai-page__composer-footer {
+		align-items: center;
+		gap: 0.5em;
+	}
+
+	.ai-page__send {
+		flex: 0 0 auto;
+	}
+}

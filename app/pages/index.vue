@@ -1,3 +1,3 @@
 <template>
-	<p>Pulso</p>
+	<section class="index-page"></section>
 </template>
