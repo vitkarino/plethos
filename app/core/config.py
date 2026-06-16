@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+import sys
 from pathlib import Path
 from urllib.parse import quote
 
@@ -25,7 +26,11 @@ def _load_dotenv(path: str = ".env") -> None:
         os.environ[name] = value
 
 
-_load_dotenv()
+_should_load_dotenv = os.getenv("APP_LOAD_DOTENV", "1").strip().lower() not in {"0", "false", "no", "off"}
+# Pytest imports the application modules for unit tests; loading local `.env`
+# during import makes tests environment-dependent.
+if _should_load_dotenv and "pytest" not in sys.modules:
+    _load_dotenv()
 
 
 def _float_env(name: str, default: float) -> float:
