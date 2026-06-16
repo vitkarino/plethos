@@ -1,14 +1,14 @@
 import { reactive } from 'vue'
 import { createChartDataFromRecordingSamples } from '~/controllers/components/pulseSamplesChart'
-import { PulsoApiModel } from '~/models/PulsoApiModel'
-import { PulsoMeasurementStreamModel, type MeasurementStreamMessage } from '~/models/PulsoMeasurementStreamModel'
+import { ApiModel as ApiModel } from '~/models/ApiModel'
+import { MeasurementStreamModel as MeasurementStreamModel, type MeasurementStreamMessage } from '~/models/MeasurementStreamModel'
 import type { BPMBlockState } from '~/types/components/bpm-block'
 import type { EntityId, Measurement, QualityLevel, Recording, RecordingSample } from '~/types/shared/entities'
 import { getRequestErrorMessage } from '~/utils/shared'
 
 const RECORDING_SAMPLES_PAGE_SIZE = 1000
 const RECORDINGS_LIST_LIMIT = 12
-const BPM_BLOCK_STORAGE_KEY_PREFIX = 'pulso.bpmBlock'
+const BPM_BLOCK_STORAGE_KEY_PREFIX = 'ppg.bpmBlock'
 
 type BPMBlockPersistedState = {
 	measurementId: EntityId | null
@@ -59,8 +59,8 @@ export class BPMBlockViewModel {
 		error: null,
 	})
 
-	private readonly api = new PulsoApiModel()
-	private readonly stream = new PulsoMeasurementStreamModel()
+	private readonly api = new ApiModel()
+	private readonly stream = new MeasurementStreamModel()
 	private liveSamples: RecordingSample[] = []
 	private sampleOriginIndex: number | null = null
 	private recordingSampleRanges: RecordingSampleRange[] = []
@@ -73,12 +73,13 @@ export class BPMBlockViewModel {
 		signalReadiness: null,
 	}
 
-	private readonly options: { autoLoadLastRecording: boolean }
+	private readonly options: { autoLoadLastRecording: boolean; restoreLiveMeasurement: boolean }
 
-	public constructor(studyId: EntityId | null = null, options: { autoLoadLastRecording?: boolean } = {}) {
+	public constructor(studyId: EntityId | null = null, options: { autoLoadLastRecording?: boolean; restoreLiveMeasurement?: boolean } = {}) {
 		this.state.studyId = studyId
 		this.options = {
 			autoLoadLastRecording: options.autoLoadLastRecording ?? true,
+			restoreLiveMeasurement: options.restoreLiveMeasurement ?? true,
 		}
 	}
 
@@ -643,7 +644,11 @@ export class BPMBlockViewModel {
 	}
 
 	private restoreRuntimeState() {
-		return this.restoreActiveMeasurement()
+		const restoreMeasurement = this.options.restoreLiveMeasurement
+			? this.restoreActiveMeasurement()
+			: Promise.resolve(false)
+
+		return restoreMeasurement
 			.then((isRestored) => {
 				if (isRestored) {
 					return

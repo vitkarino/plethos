@@ -1,21 +1,19 @@
 <template>
 	<section class="study-dashboard-page">
-		<BlocksGrid v-if="viewModel.state.study" class="study-dashboard-page__grid">
-			<template #topLeft>
-				<BPMBlock
-					:key="recordingId || 'live'"
-					:study-id="viewModel.state.study?.id ?? null"
-					:selected-recording-id="recordingId"
-					:show-controls="!isRecordingViewMode"
-					:show-context-selectors="!isRecordingViewMode"
-					:show-export="isRecordingViewMode"
-					:show-recording-markers="!isRecordingViewMode"
-					:show-recording-select="false"
-					:auto-load-last-recording="false"
-					:quality-metric-mode="isRecordingViewMode ? 'analysis' : 'readiness'"
-				/>
-			</template>
-		</BlocksGrid>
+		<BPMBlock
+			v-if="viewModel.state.study"
+			class="study-dashboard-page__grid"
+			:key="recordingId || 'live'"
+			:study-id="viewModel.state.study?.id ?? null"
+			:selected-recording-id="recordingId"
+			:show-controls="!isRecordingViewMode"
+			:show-context-selectors="!isRecordingViewMode"
+			:show-export="isRecordingViewMode"
+			:show-recording-markers="!isRecordingViewMode"
+			:show-recording-select="false"
+			:auto-load-last-recording="false"
+			:quality-metric-mode="isRecordingViewMode ? 'analysis' : 'readiness'"
+		/>
 		<p v-else-if="!viewModel.state.isLoading" class="study-dashboard-page__message">
 			{{ viewModel.state.pageError }}
 		</p>
@@ -23,17 +21,18 @@
 </template>
 
 <script setup lang="ts">
-import BlocksGrid from '~/components/BlocksGrid.vue';
+import type { RouteLocationNormalized } from 'vue-router';
 import BPMBlock from '~/components/BPMBlock.vue';
 import { StudyDashboardPageViewModel } from '~/controllers/pages/StudyDashboardPageViewModel';
-import { PulsoApiModel } from '~/models/PulsoApiModel';
+import { ApiModel } from '~/models/ApiModel';
 import type { QualityAnalysis, Recording } from '~/types/shared/entities';
 import { formatQualityLevelLabel } from '~/utils/shared';
 
 const route = useRoute();
+const measurementSession = useMeasurementSession();
 const studyName = Array.isArray(route.params.name) ? route.params.name[0] : route.params.name;
 const viewModel = new StudyDashboardPageViewModel(studyName ?? '');
-const api = new PulsoApiModel();
+const api = new ApiModel();
 const recording = ref<Recording | null>(null);
 const qualityAnalysis = ref<QualityAnalysis | null>(null);
 const recordingId = computed(() => typeof route.query.recording === 'string' ? route.query.recording : '');
@@ -53,6 +52,42 @@ usePageHeader({
 });
 
 viewModel.initialize();
+
+onBeforeRouteUpdate(async (to, from) => {
+	return guardMeasurementExit(to, from);
+});
+
+onBeforeRouteLeave(async (to, from) => {
+	return guardMeasurementExit(to, from);
+});
+
+function isLiveDashboardRoute(value: RouteLocationNormalized) {
+	return value.path.endsWith('/dashboard') && typeof value.query.recording !== 'string';
+}
+
+function shouldConfirmMeasurementExit(from: RouteLocationNormalized, to: RouteLocationNormalized) {
+	if (!isLiveDashboardRoute(from)) {
+		return false;
+	}
+
+	return !isLiveDashboardRoute(to);
+}
+
+async function guardMeasurementExit(to: RouteLocationNormalized, from: RouteLocationNormalized) {
+	if (!shouldConfirmMeasurementExit(from, to)) {
+		return true;
+	}
+
+	const confirmed = await measurementSession.confirmExit();
+
+	if (!confirmed) {
+		return false;
+	}
+
+	await measurementSession.stopIfActive();
+
+	return true;
+}
 
 watch(
 	recordingId,
@@ -154,5 +189,5 @@ function formatNumber(value: number | null) {
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/pages/study-dashboard";
+@use "~/assets/styles/pages/study-dashboard";
 </style>

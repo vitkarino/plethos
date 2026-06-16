@@ -21,5 +21,5 @@ withDefaults(defineProps<{
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/components/Panel";
+@use "~/assets/styles/components/Panel";
 </style>

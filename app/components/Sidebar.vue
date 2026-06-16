@@ -11,5 +11,5 @@
 </template>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/components/Sidebar";
+@use "~/assets/styles/components/Sidebar";
 </style>

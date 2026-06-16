@@ -1,15 +1,15 @@
 import { reactive } from 'vue'
-import { PulsoApiModel } from '~/models/PulsoApiModel'
+import { ApiModel } from '~/models/ApiModel'
 import type { AIChatSession, AIPageState, AIRecordingRow } from '~/types/pages/ai'
 import type { AssistantMessage, EntityId, Recording } from '~/types/shared/entities'
 import { formatDateValue, getQualityTone, getRequestErrorMessage } from '~/utils/shared'
 
 const CHAT_CONTEXT_MESSAGE_LIMIT = 20
 const CHAT_HISTORY_LIMIT = 20
-const CHAT_STORAGE_KEY = 'pulso.assistant.chats.v1'
+const CHAT_STORAGE_KEY = 'ppg.assistant.chats.v1'
 
 export class AIPageViewModel {
-	private readonly api = new PulsoApiModel()
+	private readonly api = new ApiModel()
 	public readonly contextMessageLimit = CHAT_CONTEXT_MESSAGE_LIMIT
 
 	public readonly state = reactive<AIPageState>({

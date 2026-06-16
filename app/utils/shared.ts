@@ -1,7 +1,7 @@
 import type { ApiResponse } from '~/types/shared/api'
 import type { EntityId, QualityLevel, Study, StudyParticipant, Sex } from '~/types/shared/entities'
 
-export const SELECTED_STUDY_STORAGE_KEY = 'pulso.selectedStudyId'
+export const SELECTED_STUDY_STORAGE_KEY = 'ppg.selectedStudyId'
 
 export type QualityTone = 'high' | 'medium' | 'low' | 'neutral'
 

@@ -166,8 +166,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/pages/ai";
-@use "~/assets/styles/scss/core/variables" as *;
+@use "~/assets/styles/pages/ai";
+@use "~/assets/styles/core/variables" as *;
 
 :global(.panel.ai-page) :deep(.ai-page__feed) {
 	align-items: stretch;
@@ -180,14 +180,18 @@ defineExpose({
 	padding: 1em 0.5em;
 }
 
+:global(.panel.ai-page) {
+	padding-inline: 0;
+	padding-bottom: 0;
+}
+
 :global(.panel.ai-page) :deep(.ai-page__bottom) {
-	padding: 0 0.75em 0.75em;
+	padding: 0;
 }
 
 :global(.panel.ai-page) :deep(.ai-page__composer),
 :global(.panel.ai-page) :deep(.ai-page__error),
-:global(.panel.ai-page) :deep(.ai-bubble),
-:global(.panel.ai-page) :deep(.ai-page__thread-header) {
+:global(.panel.ai-page) :deep(.ai-bubble) {
 	width: 100%;
 }
 

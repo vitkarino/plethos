@@ -23,6 +23,17 @@
 					</button>
 				</div>
 			</template>
+
+			<template v-if="!hasNoSelectedStudy" #bottom>
+				<button
+					class="app-layout__link app-layout__link_exit-study"
+					type="button"
+					aria-label="Вийти з дослідження"
+					@click="exitCurrentStudy()"
+				>
+					<span>Вийти з дослідження</span>
+				</button>
+			</template>
 		</Sidebar>
 
 		<Transition name="app-layout-activity">
@@ -133,7 +144,7 @@
 		</Transition>
 
 		<main class="app-layout__content" @click="viewModel.closeSidebarPanel()">
-			<header v-if="pageTitle || pageHeaderInfoItems.length" class="app-layout__page-header">
+			<header v-if="!hasNoSelectedStudy && (pageTitle || pageHeaderInfoItems.length)" class="app-layout__page-header">
 				<button
 					v-if="pageHeaderInfoItems.length"
 					class="app-layout__page-info"
@@ -169,7 +180,10 @@
 			<div class="app-layout__status-slot"></div>
 
 			<div class="app-layout__page-body">
-				<slot />
+				<p v-if="hasNoSelectedStudy" class="app-layout__study-prompt">
+					Оберіть дослідження для початку роботи
+				</p>
+				<slot v-else />
 			</div>
 		</main>
 
@@ -258,6 +272,7 @@ type SidebarNavItem = {
 }
 
 const viewModel = new DefaultLayoutViewModel();
+provideAppLayout(viewModel);
 const route = useRoute();
 const pageHeader = providePageHeader();
 const recordsPanelRef = ref<InstanceType<typeof RecordsPanel> | null>(null);
@@ -273,7 +288,7 @@ const sexOptions = [
 viewModel.initialize(route.params.name).finally(syncStudySelectionFallback);
 viewModel.syncSidebarPanelFromPath(route.path);
 
-const sidebarNavItems = computed<SidebarNavItem[]>(() => [
+const allSidebarNavItems: SidebarNavItem[] = [
 	{
 		key: 'records',
 		label: 'Записи',
@@ -298,7 +313,17 @@ const sidebarNavItems = computed<SidebarNavItem[]>(() => [
 		title: 'ШІ Чат',
 		iconClass: 'app-layout__link_chat',
 	},
-]);
+];
+
+const hasNoSelectedStudy = computed(() => !viewModel.state.selectedStudy);
+
+const sidebarNavItems = computed<SidebarNavItem[]>(() => {
+	if (hasNoSelectedStudy.value) {
+		return allSidebarNavItems.filter((item) => item.key === 'studies');
+	}
+
+	return allSidebarNavItems;
+});
 
 const activeSidebarPanelItem = computed(() => {
 	return sidebarNavItems.value.find((item) => item.key === viewModel.state.activeSidebarPanel) ?? null;
@@ -336,7 +361,7 @@ const activeRecordingId = computed(() => {
 
 	return typeof value === 'string' ? value : null;
 });
-const isStudySelectionFallback = computed(() => route.path === '/' && !viewModel.state.selectedStudy);
+const isStudySelectionFallback = computed(() => route.path === '/' && hasNoSelectedStudy.value);
 
 const defaultPageTitle = computed(() => {
 	if (isStudySelectionFallback.value) {
@@ -375,6 +400,11 @@ watch(
 	() => route.params.name,
 	(value) => {
 		viewModel.syncSelectedStudyByRouteParam(value);
+
+		if (typeof value === 'string' && value && !viewModel.state.selectedStudy) {
+			void viewModel.refreshStudies();
+		}
+
 		syncStudySelectionFallback();
 	},
 );
@@ -389,17 +419,27 @@ watch(
 
 watch(
 	() => viewModel.state.selectedStudy,
-	syncStudySelectionFallback,
+	(study) => {
+		syncStudySelectionFallback();
+
+		if (study && route.path === '/') {
+			void navigateTo(viewModel.studyDashboardPath(study));
+		}
+	},
 );
 
 function syncStudySelectionFallback() {
-	if (route.path === '/' && !viewModel.state.selectedStudy) {
+	if (route.path === '/' && hasNoSelectedStudy.value) {
 		viewModel.openSidebarPanel('studies');
 	}
+}
+
+function exitCurrentStudy() {
+	void viewModel.exitCurrentStudy();
 }
 
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/layouts/default";
+@use "~/assets/styles/layouts/default";
 </style>

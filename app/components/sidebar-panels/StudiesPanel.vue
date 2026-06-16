@@ -9,13 +9,13 @@
 				v-for="study in viewModel.state.studies"
 				:key="study.id"
 				class="studies-page__card"
-				:class="{ 'studies-page__card_selected': viewModel.isStudySelected(study) }"
+				:class="{ 'studies-page__card_selected': layoutViewModel.isStudySelected(study) }"
 			>
 				<div class="studies-page__heading">
 					<div class="studies-page__heading-row">
 						<h2>{{ study.title }}</h2>
 					</div>
-					<span v-if="viewModel.isStudySelected(study)" class="studies-page__active-badge">Активний</span>
+					<span v-if="layoutViewModel.isStudySelected(study)" class="studies-page__active-badge">Активний</span>
 					<p class="studies-page__description">{{ study.description }}</p>
 				</div>
 
@@ -99,12 +99,11 @@
 				<div class="studies-page__study-actions" @click.stop>
 					<div class="studies-page__study-actions-left">
 						<NuxtLink
-							v-if="!viewModel.isStudySelected(study)"
 							class="studies-page__button studies-page__button_open"
-							:to="viewModel.studyDashboardPath(study)"
-							@click="selectStudy(study)"
+							:to="layoutViewModel.studyDashboardPath(study)"
+							@click="openStudy(study)"
 						>
-							Відкрити
+							{{ layoutViewModel.isStudySelected(study) ? 'Перейти' : 'Відкрити' }}
 						</NuxtLink>
 						<button class="studies-page__button studies-page__button_icon" type="button" :aria-label="`Редагувати ${study.title}`" @click="viewModel.openEditStudyModal(study)">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -186,11 +185,13 @@
 <script setup lang="ts">
 import AppDialog from '~/components/AppDialog.vue';
 import Panel from '~/components/Panel.vue';
+import { useAppLayout } from '~/composables/useAppLayout';
 import { STUDY_DESCRIPTION_MAX_LENGTH } from '~/constants/forms';
 import { StudiesPageViewModel } from '~/controllers/pages/StudiesPageViewModel';
-import type { AssignedParticipant, EntityId } from '~/types/shared/entities';
+import type { AssignedParticipant, EntityId, Study } from '~/types/shared/entities';
 
 const viewModel = new StudiesPageViewModel();
+const layoutViewModel = useAppLayout();
 const emit = defineEmits<{
 	select: []
 }>();
@@ -206,9 +207,9 @@ function reload() {
 	void viewModel.initialize();
 }
 
-function selectStudy(study: Parameters<typeof viewModel.selectStudy>[0]) {
+function openStudy(study: Study) {
+	layoutViewModel.selectStudy(study);
 	emit('select');
-	viewModel.selectStudy(study);
 }
 
 function openCreateStudyModal() {
@@ -253,6 +254,6 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/components/NativeField";
-@use "~/assets/styles/scss/pages/studies";
+@use "~/assets/styles/components/NativeField";
+@use "~/assets/styles/pages/studies";
 </style>

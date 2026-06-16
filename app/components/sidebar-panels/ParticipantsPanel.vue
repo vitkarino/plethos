@@ -128,9 +128,9 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/components/NativeField";
-@use "~/assets/styles/scss/pages/participants";
-@use "~/assets/styles/scss/core/variables" as *;
+@use "~/assets/styles/components/NativeField";
+@use "~/assets/styles/pages/participants";
+@use "~/assets/styles/core/variables" as *;
 
 .participants-page__study-details {
 	display: flex;

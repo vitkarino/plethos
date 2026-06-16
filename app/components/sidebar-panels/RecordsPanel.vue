@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import Panel from '~/components/Panel.vue';
 import { RecordsPanelViewModel } from '~/controllers/components/RecordsPanelViewModel';
-import { PulsoApiModel } from '~/models/PulsoApiModel';
+import { ApiModel } from '~/models/ApiModel';
 
 const props = withDefaults(defineProps<{
 	studyId?: string | null
@@ -93,7 +93,7 @@ const emit = defineEmits<{
 
 const route = useRoute();
 const viewModel = new RecordsPanelViewModel();
-const api = new PulsoApiModel();
+const api = new ApiModel();
 
 function reload() {
 	void viewModel.load(props.studyId ?? null);
@@ -146,7 +146,7 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/core/variables" as *;
+@use "~/assets/styles/core/variables" as *;
 
 @mixin icon-mask($svg) {
 	-webkit-mask: url($svg) center / contain no-repeat;

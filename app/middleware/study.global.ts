@@ -1,4 +1,4 @@
-import { PulsoApiModel } from '~/models/PulsoApiModel'
+import { ApiModel } from '~/models/ApiModel'
 import type { Study } from '~/types/shared/entities'
 import {
 	clearSelectedStudyId,
@@ -21,7 +21,7 @@ export default defineNuxtRouteMiddleware((to) => {
 
 	const path = normalizePath(to.path)
 
-	const api = new PulsoApiModel()
+	const api = new ApiModel()
 
 	return api.fetchStudies()
 		.then((studies) => resolveStudyRoute(to, path, studies))

@@ -1,5 +1,5 @@
 <template>
-	<Block class="bpm-block">
+	<div class="bpm-block">
 		<Teleport v-if="isPageHeaderActionTargetReady" to=".app-layout__page-header">
 			<div v-if="shouldShowMetrics" class="bpm-block__header-metrics" aria-label="Показники запису">
 				<div v-for="metric in metricCards" :key="metric.key" class="bpm-block__header-metric"
@@ -36,7 +36,6 @@
 					<label class="bpm-block__bar-select bpm-block__bar-select_inline">
 						<span class="bpm-block__bar-select-heading" aria-hidden="true">
 							<span class="bpm-block__select-icon bpm-block__select-icon_device"></span>
-							<span class="bpm-block__bar-select-label">Пристрій</span>
 						</span>
 						<select
 							v-model="viewModel.state.selectedDeviceId"
@@ -52,7 +51,6 @@
 					<label class="bpm-block__bar-select bpm-block__bar-select_inline">
 						<span class="bpm-block__bar-select-heading" aria-hidden="true">
 							<span class="bpm-block__select-icon bpm-block__select-icon_participant"></span>
-							<span class="bpm-block__bar-select-label">Учасник</span>
 						</span>
 						<select
 							v-model="viewModel.state.selectedParticipantId"
@@ -191,7 +189,7 @@
 				</div>
 			</div>
 		</div>
-	</Block>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -210,7 +208,6 @@ import {
 	type ChartOptions,
 	type Plugin,
 } from 'chart.js';
-import Block from '~/components/Block.vue';
 import { BPMBlockViewModel } from '~/controllers/components/BPMBlockViewModel';
 import type { BPMChartDataset, PulseSample } from '~/types/components/bpm-block';
 import { formatQualityLevelLabel, getQualityToneFromLevel } from '~/utils/shared';
@@ -255,8 +252,10 @@ const emit = defineEmits<{
 
 const route = useRoute();
 const router = useRouter();
+const measurementSession = useMeasurementSession();
 const viewModel = new BPMBlockViewModel(props.studyId, {
 	autoLoadLastRecording: props.autoLoadLastRecording,
+	restoreLiveMeasurement: !props.selectedRecordingId,
 });
 const irChartCanvas = ref<HTMLCanvasElement | null>(null);
 const rChartCanvas = ref<HTMLCanvasElement | null>(null);
@@ -408,7 +407,7 @@ const statusLabel = computed(() => {
 		case 'recording':
 			return 'Запис триває';
 		case 'measuring':
-			return 'Вимір активний';
+			return 'Вимірювання активне';
 		case 'pending':
 			return 'Опрацювання…';
 		default:
@@ -972,6 +971,7 @@ function syncSelectedRecordingFromProp(recordingId: string | null | undefined) {
 
 onMounted(() => {
 	isPageHeaderActionTargetReady.value = true;
+	measurementSession.register(viewModel);
 	viewModel.initialize().then(() => {
 		syncSelectedRecordingFromProp(props.selectedRecordingId);
 	});
@@ -981,6 +981,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
 	isPageHeaderActionTargetReady.value = false;
+	measurementSession.unregister(viewModel);
 	charts.ir?.destroy();
 	charts.r?.destroy();
 	window.removeEventListener('resize', syncScrollMetrics);
@@ -1039,5 +1040,5 @@ watch(
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/components/BPMBlock";
+@use "~/assets/styles/components/BPMBlock";
 </style>

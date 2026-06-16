@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 import { STUDY_DESCRIPTION_MAX_LENGTH } from '~/constants/forms'
-import { PulsoApiModel } from '~/models/PulsoApiModel'
+import { ApiModel } from '~/models/ApiModel'
 import type { StudiesPageState } from '~/types/pages/studies'
 import type { AssignedParticipant, EntityId, Study, Participant } from '~/types/shared/entities'
 import {
@@ -16,7 +16,7 @@ import {
 } from '~/utils/shared'
 
 export class StudiesPageViewModel {
-	private readonly api = new PulsoApiModel()
+	private readonly api = new ApiModel()
 
 	public readonly state = reactive<StudiesPageState>({
 		studies: [],
@@ -194,7 +194,7 @@ export class StudiesPageViewModel {
 
 				const study = this.state.studies.find((item) => item.id === createdStudy.id) ?? createdStudy
 
-				this.selectStudy(study)
+				setSelectedStudyId(study.id)
 
 				return navigateTo(this.studyDashboardPath(study))
 			})

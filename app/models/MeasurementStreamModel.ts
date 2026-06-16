@@ -65,7 +65,7 @@ export type MeasurementStreamHandlers = {
 	onError: (message: string) => void
 }
 
-export class PulsoMeasurementStreamModel {
+export class MeasurementStreamModel {
 	private connection: WebSocket | null = null
 	private readonly wsBaseUrl: string
 
@@ -131,6 +131,6 @@ export class PulsoMeasurementStreamModel {
 	private readWsBaseUrl() {
 		const config = useRuntimeConfig()
 
-		return config.public.pulsoWsBaseUrl || 'ws://127.0.0.1:8080'
+		return config.public.WsBaseUrl || 'ws://127.0.0.1:8080'
 	}
 }

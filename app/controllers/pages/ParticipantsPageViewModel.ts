@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import { PulsoApiModel } from '~/models/PulsoApiModel'
+import { ApiModel } from '~/models/ApiModel'
 import type { ParticipantsPageState } from '~/types/pages/participants'
 import type { EntityId, Participant } from '~/types/shared/entities'
 import {
@@ -12,7 +12,7 @@ import {
 } from '~/utils/shared'
 
 export class ParticipantsPageViewModel {
-	private readonly api = new PulsoApiModel()
+	private readonly api = new ApiModel()
 
 	public readonly state = reactive<ParticipantsPageState>({
 		participants: [],

@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 import { STUDY_DESCRIPTION_MAX_LENGTH } from '~/constants/forms'
-import { PulsoApiModel } from '~/models/PulsoApiModel'
+import { ApiModel as ApiModel } from '~/models/ApiModel'
 import type { DefaultLayoutState, SidebarPanelKey } from '~/types/layouts/default'
 import type { EntityId, Study, Participant } from '~/types/shared/entities'
 import {
@@ -19,7 +19,7 @@ import {
 } from '~/utils/shared'
 
 export class DefaultLayoutViewModel {
-	private readonly api = new PulsoApiModel()
+	private readonly api = new ApiModel()
 
 	public readonly state = reactive<DefaultLayoutState>({
 		studies: [],
@@ -119,6 +119,19 @@ export class DefaultLayoutViewModel {
 	public selectStudy(study: Study) {
 		this.state.selectedStudy = study
 		setSelectedStudyId(study.id)
+	}
+
+	public exitCurrentStudy() {
+		if (!this.confirmExitStudy()) {
+			return Promise.resolve()
+		}
+
+		this.state.selectedStudy = null
+		clearSelectedStudyId()
+		this.state.pageError = ''
+		this.openSidebarPanel('studies')
+
+		return navigateTo('/')
 	}
 
 	public selectStudyById(studyId: EntityId | number | null) {
@@ -336,6 +349,10 @@ export class DefaultLayoutViewModel {
 
 	private confirmDelete(message: string) {
 		return typeof window === 'undefined' || window.confirm(message)
+	}
+
+	private confirmExitStudy() {
+		return typeof window === 'undefined' || window.confirm('Завершити роботу?')
 	}
 
 	private getRouteStudyName(value: unknown) {

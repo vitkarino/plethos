@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
-import { PulsoApiModel } from '~/models/PulsoApiModel'
+import { ApiModel } from '~/models/ApiModel'
 import type { EntityId, Measurement, QualityAnalysis, Recording } from '~/types/shared/entities'
-import { formatDateValue, getQualityTone, getRequestErrorMessage } from '~/utils/shared'
+import { formatDateValue, formatQualityLevelLabel, getQualityToneFromLevel, getRequestErrorMessage } from '~/utils/shared'
 
 const RECORDINGS_PANEL_LIMIT = 24
 
@@ -24,7 +24,7 @@ export class RecordsPanelViewModel {
 		error: '',
 	})
 
-	private readonly api = new PulsoApiModel()
+	private readonly api = new ApiModel()
 	private loadToken = 0
 
 	public load(studyId: EntityId | null = null) {
@@ -114,15 +114,11 @@ export class RecordsPanelViewModel {
 			return Number.isFinite(row.measurement?.spo2) ? `${Math.round(Number(row.measurement?.spo2))}%` : '--'
 		}
 
-		const score = row.qualityAnalysis?.quality_result.score
-
-		return Number.isFinite(score) ? `${Math.round(Number(score) * 100)}%` : '--'
+		return formatQualityLevelLabel(row.qualityAnalysis?.quality_result.level)
 	}
 
 	public qualityTone(row: RecordsPanelRow) {
-		const score = row.qualityAnalysis?.quality_result.score
-
-		return getQualityTone(Number.isFinite(score) ? Number(score) * 100 : null)
+		return getQualityToneFromLevel(row.qualityAnalysis?.quality_result.level)
 	}
 
 	public trainingLabel(recording: Recording) {

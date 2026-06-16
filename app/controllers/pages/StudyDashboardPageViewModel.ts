@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import { PulsoApiModel } from '~/models/PulsoApiModel'
+import { ApiModel } from '~/models/ApiModel'
 import type { StudyDashboardPageState } from '~/types/pages/study-dashboard'
 import type { Participant } from '~/types/shared/entities'
 import {
@@ -11,7 +11,7 @@ import {
 } from '~/utils/shared'
 
 export class StudyDashboardPageViewModel {
-	private readonly api = new PulsoApiModel()
+	private readonly api = new ApiModel()
 
 	public readonly state = reactive<StudyDashboardPageState>({
 		studyName: '',

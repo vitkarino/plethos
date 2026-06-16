@@ -109,5 +109,5 @@ function handleBackdropClick(event: MouseEvent) {
 </script>
 
 <style scoped lang="scss">
-@use "~/assets/styles/scss/components/AppDialog";
+@use "~/assets/styles/components/AppDialog";
 </style>

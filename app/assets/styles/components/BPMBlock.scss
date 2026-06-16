@@ -18,18 +18,17 @@ $accent-record: #ff5c5c;
 $accent-measure: #4ad6c4;
 
 .bpm-block {
-	height: 100%;
-	min-height: 0;
-	overflow: visible;
-}
-
-.bpm-block :deep(.block__content) {
 	display: flex;
 	flex-direction: column;
 	flex: 1 1 auto;
 	gap: 1em;
+	width: 100%;
 	height: 100%;
 	min-height: 0;
+	border-radius: $radius-block;
+	background: $color-reflector-surface-bg;
+	color: $color-text-primary;
+	box-sizing: border-box;
 	overflow: visible;
 }
 
@@ -51,7 +50,6 @@ $accent-measure: #4ad6c4;
 	cursor: pointer;
 	transition:
 		color 160ms ease,
-		transform 160ms ease;
 }
 
 .bpm-block__exit-view-button {
@@ -64,7 +62,6 @@ $accent-measure: #4ad6c4;
 .bpm-block__exit-view-button:focus-visible {
 	color: $color-selected;
 	outline: none;
-	transform: translateY(-1px);
 }
 
 .bpm-block__export-button:disabled {
@@ -219,7 +216,7 @@ $accent-measure: #4ad6c4;
 	min-width: 0;
 	max-width: 100%;
 	border-radius: $radius-control;
-	background: rgba(255, 255, 255, 0.035);
+	// background: rgba(255, 255, 255, 0.035);
 }
 
 .bpm-block__bar-select-heading {
@@ -229,15 +226,7 @@ $accent-measure: #4ad6c4;
 	gap: 0.35em;
 	max-width: 9.5em;
 	padding: 0 0.65em;
-	border-right: 1px solid rgba(255, 255, 255, 0.12);
 	color: $color-text-secondary;
-}
-
-.bpm-block__bar-select-label {
-	font-size: 8pt;
-	font-weight: 700;
-	line-height: 1;
-	white-space: nowrap;
 }
 
 .bpm-block__select-icon {
@@ -261,12 +250,12 @@ $accent-measure: #4ad6c4;
 }
 
 .bpm-block__native-select {
-	flex: 1 1 auto;
-	width: auto;
-	max-width: 13em;
-	min-width: 0;
-	min-height: 2.4em;
-	padding: 0.3em 0.65em 0.3em 0.7em;
+	// flex: 1 1 auto;
+	// width: auto;
+	// max-width: 13em;
+	// min-width: 0;
+	// min-height: 2.4em;
+	// padding: 0.3em 0.65em 0.3em 0.7em;
 	border: 0;
 	border-radius: $radius-control;
 	background: transparent;
@@ -279,13 +268,6 @@ $accent-measure: #4ad6c4;
 	transition:
 		background-color 160ms ease,
 		color 160ms ease;
-}
-
-.bpm-block__native-select:hover:not(:disabled),
-.bpm-block__native-select:focus-visible {
-	background: rgba($color-selected, 0.08);
-	color: $color-selected;
-	outline: none;
 }
 
 .bpm-block__native-select:disabled {
@@ -447,6 +429,7 @@ $accent-measure: #4ad6c4;
 
 .bpm-block__cta_active {
 	color: #ffffff;
+	border-radius: 99px;
 }
 
 .bpm-block__cta_active.bpm-block__cta_measure {
@@ -535,7 +518,7 @@ $accent-measure: #4ad6c4;
 .bpm-block__status-banner_recording {
 	background: #3a1d21;
 	color: #ff8b8b;
-	animation: bpm-block-status-blink 1.2s ease-in-out infinite;
+	// animation: bpm-block-status-blink 1.2s ease-in-out infinite;
 }
 
 .bpm-block__status-banner_viewing {

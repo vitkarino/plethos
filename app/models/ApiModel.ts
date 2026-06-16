@@ -76,7 +76,7 @@ export type StudyParticipantDeleteResult = Pick<StudyParticipant, 'study_id' | '
 	deleted: boolean
 }
 
-export class PulsoApiModel {
+export class ApiModel {
 	private readonly apiBaseUrl: string
 
 	public constructor(apiBaseUrl?: string) {
@@ -450,6 +450,6 @@ export class PulsoApiModel {
 	private readApiBaseUrl() {
 		const config = useRuntimeConfig()
 
-		return config.public.pulsoApiBaseUrl || 'http://127.0.0.1:8080/api'
+		return config.public.ApiBaseUrl || 'http://127.0.0.1:8080/api'
 	}
 }
