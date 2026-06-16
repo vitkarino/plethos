@@ -1,4 +1,4 @@
-# Pulso Python Backend
+# Python Backend
 
 FastAPI backend for live PPG measurements, persisted recordings, and PPG quality-analysis feature extraction.
 
@@ -12,9 +12,10 @@ The backend loads `.env` automatically. `DATABASE_URL` or `POSTGRES_DSN` enables
 If a full DSN is not set, the app can build one from `POSTGRES_HOST`, `POSTGRES_PORT`,
 `POSTGRES_PASSWORD`, `POSTGRES_USER`, and `POSTGRES_DB`.
 `CORS_ORIGINS` can override the comma-separated frontend origins allowed by the API;
-by default `http://localhost:3000` and `http://127.0.0.1:3000` are allowed.
+by default `http://localhost:3000`, `http://127.0.0.1:3000`, `http://localhost:3080`, and
+`http://127.0.0.1:3080` are allowed.
 
-On startup the app creates or migrates `users`, `projects`, `project_users`, `measurements`,
+On startup the app creates or migrates `participants`, `studies`, `study_participants`, `measurements`,
 `recordings`, `recordings_samples`, and `quality_analyses`.
 
 ## API v4.2
@@ -25,8 +26,8 @@ Public IDs are prefixed:
 dev_ for devices
 mes_ for measurements
 rec_ for recordings
-usr_ for users
-prj_ for projects
+par_ for participants
+std_ for studies
 qlt_ for quality analyses
 ```
 
@@ -59,7 +60,7 @@ Errors use explicit codes:
 }
 ```
 
-Project-user assignment errors include `assignment_not_found` and `project_user_already_exists`.
+Study-participant assignment errors include `assignment_not_found` and `study_participant_already_exists`.
 
 ## HTTP Endpoints
 
@@ -75,7 +76,7 @@ POST   /api/measurements/{measurement_id}/stop
 POST   /api/measurements/{measurement_id}/recording
 POST   /api/measurements/{measurement_id}/recording/stop
 
-GET    /api/recordings?device_id=&date_from=&date_to=&user_id=&project_id=&status=&limit=100&offset=0
+GET    /api/recordings?device_id=&date_from=&date_to=&participant_id=&study_id=&status=&limit=100&offset=0
 GET    /api/recordings/{recording_id}
 DELETE /api/recordings/{recording_id}
 GET    /api/recordings/{recording_id}/samples?limit=1000&offset=0
@@ -86,27 +87,27 @@ GET    /api/recordings/{recording_id}/quality-analysis
 GET    /api/assistant/status
 POST   /api/assistant/chat
 
-POST   /api/users
-GET    /api/users?project_id=&limit=100&offset=0
-GET    /api/users/{user_id}
-PATCH  /api/users/{user_id}
-DELETE /api/users/{user_id}
+POST   /api/participants
+GET    /api/participants?study_id=&limit=100&offset=0
+GET    /api/participants/{participant_id}
+PATCH  /api/participants/{participant_id}
+DELETE /api/participants/{participant_id}
 
-POST   /api/projects
-GET    /api/projects?limit=100&offset=0
-GET    /api/projects/{project_id}
-PATCH  /api/projects/{project_id}
-DELETE /api/projects/{project_id}
-POST   /api/projects/{project_id}/users
-DELETE /api/projects/{project_id}/users/{user_id}
+POST   /api/studies
+GET    /api/studies?limit=100&offset=0
+GET    /api/studies/{study_id}
+PATCH  /api/studies/{study_id}
+DELETE /api/studies/{study_id}
+POST   /api/studies/{study_id}/participants
+DELETE /api/studies/{study_id}/participants/{participant_id}
 ```
 
 Measurement start body:
 
 ```json
 {
-  "user_id": "usr_1",
-  "project_id": "prj_1"
+  "participant_id": "par_1",
+  "study_id": "std_1"
 }
 ```
 
@@ -118,11 +119,11 @@ Recording start body:
 }
 ```
 
-Project user assignment body:
+Study participant assignment body:
 
 ```json
 {
-  "user_id": "usr_1"
+  "participant_id": "par_1"
 }
 ```
 
@@ -316,7 +317,7 @@ Use the generated model at runtime with:
 QUALITY_MODEL_PATH=models/ppg_quality_rf.joblib
 ```
 
-BUT-PPG is RGB smartphone PPG, while this project records MAX30105 IR/Red PPG.
+BUT-PPG is RGB smartphone PPG, while this study records MAX30105 IR/Red PPG.
 The generated model is a useful first-pass quality estimator, but production
 accuracy should be calibrated with recordings from the target hardware.
 

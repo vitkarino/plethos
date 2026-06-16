@@ -338,15 +338,11 @@ class WebSocketController:
         if not isinstance(measurement_id, str) or not measurement_id:
             return None
 
-        samples = device.get("samples")
-        if not isinstance(samples, list):
+        if not isinstance(device.get("samples"), list):
             return None
-        sample_rate = device.get("fs")
-        output_samples = self._samples_for_client(
-            raw_samples=samples,
-            processed_samples=processed_samples,
-            sample_rate=sample_rate if isinstance(sample_rate, (int, float)) else None,
-        )
+        # The service already produced the display-ready samples (lag-margin filtered,
+        # each with index/t_ms/raw/filtered), so they are forwarded as-is.
+        output_samples = processed_samples or []
         state = self._service.get_recording_state(measurement_id)
 
         return {
@@ -360,34 +356,6 @@ class WebSocketController:
             "samples": output_samples,
             "metrics": self._metrics_formatter(metrics),
         }
-
-    @staticmethod
-    def _samples_for_client(
-        *,
-        raw_samples: list[Any],
-        processed_samples: list[dict[str, float]] | None,
-        sample_rate: float | None,
-    ) -> list[dict[str, Any]]:
-        output: list[dict[str, Any]] = []
-        processed_samples = processed_samples or []
-        for index, raw_sample in enumerate(raw_samples):
-            raw = raw_sample if isinstance(raw_sample, dict) else {}
-            processed = processed_samples[index] if index < len(processed_samples) else {}
-            sample_index = raw.get("index", index)
-            t_ms = None
-            if isinstance(sample_index, (int, float)) and sample_rate:
-                t_ms = round(float(sample_index) / sample_rate * 1000.0, 3)
-            output.append(
-                {
-                    "index": sample_index,
-                    "t_ms": t_ms,
-                    "ir": raw.get("ir"),
-                    "red": raw.get("red", raw.get("r")),
-                    "ir_filtered": processed.get("ir"),
-                    "red_filtered": processed.get("red", processed.get("r")),
-                }
-            )
-        return output
 
     @staticmethod
     def _timestamp() -> str:

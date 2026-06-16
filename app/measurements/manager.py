@@ -10,8 +10,8 @@ from app.core.ids import (
     RECORDING_PREFIX,
     new_internal_id,
     new_public_id,
-    public_project_id,
-    public_user_id,
+    public_study_id,
+    public_participant_id,
 )
 from app.core.config import AppConfig
 from app.measurements.models import CompletedMeasurement, RecordingEvent, RecordingMetadata
@@ -63,10 +63,10 @@ class MeasurementManager:
         device_id: str | None = None,
     ) -> MeasurementState:
         normalized_metadata = RecordingMetadata(
-            user_name=metadata.user_name,
-            user_id=public_user_id(metadata.user_id),
-            project_name=metadata.project_name,
-            project_id=public_project_id(metadata.project_id),
+            participant_name=metadata.participant_name,
+            participant_id=public_participant_id(metadata.participant_id),
+            study_name=metadata.study_name,
+            study_id=public_study_id(metadata.study_id),
         )
 
         with self._lock:
@@ -96,13 +96,20 @@ class MeasurementManager:
         duration_seconds: float | None,
         metadata: RecordingMetadata,
         device_id: str | None = None,
+        name: str | None = None,
+        use_for_ml_training: bool = False,
     ) -> MeasurementState:
         snapshot = self.start_measurement(
             metadata=metadata,
             device_id=device_id,
         )
         if snapshot.id is not None:
-            self.start_recording_for_measurement(snapshot.id, duration_seconds=duration_seconds)
+            self.start_recording_for_measurement(
+                snapshot.id,
+                duration_seconds=duration_seconds,
+                name=name,
+                use_for_ml_training=use_for_ml_training,
+            )
         return self.get_recording_state(snapshot.id or "") or snapshot
 
     def start_recording_for_measurement(
@@ -110,6 +117,8 @@ class MeasurementManager:
         measurement_id: str,
         *,
         duration_seconds: float | None,
+        name: str | None = None,
+        use_for_ml_training: bool = False,
     ) -> tuple[MeasurementState, RecordingEvent]:
         if duration_seconds is not None and duration_seconds <= 0:
             raise ValueError("recording duration must be greater than zero seconds")
@@ -123,6 +132,8 @@ class MeasurementManager:
                 recording_id=recording_id,
                 public_recording_id=new_public_id(RECORDING_PREFIX, recording_id),
                 duration_seconds=duration_seconds,
+                name=name,
+                use_for_ml_training=use_for_ml_training,
             )
             snapshot = session.snapshot()
             measurement_update = session.measurement_update()

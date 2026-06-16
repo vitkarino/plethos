@@ -10,9 +10,9 @@ from urllib import error, request
 from app.core.config import AppConfig
 
 
-SYSTEM_PROMPT = """You are Pulso's data assistant for PPG recordings.
+SYSTEM_PROMPT = """You are data assistant for PPG recordings.
 
-You help users understand already processed Pulso data. You can discuss recording metadata, calculated BPM and SpO2, ML-based signal quality analysis, extracted quality features, and practical measurement-quality recommendations.
+You help users understand already processed data. You can discuss recording metadata, calculated BPM and SpO2, ML-based signal quality analysis, extracted quality features, and practical measurement-quality recommendations.
 
 You must not work with raw unprocessed data. You must not diagnose diseases, prescribe treatment, or present your response as medical advice.
 
@@ -25,7 +25,7 @@ Rules:
 - If BPM or SpO2 values look concerning, recommend confirming them with certified equipment or clinician review.
 - Do not output JSON, tables, markdown-heavy reports, or hidden reasoning unless explicitly requested.
 - Keep the answer concise.
-- Answer in the user's language when it can be inferred; otherwise answer in Russian.
+- Answer in the user's language when it can be inferred; otherwise answer in Ukrainian.
 """
 
 
@@ -75,6 +75,7 @@ class AssistantService:
         recording: dict[str, Any],
         quality_analysis: dict[str, Any],
         user_message: str,
+        conversation_history: list[dict[str, str]] | None = None,
     ) -> AssistantChatResult:
         provider = self._provider or self._create_provider()
         provider_info = {
@@ -82,9 +83,12 @@ class AssistantService:
             "model": self._config.llm_model,
         }
         context = _assistant_context(recording=recording, quality_analysis=quality_analysis)
+        transcript = _conversation_transcript(conversation_history or [])
         prompt = (
             "User question:\n"
             f"{user_message}\n\n"
+            "Previous conversation in this chat:\n"
+            f"{transcript}\n\n"
             "Available processed context as JSON:\n"
             f"{json.dumps(context, ensure_ascii=False, default=str)}"
         )
@@ -219,6 +223,18 @@ def _ssl_context() -> ssl.SSLContext:
     except ImportError:
         return ssl.create_default_context()
     return ssl.create_default_context(cafile=certifi.where())
+
+
+def _conversation_transcript(history: list[dict[str, str]]) -> str:
+    lines: list[str] = []
+    for item in history[-20:]:
+        role = item.get("role")
+        message = item.get("message", "").strip()
+        if role not in {"user", "assistant"} or not message:
+            continue
+        label = "User" if role == "user" else "Assistant"
+        lines.append(f"{label}: {message}")
+    return "\n".join(lines) if lines else "No previous messages."
 
 
 def _assistant_context(

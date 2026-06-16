@@ -1,1 +1,1 @@
-"""Pulso PPG backend package."""
+"""PPG backend package."""

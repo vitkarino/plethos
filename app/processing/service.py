@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from app.core.config import AppConfig
 from app.measurements import CompletedMeasurement, MeasurementManager, RecordingEvent, RecordingMetadata
 from app.processing.buffer import DeviceBufferRegistry
-from app.processing.filters import PPGNoiseFilter
+from app.processing.filters import PPGNoiseFilter, LiveDisplayFilter
 from app.processing.metrics import VitalSignsCalculator
 from app.processing.quality import QualityAnalysisResult, QualityAnalyzer
 from app.realtime.store import MetricsStore
@@ -35,6 +35,8 @@ class PPGProcessingService:
         self._config = config
         self._buffers = DeviceBufferRegistry(config)
         self._filter = PPGNoiseFilter(config)
+        # Per-device live display filter (lag-margin filtfilt, matches the recording).
+        self._live_filters: dict[str, LiveDisplayFilter] = {}
         self._calculator = VitalSignsCalculator(config)
         self._quality_analyzer = QualityAnalyzer(config)
         self._recording_repository = recording_repository
@@ -112,27 +114,24 @@ class PPGProcessingService:
             metrics=metrics,
             completed_measurements=ingest_result.completed_measurements if ingest_result is not None else [],
             recording_events=ingest_result.recording_events if ingest_result is not None else [],
-            processed_samples=self._processed_latest_samples(
-                filtered_ir=filtered_ir,
-                filtered_red=filtered_red,
-                batch_size=len(device.samples),
-            ),
+            processed_samples=self._live_display_samples(device),
         )
 
-    @staticmethod
-    def _processed_latest_samples(
-        *,
-        filtered_ir: np.ndarray,
-        filtered_red: np.ndarray,
-        batch_size: int,
-    ) -> list[dict[str, float]]:
-        sample_count = min(batch_size, filtered_ir.size, filtered_red.size)
-        if sample_count <= 0:
+    def _live_display_samples(self, device) -> list[dict[str, float | int | None]]:
+        """Lag-margin display samples that match the stored recording's morphology."""
+        samples = device.samples
+        if not samples:
             return []
+        live_filter = self._live_filters.get(device.id)
+        if live_filter is None:
+            live_filter = LiveDisplayFilter(self._filter, self._config)
+            self._live_filters[device.id] = live_filter
+        return live_filter.push(samples, device.fs)
 
-        ir_tail = filtered_ir[-sample_count:]
-        red_tail = filtered_red[-sample_count:]
-        return PPGProcessingService._sample_dicts_from_arrays(ir_tail, red_tail)
+    def _reset_stream(self, device_id: str | None) -> None:
+        if device_id is None:
+            return
+        self._live_filters.pop(device_id, None)
 
     @staticmethod
     def _sample_dicts_from_arrays(
@@ -150,6 +149,7 @@ class PPGProcessingService:
     def start_measurement(self, device_id: str):
         if device_id is not None:
             self._buffers.reset(device_id)
+            self._reset_stream(device_id)
         return self._measurements.start(device_id)
 
     def start_live_measurement(
@@ -159,6 +159,7 @@ class PPGProcessingService:
         device_id: str,
     ):
         self._buffers.reset(device_id)
+        self._reset_stream(device_id)
         return self._measurements.start_measurement(
             metadata=metadata,
             device_id=device_id,
@@ -170,6 +171,8 @@ class PPGProcessingService:
         duration_seconds: float | None,
         metadata: RecordingMetadata,
         device_id: str | None = None,
+        name: str | None = None,
+        use_for_ml_training: bool = False,
     ):
         if device_id is not None:
             self._buffers.reset(device_id)
@@ -181,13 +184,24 @@ class PPGProcessingService:
             self._measurements.start_recording_for_measurement(
                 measurement.id,
                 duration_seconds=duration_seconds,
+                name=name,
+                use_for_ml_training=use_for_ml_training,
             )
         return self._measurements.get_recording_state(measurement.id or "") or measurement
 
-    def start_recording_for_measurement(self, measurement_id: str, duration_seconds: float | None = None):
+    def start_recording_for_measurement(
+        self,
+        measurement_id: str,
+        duration_seconds: float | None = None,
+        *,
+        name: str | None = None,
+        use_for_ml_training: bool = False,
+    ):
         return self._measurements.start_recording_for_measurement(
             measurement_id,
             duration_seconds=duration_seconds,
+            name=name,
+            use_for_ml_training=use_for_ml_training,
         )
 
     def stop_measurement(self, measurement_id: str):
@@ -232,8 +246,8 @@ class PPGProcessingService:
         date_from=None,
         date_to=None,
         device_id: str | None = None,
-        user_id: str | None = None,
-        project_id: str | None = None,
+        participant_id: str | None = None,
+        study_id: str | None = None,
         status: str | None = None,
     ):
         repository = self._require_recording_repository()
@@ -243,8 +257,8 @@ class PPGProcessingService:
             date_from=date_from,
             date_to=date_to,
             device_id=device_id,
-            user_id=user_id,
-            project_id=project_id,
+            participant_id=participant_id,
+            study_id=study_id,
             status=status,
         )
 
@@ -260,8 +274,8 @@ class PPGProcessingService:
         date_from=None,
         date_to=None,
         device_id: str | None = None,
-        user_id: str | None = None,
-        project_id: str | None = None,
+        participant_id: str | None = None,
+        study_id: str | None = None,
         status: str | None = None,
     ):
         repository = self._require_recording_repository()
@@ -271,8 +285,8 @@ class PPGProcessingService:
             date_from=date_from,
             date_to=date_to,
             device_id=device_id,
-            user_id=user_id,
-            project_id=project_id,
+            participant_id=participant_id,
+            study_id=study_id,
             status=status,
         )
 

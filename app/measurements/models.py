@@ -5,10 +5,10 @@ from app.schemas.metrics import VitalSigns
 
 @dataclass(frozen=True)
 class RecordingMetadata:
-    user_name: str | None = None
-    user_id: str | None = None
-    project_name: str | None = None
-    project_id: str | None = None
+    participant_name: str | None = None
+    participant_id: str | None = None
+    study_name: str | None = None
+    study_id: str | None = None
 
 
 @dataclass(frozen=True)

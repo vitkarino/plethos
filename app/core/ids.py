@@ -6,9 +6,11 @@ from uuid import uuid4
 DEVICE_PREFIX = "dev_"
 MEASUREMENT_PREFIX = "mes_"
 RECORDING_PREFIX = "rec_"
-USER_PREFIX = "usr_"
-PROJECT_PREFIX = "prj_"
+PARTICIPANT_PREFIX = "par_"
+STUDY_PREFIX = "std_"
 QUALITY_PREFIX = "qlt_"
+LEGACY_PARTICIPANT_PREFIX = "usr_"
+LEGACY_STUDY_PREFIX = "prj_"
 
 
 def new_internal_id() -> str:
@@ -53,12 +55,18 @@ def public_recording_id(recording_id: object | None) -> str | None:
     return prefixed_id(RECORDING_PREFIX, strip_prefix(recording_id, RECORDING_PREFIX))
 
 
-def public_user_id(user_id: object | None) -> str | None:
-    return prefixed_id(USER_PREFIX, strip_prefix(user_id, USER_PREFIX))
+def public_participant_id(participant_id: object | None) -> str | None:
+    return prefixed_id(
+        PARTICIPANT_PREFIX,
+        strip_prefix(strip_prefix(participant_id, PARTICIPANT_PREFIX), LEGACY_PARTICIPANT_PREFIX),
+    )
 
 
-def public_project_id(project_id: object | None) -> str | None:
-    return prefixed_id(PROJECT_PREFIX, strip_prefix(project_id, PROJECT_PREFIX))
+def public_study_id(study_id: object | None) -> str | None:
+    return prefixed_id(
+        STUDY_PREFIX,
+        strip_prefix(strip_prefix(study_id, STUDY_PREFIX), LEGACY_STUDY_PREFIX),
+    )
 
 
 def public_quality_id(quality_id: object | None) -> str | None:
@@ -67,6 +75,10 @@ def public_quality_id(quality_id: object | None) -> str | None:
 
 def numeric_id(value: object | None, prefix: str) -> int | None:
     raw = strip_prefix(value, prefix)
+    if prefix == PARTICIPANT_PREFIX:
+        raw = strip_prefix(raw, LEGACY_PARTICIPANT_PREFIX)
+    elif prefix == STUDY_PREFIX:
+        raw = strip_prefix(raw, LEGACY_STUDY_PREFIX)
     if raw is None:
         return None
     try:

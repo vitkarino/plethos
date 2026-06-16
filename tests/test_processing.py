@@ -25,12 +25,12 @@ from app.realtime.websocket import WebSocketController
 from app.schemas.assistant import AssistantChatRequest
 from app.schemas.measurements import (
     MeasurementStartRequest,
-    ProjectCreateRequest,
-    ProjectPatchRequest,
-    ProjectUserAssignRequest,
+    StudyCreateRequest,
+    StudyPatchRequest,
+    StudyParticipantAssignRequest,
     RecordingStartRequest,
-    UserCreateRequest,
-    UserPatchRequest,
+    ParticipantCreateRequest,
+    ParticipantPatchRequest,
 )
 from app.storage.recording_repository import RecordingRepository
 
@@ -158,6 +158,13 @@ async def _asgi_request(method: str, path: str, headers: dict[str, str]) -> dict
     return {"status": response_start["status"], "headers": response_headers}
 
 
+async def _streaming_response_text(response: Any) -> str:
+    chunks: list[str] = []
+    async for chunk in response.body_iterator:
+        chunks.append(chunk.decode("utf-8") if isinstance(chunk, bytes) else str(chunk))
+    return "".join(chunks)
+
+
 def _raw_signal(fs: float = 25, seconds: float = 18, bpm: float = 72.0) -> tuple[np.ndarray, np.ndarray]:
     count = int(math.ceil(fs * seconds - 1e-9))
     t = np.arange(count) / fs
@@ -204,7 +211,7 @@ class ProcessingTests(unittest.TestCase):
 
         started = service.start_recording(
             duration_seconds=15.0,
-            metadata=RecordingMetadata(user_id="1", project_id="1"),
+            metadata=RecordingMetadata(participant_id="1", study_id="1"),
             device_id="sim-device-001",
         )
         assert started.id is not None
@@ -215,8 +222,8 @@ class ProcessingTests(unittest.TestCase):
         measurement_payload = _measurement_for_api(measurement)
 
         self.assertTrue(str(measurement_payload["id"]).startswith("mes_"))
-        self.assertEqual(measurement_payload["user_id"], "usr_1")
-        self.assertEqual(measurement_payload["project_id"], "prj_1")
+        self.assertEqual(measurement_payload["participant_id"], "par_1")
+        self.assertEqual(measurement_payload["study_id"], "std_1")
         self.assertEqual(measurement_payload["device_id"], "dev_sim-device-001")
         self.assertEqual(measurement_payload["sample_rate_hz"], 25)
         self.assertNotIn("sample_rate", measurement_payload)
@@ -419,18 +426,18 @@ class ApiMutationTests(unittest.TestCase):
         self.repository.dispose()
         self._tempdir.cleanup()
 
-    def _create_user_project(self) -> tuple[str, str]:
-        user_response = main_module.create_api_user(UserCreateRequest(name="Alice", age=30, sex="female"))
-        project_response = main_module.create_api_project(ProjectCreateRequest(title="Study", description="PPG"))
-        user_id = json.loads(user_response.body)["data"]["user"]["id"]
-        project_id = json.loads(project_response.body)["data"]["project"]["id"]
-        return user_id, project_id
+    def _create_participant_study(self) -> tuple[str, str]:
+        participant_response = main_module.create_api_participant(ParticipantCreateRequest(name="Alice", age=30, sex="female"))
+        study_response = main_module.create_api_study(StudyCreateRequest(title="Study", description="PPG"))
+        participant_id = json.loads(participant_response.body)["data"]["participant"]["id"]
+        study_id = json.loads(study_response.body)["data"]["study"]["id"]
+        return participant_id, study_id
 
     def test_cors_preflight_allows_local_frontend(self) -> None:
         response = asyncio.run(
             _asgi_request(
                 "OPTIONS",
-                "/api/projects",
+                "/api/studies",
                 {
                     "origin": "http://localhost:3000",
                     "access-control-request-method": "POST",
@@ -443,69 +450,69 @@ class ApiMutationTests(unittest.TestCase):
         self.assertEqual(response["headers"]["access-control-allow-origin"], "http://localhost:3000")
         self.assertIn("POST", response["headers"]["access-control-allow-methods"])
 
-    def test_user_and_project_crud_use_public_ids(self) -> None:
-        user_id, project_id = self._create_user_project()
+    def test_participant_and_study_crud_use_public_ids(self) -> None:
+        participant_id, study_id = self._create_participant_study()
 
-        self.assertTrue(user_id.startswith("usr_"))
-        self.assertTrue(project_id.startswith("prj_"))
+        self.assertTrue(participant_id.startswith("par_"))
+        self.assertTrue(study_id.startswith("std_"))
 
-        patched_user = json.loads(
-            main_module.patch_api_user(user_id, UserPatchRequest(age=31)).body
-        )["data"]["user"]
-        patched_project = json.loads(
-            main_module.patch_api_project(project_id, ProjectPatchRequest(description=None)).body
-        )["data"]["project"]
+        patched_participant = json.loads(
+            main_module.patch_api_participant(participant_id, ParticipantPatchRequest(age=31)).body
+        )["data"]["participant"]
+        patched_study = json.loads(
+            main_module.patch_api_study(study_id, StudyPatchRequest(description=None)).body
+        )["data"]["study"]
 
-        self.assertEqual(patched_user["age"], 31)
-        self.assertIsNone(patched_project["description"])
-        self.assertEqual(json.loads(main_module.get_api_user(user_id).body)["data"]["user"]["id"], user_id)
-        self.assertEqual(json.loads(main_module.get_api_project(project_id).body)["data"]["project"]["id"], project_id)
+        self.assertEqual(patched_participant["age"], 31)
+        self.assertIsNone(patched_study["description"])
+        self.assertEqual(json.loads(main_module.get_api_participant(participant_id).body)["data"]["participant"]["id"], participant_id)
+        self.assertEqual(json.loads(main_module.get_api_study(study_id).body)["data"]["study"]["id"], study_id)
 
-    def test_project_user_assignment_routes(self) -> None:
-        user_id, project_id = self._create_user_project()
+    def test_study_participant_assignment_routes(self) -> None:
+        participant_id, study_id = self._create_participant_study()
 
-        assign_response = main_module.assign_api_project_user(project_id, ProjectUserAssignRequest(user_id=user_id))
+        assign_response = main_module.assign_api_study_participant(study_id, StudyParticipantAssignRequest(participant_id=participant_id))
         assignment = json.loads(assign_response.body)["data"]["assignment"]
 
         self.assertEqual(assign_response.status_code, 201)
-        self.assertEqual(assignment["project_id"], project_id)
-        self.assertEqual(assignment["user_id"], user_id)
+        self.assertEqual(assignment["study_id"], study_id)
+        self.assertEqual(assignment["participant_id"], participant_id)
         self.assertIsNotNone(assignment["assigned_at"])
 
-        listed_users = json.loads(main_module.list_users(project_id=project_id, limit=100, offset=0).body)["data"]["users"]
-        project = json.loads(main_module.get_api_project(project_id).body)["data"]["project"]
-        user = json.loads(main_module.get_api_user(user_id).body)["data"]["user"]
+        listed_participants = json.loads(main_module.list_participants(study_id=study_id, limit=100, offset=0).body)["data"]["participants"]
+        study = json.loads(main_module.get_api_study(study_id).body)["data"]["study"]
+        participant = json.loads(main_module.get_api_participant(participant_id).body)["data"]["participant"]
 
-        self.assertEqual([listed_users[0]["id"]], [user_id])
-        self.assertEqual(project["users_count"], 1)
-        self.assertEqual(user["projects_count"], 1)
+        self.assertEqual([listed_participants[0]["id"]], [participant_id])
+        self.assertEqual(study["participants_count"], 1)
+        self.assertEqual(participant["studies_count"], 1)
 
         with self.assertRaises(HTTPException) as context:
-            main_module.assign_api_project_user(project_id, ProjectUserAssignRequest(user_id=user_id))
+            main_module.assign_api_study_participant(study_id, StudyParticipantAssignRequest(participant_id=participant_id))
 
         self.assertEqual(context.exception.status_code, 409)
-        self.assertEqual(context.exception.detail["code"], "project_user_already_exists")
+        self.assertEqual(context.exception.detail["code"], "study_participant_already_exists")
 
-        delete_response = main_module.delete_api_project_user(project_id, user_id)
+        delete_response = main_module.delete_api_study_participant(study_id, participant_id)
         deleted = json.loads(delete_response.body)["data"]
 
         self.assertTrue(deleted["deleted"])
-        self.assertEqual(deleted["project_id"], project_id)
-        self.assertEqual(deleted["user_id"], user_id)
-        self.assertEqual(json.loads(main_module.get_api_project(project_id).body)["data"]["project"]["users_count"], 0)
+        self.assertEqual(deleted["study_id"], study_id)
+        self.assertEqual(deleted["participant_id"], participant_id)
+        self.assertEqual(json.loads(main_module.get_api_study(study_id).body)["data"]["study"]["participants_count"], 0)
 
         with self.assertRaises(HTTPException) as context:
-            main_module.delete_api_project_user(project_id, user_id)
+            main_module.delete_api_study_participant(study_id, participant_id)
 
         self.assertEqual(context.exception.status_code, 404)
         self.assertEqual(context.exception.detail["code"], "assignment_not_found")
 
     def test_measurement_recording_lifecycle_and_recording_routes(self) -> None:
-        user_id, project_id = self._create_user_project()
+        participant_id, study_id = self._create_participant_study()
         start_response = asyncio.run(
             main_module.start_api_measurement(
                 "dev_sim-api-device",
-                MeasurementStartRequest(user_id=user_id, project_id=project_id),
+                MeasurementStartRequest(participant_id=participant_id, study_id=study_id),
             )
         )
         measurement = json.loads(start_response.body)["data"]["measurement"]
@@ -518,8 +525,8 @@ class ApiMutationTests(unittest.TestCase):
         measurement_detail = json.loads(
             main_module.get_api_measurement(
                 measurement_id,
-                user_id=user_id,
-                project_id=project_id,
+                participant_id=participant_id,
+                study_id=study_id,
                 device_id="dev_sim-api-device",
                 date_from=None,
                 date_to=None,
@@ -528,8 +535,8 @@ class ApiMutationTests(unittest.TestCase):
         )["data"]["measurement"]
         listed_measurements = json.loads(
             main_module.list_api_measurements(
-                user_id=user_id,
-                project_id=project_id,
+                participant_id=participant_id,
+                study_id=study_id,
                 device_id="dev_sim-api-device",
                 date_from=None,
                 date_to=None,
@@ -548,7 +555,9 @@ class ApiMutationTests(unittest.TestCase):
         recording = json.loads(recording_response.body)["data"]["recording"]
         recording_id = recording["id"]
         self.assertTrue(recording_id.startswith("rec_"))
+        self.assertEqual(recording["name"], "Запис 1")
         self.assertEqual(recording["measurement_id"], measurement_id)
+        self.assertFalse(recording["use_for_ml_training"])
 
         self.processing_service.process_json(
             _synthetic_payload(seconds=18, measurement_id=measurement_id, device_id="dev_sim-api-device")
@@ -564,8 +573,8 @@ class ApiMutationTests(unittest.TestCase):
         samples = json.loads(main_module.get_api_recording_samples(recording_id, limit=5, offset=0).body)["data"]["samples"]
         listed = json.loads(
             main_module.list_api_recordings(
-                user_id=user_id,
-                project_id=project_id,
+                participant_id=participant_id,
+                study_id=study_id,
                 device_id=None,
                 date_from=None,
                 date_to=None,
@@ -584,17 +593,30 @@ class ApiMutationTests(unittest.TestCase):
         export_payload = json.loads(export_response.body)
         self.assertEqual(export_payload["data"]["recording"]["id"], recording_id)
 
+        csv_response = main_module.export_api_recordings(
+            participant_id=participant_id,
+            study_id=study_id,
+            device_id=None,
+            date_from=None,
+            date_to=None,
+            status="completed",
+            export_format="csv",
+        )
+        csv_payload = asyncio.run(_streaming_response_text(csv_response))
+        self.assertIn("name", csv_payload.splitlines()[0])
+        self.assertIn("Запис 1", csv_payload)
+
         delete_response = asyncio.run(main_module.delete_api_recording(recording_id))
         self.assertTrue(json.loads(delete_response.body)["data"]["deleted"])
         self.assertIsNone(self.repository.get_recording(recording_id))
 
     def test_stop_measurement_rejects_inactive_measurement(self) -> None:
-        user_id, project_id = self._create_user_project()
+        participant_id, study_id = self._create_participant_study()
         measurement = json.loads(
             asyncio.run(
                 main_module.start_api_measurement(
                     "dev_sim-api-device",
-                    MeasurementStartRequest(user_id=user_id, project_id=project_id),
+                    MeasurementStartRequest(participant_id=participant_id, study_id=study_id),
                 )
             ).body
         )["data"]["measurement"]
@@ -609,12 +631,12 @@ class ApiMutationTests(unittest.TestCase):
         self.assertEqual(context.exception.detail["code"], "invalid_status_transition")
 
     def test_quality_analysis_requires_model_and_stores_model_result(self) -> None:
-        user_id, project_id = self._create_user_project()
+        participant_id, study_id = self._create_participant_study()
         measurement = json.loads(
             asyncio.run(
                 main_module.start_api_measurement(
                     "dev_sim-api-device",
-                    MeasurementStartRequest(user_id=user_id, project_id=project_id),
+                    MeasurementStartRequest(participant_id=participant_id, study_id=study_id),
                 )
             ).body
         )["data"]["measurement"]
@@ -675,6 +697,21 @@ class ApiMutationTests(unittest.TestCase):
         self.assertEqual(len(fake_provider.calls), 1)
         self.assertIn("quality_result", fake_provider.calls[0]["user_prompt"])
         self.assertNotIn("raw_data", fake_provider.calls[0]["user_prompt"])
+
+        main_module.assistant_chat(
+            AssistantChatRequest(
+                recording_id=recording["id"],
+                message="А что я спрашивал перед этим?",
+                conversation_history=[
+                    {"role": "user", "message": "Насколько надежны данные?"},
+                    {"role": "assistant", "message": assistant_payload["message"]},
+                ],
+            )
+        )
+        self.assertEqual(len(fake_provider.calls), 2)
+        self.assertIn("Previous conversation in this chat", fake_provider.calls[1]["user_prompt"])
+        self.assertIn("User: Насколько надежны данные?", fake_provider.calls[1]["user_prompt"])
+        self.assertIn(f"Assistant: {assistant_payload['message']}", fake_provider.calls[1]["user_prompt"])
 
     def test_measurement_detail_routes_exist_without_old_recording_exports(self) -> None:
         routes = {(route.path, tuple(sorted(route.methods))) for route in main_module.app.routes if hasattr(route, "methods")}
@@ -802,14 +839,8 @@ class MigrationTests(unittest.TestCase):
                         """
                     )
                 )
-                connection.execute(
-                    text("INSERT INTO users VALUES (1, 'Alice', 30, 'female', :ts, :ts, 0)"),
-                    {"ts": started_at},
-                )
-                connection.execute(
-                    text("INSERT INTO projects VALUES (1, 'Study', :ts, :ts, 0)"),
-                    {"ts": started_at},
-                )
+                connection.execute(text("INSERT INTO users VALUES (1, 'Alice', 30, 'female', :ts, :ts, 0)"), {"ts": started_at})
+                connection.execute(text("INSERT INTO projects VALUES (1, 'Study', :ts, :ts, 0)"), {"ts": started_at})
                 connection.execute(
                     text(
                         """
@@ -834,25 +865,38 @@ class MigrationTests(unittest.TestCase):
             repository = RecordingRepository(database_url)
             repository.create_schema()
 
-            user = repository.get_user("usr_1")
-            project = repository.get_project("prj_1")
+            participant = repository.get_participant("par_1")
+            study = repository.get_study("std_1")
             recording = repository.get_recording("rec_legacy-rec")
             samples = repository.list_recording_samples("rec_legacy-rec", limit=None, offset=0)
             engine = create_engine(database_url, future=True)
             columns = {column["name"] for column in inspect(engine).get_columns("quality_analyses")}
             measurement_columns = {column["name"] for column in inspect(engine).get_columns("measurements")}
             recording_columns = {column["name"] for column in inspect(engine).get_columns("recordings")}
+            table_names = set(inspect(engine).get_table_names())
             engine.dispose()
 
-            self.assertEqual(user["public_id"], "usr_1")
-            self.assertEqual(project["public_id"], "prj_1")
+            self.assertEqual(participant["public_id"], "par_1")
+            self.assertEqual(study["public_id"], "std_1")
             self.assertEqual(recording["public_id"], "rec_legacy-rec")
+            self.assertEqual(recording["name"], "Запис 1")
             self.assertEqual(recording["measurement_id"], "legacy-rec")
-            self.assertEqual(recording["user_id"], "usr_1")
-            self.assertEqual(recording["project_id"], "prj_1")
+            self.assertEqual(recording["participant_id"], "par_1")
+            self.assertEqual(recording["study_id"], "std_1")
             self.assertEqual(len(samples), 1)
+            self.assertIn("participants", table_names)
+            self.assertIn("studies", table_names)
+            self.assertNotIn("users", table_names)
+            self.assertNotIn("projects", table_names)
             self.assertIn("features", columns)
             self.assertIn("perfusion_index", measurement_columns)
+            self.assertIn("participant_id", measurement_columns)
+            self.assertIn("study_id", measurement_columns)
+            self.assertIn("participant_name", recording_columns)
+            self.assertIn("study_name", recording_columns)
+            self.assertIn("name", recording_columns)
+            self.assertNotIn("user_id", measurement_columns)
+            self.assertNotIn("project_id", measurement_columns)
             self.assertNotIn(legacy_confidence_column, measurement_columns)
             self.assertNotIn(legacy_confidence_column, recording_columns)
             repository.dispose()

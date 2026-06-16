@@ -20,8 +20,10 @@ from app.schemas.metrics import VitalSigns
 class ActiveRecording:
     id: str
     public_id: str
+    name: str | None
     started_at: datetime
     duration_seconds: float | None
+    use_for_ml_training: bool
     sample_start_index: int
     sample_end_index: int | None = None
     samples_count: int = 0
@@ -167,6 +169,8 @@ class MeasurementSession:
         recording_id: str,
         public_recording_id: str,
         duration_seconds: float | None,
+        name: str | None = None,
+        use_for_ml_training: bool = False,
     ) -> ActiveRecording:
         if self.status != "running":
             raise ValueError("measurement is not active")
@@ -175,8 +179,10 @@ class MeasurementSession:
         self.active_recording = ActiveRecording(
             id=recording_id,
             public_id=public_recording_id,
+            name=name,
             started_at=datetime.now(UTC),
             duration_seconds=duration_seconds,
+            use_for_ml_training=use_for_ml_training,
             sample_start_index=self._next_sample_index,
         )
         return self.active_recording
@@ -217,8 +223,8 @@ class MeasurementSession:
 
         return MeasurementState(
             id=self.public_id,
-            user_id=self.metadata.user_id,
-            project_id=self.metadata.project_id,
+            participant_id=self.metadata.participant_id,
+            study_id=self.metadata.study_id,
             device_id=public_device_id(self.device_id),
             active_recording_id=self.active_recording.public_id
             if self.active_recording is not None and self.active_recording.status == "running"
@@ -238,8 +244,8 @@ class MeasurementSession:
         return {
             "id": self.internal_id,
             "public_id": self.public_id,
-            "user_id": self.metadata.user_id,
-            "project_id": self.metadata.project_id,
+            "participant_id": self.metadata.participant_id,
+            "study_id": self.metadata.study_id,
             "device_id": self.device_id,
             "active_recording_id": None,
             "started_at": self.started_at,
@@ -262,13 +268,14 @@ class MeasurementSession:
         return {
             "id": recording.id,
             "public_id": recording.public_id,
+            "name": recording.name,
             "measurement_id": self.internal_id,
             "quality_analysis_id": None,
-            "use_for_ml_training": False,
-            "user_name": self.metadata.user_name,
-            "user_id": self.metadata.user_id,
-            "project_name": self.metadata.project_name,
-            "project_id": self.metadata.project_id,
+            "use_for_ml_training": recording.use_for_ml_training,
+            "participant_name": self.metadata.participant_name,
+            "participant_id": self.metadata.participant_id,
+            "study_name": self.metadata.study_name,
+            "study_id": self.metadata.study_id,
             "started_at": recording.started_at,
             "finished_at": None,
             "duration_ms": None,

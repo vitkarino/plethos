@@ -8,8 +8,8 @@ from app.schemas.metrics import VitalSigns
 
 class MeasurementState(BaseModel):
     id: str | None = None
-    user_id: str | None = None
-    project_id: str | None = None
+    participant_id: str | None = None
+    study_id: str | None = None
     device_id: str | None = None
     active_recording_id: str | None = None
     status: Literal["running", "completed", "cancelled", "failed"]
@@ -35,35 +35,37 @@ class RecordingState(BaseModel):
 
 
 class MeasurementStartRequest(BaseModel):
-    user_id: str = Field(min_length=1)
-    project_id: str = Field(min_length=1)
+    participant_id: str = Field(min_length=1)
+    study_id: str = Field(min_length=1)
 
 
 class RecordingStartRequest(BaseModel):
     duration_s: float = Field(gt=0)
+    name: str | None = Field(default=None, min_length=1)
+    use_for_ml_training: bool = False
 
 
-class UserCreateRequest(BaseModel):
+class ParticipantCreateRequest(BaseModel):
     name: str = Field(min_length=1)
     age: int | None = Field(default=None, ge=0)
     sex: Literal["male", "female", "other"] | None = None
 
 
-class UserPatchRequest(BaseModel):
+class ParticipantPatchRequest(BaseModel):
     name: str | None = Field(default=None, min_length=1)
     age: int | None = Field(default=None, ge=0)
     sex: Literal["male", "female", "other"] | None = None
 
 
-class ProjectCreateRequest(BaseModel):
+class StudyCreateRequest(BaseModel):
     title: str = Field(min_length=1)
     description: str | None = None
 
 
-class ProjectPatchRequest(BaseModel):
+class StudyPatchRequest(BaseModel):
     title: str | None = Field(default=None, min_length=1)
     description: str | None = None
 
 
-class ProjectUserAssignRequest(BaseModel):
-    user_id: str = Field(min_length=1)
+class StudyParticipantAssignRequest(BaseModel):
+    participant_id: str = Field(min_length=1)

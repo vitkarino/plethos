@@ -77,7 +77,7 @@ def _database_url() -> str | None:
         return None
 
     user = os.getenv("POSTGRES_USER") or os.getenv("PGUSER") or "vitkarino"
-    database = os.getenv("POSTGRES_DB") or os.getenv("PGDATABASE") or "pulso"
+    database = os.getenv("POSTGRES_DB") or os.getenv("PGDATABASE") or "ppg_backend"
     host = os.getenv("POSTGRES_HOST") or os.getenv("PGHOST") or "localhost"
     port = os.getenv("POSTGRES_PORT") or os.getenv("PGPORT") or "5432"
     password = os.getenv("POSTGRES_PASSWORD") or os.getenv("PGPASSWORD")
@@ -98,14 +98,30 @@ class AppConfig:
         (
             "http://localhost:3000",
             "http://127.0.0.1:3000",
+            "http://localhost:3080",
+            "http://127.0.0.1:3080",
         ),
     )
 
     min_bpm: float = _float_env("MIN_BPM", 40.0)
     max_bpm: float = _float_env("MAX_BPM", 180.0)
     bandpass_low_hz: float = _float_env("BANDPASS_LOW_HZ", 0.5)
-    bandpass_high_hz: float = _float_env("BANDPASS_HIGH_HZ", 3.0)
+    bandpass_high_hz: float = _float_env("BANDPASS_HIGH_HZ", 5.0)
     filter_order: int = _int_env("FILTER_ORDER", 4)
+    # Reflectance sensors (MAX30102) emit a signal inverted vs the conventional
+    # plethysmogram: systole appears as a fast downstroke instead of an upstroke.
+    # When the diastolic upstroke is this many times slower than the systolic
+    # downstroke, the channel is flipped so the waveform matches reality.
+    auto_invert_reflectance: bool = _bool_env("AUTO_INVERT_REFLECTANCE", True)
+    polarity_rise_fall_ratio: float = _float_env("POLARITY_RISE_FALL_RATIO", 1.5)
+    # Blocking sensor temperature reads leave isolated baseline steps in the raw
+    # signal. The firmware fix (rare reads + dropped settling samples) removes
+    # these at the source. The server-side detector below is opt-in and OFF by
+    # default: on inverted reflectance signals it cannot reliably tell a step from
+    # a sharp systolic edge and may distort the pulse, so it is kept for
+    # experimentation only.
+    remove_dc_steps: bool = _bool_env("REMOVE_DC_STEPS", False)
+    step_detect_sigma: float = _float_env("STEP_DETECT_SIGMA", 6.0)
 
     min_window_seconds: float = _float_env("MIN_WINDOW_SECONDS", 8.0)
     stable_spo2_window_seconds: float = _float_env("STABLE_SPO2_WINDOW_SECONDS", 10.0)

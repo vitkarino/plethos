@@ -18,10 +18,10 @@ from app.core.ids import (
     is_simulated_device,
     public_device_id,
     public_measurement_id,
-    public_project_id,
+    public_study_id,
     public_quality_id,
     public_recording_id,
-    public_user_id,
+    public_participant_id,
 )
 from app.llm import AssistantChatResult, AssistantService, LLMProviderError, LLMUnavailable
 from app.measurements import RecordingMetadata
@@ -33,18 +33,18 @@ from app.schemas.assistant import AssistantChatRequest
 from app.schemas.measurements import (
     MeasurementStartRequest,
     MeasurementState,
-    ProjectCreateRequest,
-    ProjectPatchRequest,
-    ProjectUserAssignRequest,
+    StudyCreateRequest,
+    StudyPatchRequest,
+    StudyParticipantAssignRequest,
     RecordingStartRequest,
-    UserCreateRequest,
-    UserPatchRequest,
+    ParticipantCreateRequest,
+    ParticipantPatchRequest,
 )
 from app.schemas.metrics import VitalSigns
 from app.storage.recording_repository import RecordingRepository
 
 app = FastAPI(
-    title="Pulso PPG Backend",
+    title="PPG Backend",
     version="0.4.2",
     docs_url=None,
     redoc_url=None,
@@ -64,6 +64,7 @@ assistant_service = AssistantService(settings)
 
 RECORDING_EXPORT_FIELDS = [
     "id",
+    "name",
     "measurement_id",
     "quality_analysis_id",
     "use_for_ml_training",
@@ -74,8 +75,8 @@ RECORDING_EXPORT_FIELDS = [
     "sample_start_index",
     "sample_end_index",
     "samples_count",
-    "user_id",
-    "project_id",
+    "participant_id",
+    "study_id",
     "device_id",
     "sample_rate",
     "sensor_temp",
@@ -190,127 +191,127 @@ async def delete_api_device(device_id: str) -> JSONResponse:
     )
 
 
-@app.post("/api/projects")
-def create_api_project(body: ProjectCreateRequest) -> JSONResponse:
+@app.post("/api/studies")
+def create_api_study(body: StudyCreateRequest) -> JSONResponse:
     _require_database()
-    return _api_success({"project": _project_for_api(recording_repository.create_project(body.model_dump()))}, status_code=201)
+    return _api_success({"study": _study_for_api(recording_repository.create_study(body.model_dump()))}, status_code=201)
 
 
-@app.get("/api/projects")
-def list_projects(
+@app.get("/api/studies")
+def list_studies(
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
 ) -> JSONResponse:
     _require_database()
     return _api_success(
         {
-            "projects": [_project_for_api(project) for project in recording_repository.list_projects(limit=limit, offset=offset)],
+            "studies": [_study_for_api(study) for study in recording_repository.list_studies(limit=limit, offset=offset)],
             "limit": limit,
             "offset": offset,
         }
     )
 
 
-@app.get("/api/projects/{project_id}")
-def get_api_project(project_id: str) -> JSONResponse:
+@app.get("/api/studies/{study_id}")
+def get_api_study(study_id: str) -> JSONResponse:
     _require_database()
-    return _api_success({"project": _project_for_api(_get_project_or_404(project_id))})
+    return _api_success({"study": _study_for_api(_get_study_or_404(study_id))})
 
 
-@app.patch("/api/projects/{project_id}")
-def patch_api_project(project_id: str, body: ProjectPatchRequest) -> JSONResponse:
+@app.patch("/api/studies/{study_id}")
+def patch_api_study(study_id: str, body: StudyPatchRequest) -> JSONResponse:
     _require_database()
     values = _patch_values(body, non_nullable_fields={"title"})
-    project = recording_repository.update_project(project_id, values)
-    if project is None:
-        _raise(404, "project_not_found", "Project not found")
-    return _api_success({"project": _project_for_api(project)})
+    study = recording_repository.update_study(study_id, values)
+    if study is None:
+        _raise(404, "study_not_found", "Study not found")
+    return _api_success({"study": _study_for_api(study)})
 
 
-@app.delete("/api/projects/{project_id}")
-def delete_api_project(project_id: str) -> JSONResponse:
+@app.delete("/api/studies/{study_id}")
+def delete_api_study(study_id: str) -> JSONResponse:
     _require_database()
-    if not recording_repository.delete_project(project_id):
-        _raise(404, "project_not_found", "Project not found")
-    return _api_success({"deleted": True, "project_id": public_project_id(project_id)})
+    if not recording_repository.delete_study(study_id):
+        _raise(404, "study_not_found", "Study not found")
+    return _api_success({"deleted": True, "study_id": public_study_id(study_id)})
 
 
-@app.post("/api/projects/{project_id}/users")
-def assign_api_project_user(project_id: str, body: ProjectUserAssignRequest) -> JSONResponse:
+@app.post("/api/studies/{study_id}/participants")
+def assign_api_study_participant(study_id: str, body: StudyParticipantAssignRequest) -> JSONResponse:
     _require_database()
-    _get_project_or_404(project_id)
-    _get_user_or_404(body.user_id)
+    _get_study_or_404(study_id)
+    _get_participant_or_404(body.participant_id)
     try:
-        assignment = recording_repository.add_project_user(project_id, body.user_id)
+        assignment = recording_repository.add_study_participant(study_id, body.participant_id)
     except ValueError as exc:
-        if str(exc) == "project user already exists":
-            _raise(409, "project_user_already_exists", "Project user already exists")
+        if str(exc) == "study participant already exists":
+            _raise(409, "study_participant_already_exists", "Study participant already exists")
         _raise(400, "validation_error", str(exc))
-    return _api_success({"assignment": _project_user_assignment_for_api(assignment)}, status_code=201)
+    return _api_success({"assignment": _study_participant_assignment_for_api(assignment)}, status_code=201)
 
 
-@app.delete("/api/projects/{project_id}/users/{user_id}")
-def delete_api_project_user(project_id: str, user_id: str) -> JSONResponse:
+@app.delete("/api/studies/{study_id}/participants/{participant_id}")
+def delete_api_study_participant(study_id: str, participant_id: str) -> JSONResponse:
     _require_database()
-    _get_project_or_404(project_id)
-    _get_user_or_404(user_id)
-    if not recording_repository.delete_project_user(project_id, user_id):
-        _raise(404, "assignment_not_found", "Project user assignment not found")
+    _get_study_or_404(study_id)
+    _get_participant_or_404(participant_id)
+    if not recording_repository.delete_study_participant(study_id, participant_id):
+        _raise(404, "assignment_not_found", "Study participant assignment not found")
     return _api_success(
         {
             "deleted": True,
-            "project_id": public_project_id(project_id),
-            "user_id": public_user_id(user_id),
+            "study_id": public_study_id(study_id),
+            "participant_id": public_participant_id(participant_id),
         }
     )
 
 
-@app.post("/api/users")
-def create_api_user(body: UserCreateRequest) -> JSONResponse:
+@app.post("/api/participants")
+def create_api_participant(body: ParticipantCreateRequest) -> JSONResponse:
     _require_database()
-    return _api_success({"user": _user_for_api(recording_repository.create_user(body.model_dump()))}, status_code=201)
+    return _api_success({"participant": _participant_for_api(recording_repository.create_participant(body.model_dump()))}, status_code=201)
 
 
-@app.get("/api/users")
-def list_users(
-    project_id: str | None = Query(default=None),
+@app.get("/api/participants")
+def list_participants(
+    study_id: str | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
 ) -> JSONResponse:
     _require_database()
-    if project_id is not None:
-        _get_project_or_404(project_id)
+    if study_id is not None:
+        _get_study_or_404(study_id)
     return _api_success(
         {
-            "users": [_user_for_api(user) for user in recording_repository.list_users(project_id=project_id, limit=limit, offset=offset)],
+            "participants": [_participant_for_api(participant) for participant in recording_repository.list_participants(study_id=study_id, limit=limit, offset=offset)],
             "limit": limit,
             "offset": offset,
         }
     )
 
 
-@app.get("/api/users/{user_id}")
-def get_api_user(user_id: str) -> JSONResponse:
+@app.get("/api/participants/{participant_id}")
+def get_api_participant(participant_id: str) -> JSONResponse:
     _require_database()
-    return _api_success({"user": _user_for_api(_get_user_or_404(user_id))})
+    return _api_success({"participant": _participant_for_api(_get_participant_or_404(participant_id))})
 
 
-@app.patch("/api/users/{user_id}")
-def patch_api_user(user_id: str, body: UserPatchRequest) -> JSONResponse:
+@app.patch("/api/participants/{participant_id}")
+def patch_api_participant(participant_id: str, body: ParticipantPatchRequest) -> JSONResponse:
     _require_database()
     values = _patch_values(body, non_nullable_fields={"name"})
-    user = recording_repository.update_user(user_id, values)
-    if user is None:
-        _raise(404, "user_not_found", "User not found")
-    return _api_success({"user": _user_for_api(user)})
+    participant = recording_repository.update_participant(participant_id, values)
+    if participant is None:
+        _raise(404, "participant_not_found", "Participant not found")
+    return _api_success({"participant": _participant_for_api(participant)})
 
 
-@app.delete("/api/users/{user_id}")
-def delete_api_user(user_id: str) -> JSONResponse:
+@app.delete("/api/participants/{participant_id}")
+def delete_api_participant(participant_id: str) -> JSONResponse:
     _require_database()
-    if not recording_repository.delete_user(user_id):
-        _raise(404, "user_not_found", "User not found")
-    return _api_success({"deleted": True, "user_id": public_user_id(user_id)})
+    if not recording_repository.delete_participant(participant_id):
+        _raise(404, "participant_not_found", "Participant not found")
+    return _api_success({"deleted": True, "participant_id": public_participant_id(participant_id)})
 
 
 @app.post("/api/devices/{device_id}/measurements")
@@ -319,13 +320,13 @@ async def start_api_measurement(
     body: MeasurementStartRequest,
 ) -> JSONResponse:
     raw_device_id = internal_device_id(device_id) or device_id
-    _get_user_or_404(body.user_id)
-    _get_project_or_404(body.project_id)
+    _get_participant_or_404(body.participant_id)
+    _get_study_or_404(body.study_id)
     try:
         measurement = processing_service.start_live_measurement(
             metadata=RecordingMetadata(
-                user_id=public_user_id(body.user_id),
-                project_id=public_project_id(body.project_id),
+                participant_id=public_participant_id(body.participant_id),
+                study_id=public_study_id(body.study_id),
             ),
             device_id=raw_device_id,
         )
@@ -374,6 +375,8 @@ async def start_api_recording(
         _measurement, event = processing_service.start_recording_for_measurement(
             measurement_id,
             duration_seconds=body.duration_s,
+            name=body.name,
+            use_for_ml_training=body.use_for_ml_training,
         )
     except KeyError:
         _raise(404, "measurement_not_found", "Measurement not found")
@@ -405,8 +408,8 @@ def list_api_measurements(
     device_id: str | None = Query(default=None),
     date_from: str | None = Query(default=None),
     date_to: str | None = Query(default=None),
-    user_id: str | None = Query(default=None),
-    project_id: str | None = Query(default=None),
+    participant_id: str | None = Query(default=None),
+    study_id: str | None = Query(default=None),
     status: Literal["running", "completed", "failed", "cancelled"] | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
@@ -418,8 +421,8 @@ def list_api_measurements(
         date_from=_parse_date_bound(date_from, end_of_day=False),
         date_to=_parse_date_bound(date_to, end_of_day=True),
         device_id=device_id,
-        user_id=user_id,
-        project_id=project_id,
+        participant_id=participant_id,
+        study_id=study_id,
         status=status,
     )
     return _api_success(
@@ -437,8 +440,8 @@ def get_api_measurement(
     device_id: str | None = Query(default=None),
     date_from: str | None = Query(default=None),
     date_to: str | None = Query(default=None),
-    user_id: str | None = Query(default=None),
-    project_id: str | None = Query(default=None),
+    participant_id: str | None = Query(default=None),
+    study_id: str | None = Query(default=None),
     status: Literal["running", "completed", "failed", "cancelled"] | None = Query(default=None),
 ) -> JSONResponse:
     _require_database()
@@ -448,8 +451,8 @@ def get_api_measurement(
         date_from=_parse_date_bound(date_from, end_of_day=False),
         date_to=_parse_date_bound(date_to, end_of_day=True),
         device_id=device_id,
-        user_id=user_id,
-        project_id=project_id,
+        participant_id=participant_id,
+        study_id=study_id,
         status=status,
     ):
         _raise(404, "measurement_not_found", "Measurement not found")
@@ -461,8 +464,8 @@ def list_api_recordings(
     device_id: str | None = Query(default=None),
     date_from: str | None = Query(default=None),
     date_to: str | None = Query(default=None),
-    user_id: str | None = Query(default=None),
-    project_id: str | None = Query(default=None),
+    participant_id: str | None = Query(default=None),
+    study_id: str | None = Query(default=None),
     status: Literal["running", "completed", "failed", "cancelled"] | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
@@ -474,8 +477,8 @@ def list_api_recordings(
         date_from=_parse_date_bound(date_from, end_of_day=False),
         date_to=_parse_date_bound(date_to, end_of_day=True),
         device_id=device_id,
-        user_id=user_id,
-        project_id=project_id,
+        participant_id=participant_id,
+        study_id=study_id,
         status=status,
     )
     return _api_success(
@@ -485,6 +488,34 @@ def list_api_recordings(
             "offset": offset,
         }
     )
+
+
+@app.get("/api/recordings/export")
+def export_api_recordings(
+    device_id: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+    participant_id: str | None = Query(default=None),
+    study_id: str | None = Query(default=None),
+    status: Literal["running", "completed", "failed", "cancelled"] | None = Query(default=None),
+    export_format: Literal["csv"] = Query(default="csv", alias="format"),
+) -> StreamingResponse:
+    _require_database()
+    recordings = processing_service.list_recordings(
+        limit=None,
+        offset=0,
+        date_from=_parse_date_bound(date_from, end_of_day=False),
+        date_to=_parse_date_bound(date_to, end_of_day=True),
+        device_id=device_id,
+        participant_id=participant_id,
+        study_id=study_id,
+        status=status,
+    )
+    samples_by_recording = {
+        str(recording["id"]): processing_service.get_recording_samples(str(recording["id"]), limit=None, offset=0)
+        for recording in recordings
+    }
+    return _recordings_csv_response("recordings.csv", recordings, samples_by_recording)
 
 
 @app.get("/api/recordings/{recording_id}/export")
@@ -622,6 +653,7 @@ def assistant_chat(body: AssistantChatRequest) -> JSONResponse:
             recording=recording,
             quality_analysis=analysis,
             user_message=body.message,
+            conversation_history=[item.model_dump() for item in body.conversation_history],
         )
     except LLMUnavailable as exc:
         _raise(503, "llm_unavailable", str(exc))
@@ -728,8 +760,8 @@ def _measurement_for_api(measurement: object) -> dict[str, object]:
         return {
             "id": public_measurement_id(measurement.id),
             "is_simulated": is_simulated_device(device_id),
-            "user_id": public_user_id(measurement.user_id),
-            "project_id": public_project_id(measurement.project_id),
+            "participant_id": public_participant_id(measurement.participant_id),
+            "study_id": public_study_id(measurement.study_id),
             "active_recording_id": public_recording_id(measurement.active_recording_id),
             "device_id": public_device_id(device_id),
             "time": {
@@ -754,8 +786,8 @@ def _measurement_for_api(measurement: object) -> dict[str, object]:
     return {
         "id": payload.get("public_id") or public_measurement_id(payload.get("id")),
         "is_simulated": is_simulated_device(device_id),
-        "user_id": public_user_id(payload.get("user_id")),
-        "project_id": public_project_id(payload.get("project_id")),
+        "participant_id": public_participant_id(payload.get("participant_id")),
+        "study_id": public_study_id(payload.get("study_id")),
         "active_recording_id": public_recording_id(payload.get("active_recording_id")),
         "device_id": public_device_id(device_id),
         "time": {
@@ -776,6 +808,7 @@ def _measurement_for_api(measurement: object) -> dict[str, object]:
 def _recording_for_api(recording: dict[str, Any]) -> dict[str, object]:
     return {
         "id": _public_recording_id_from_row(recording),
+        "name": recording.get("name") or _public_recording_id_from_row(recording),
         "measurement_id": public_measurement_id(recording.get("measurement_id")),
         "quality_analysis_id": public_quality_id(recording.get("quality_analysis_id")),
         "use_for_ml_training": bool(recording.get("use_for_ml_training")),
@@ -791,8 +824,8 @@ def _recording_for_api(recording: dict[str, Any]) -> dict[str, object]:
         },
         "samples_count": recording.get("samples_count"),
         "device_id": public_device_id(recording.get("device_id")),
-        "user_id": public_user_id(recording.get("user_id")),
-        "project_id": public_project_id(recording.get("project_id")),
+        "participant_id": public_participant_id(recording.get("participant_id")),
+        "study_id": public_study_id(recording.get("study_id")),
         "sample_rate_hz": recording.get("sample_rate"),
         "sensor_temp_c": recording.get("sensor_temp"),
         "bpm": recording.get("bpm"),
@@ -871,33 +904,33 @@ def _quality_reason_for_api(reason: str | None, level: str) -> str | None:
     return "high_noise"
 
 
-def _project_for_api(project: dict[str, Any]) -> dict[str, object]:
+def _study_for_api(study: dict[str, Any]) -> dict[str, object]:
     return {
-        "id": project.get("public_id") or public_project_id(project.get("id")),
-        "title": project.get("title"),
-        "description": project.get("description"),
-        "users_count": project.get("users_count", 0),
-        "recordings_count": project.get("recordings_qty", 0),
-        "created_at": _datetime_for_api(project.get("created_at")),
+        "id": study.get("public_id") or public_study_id(study.get("id")),
+        "title": study.get("title"),
+        "description": study.get("description"),
+        "participants_count": study.get("participants_count", 0),
+        "recordings_count": study.get("recordings_qty", 0),
+        "created_at": _datetime_for_api(study.get("created_at")),
     }
 
 
-def _user_for_api(user: dict[str, Any]) -> dict[str, object]:
+def _participant_for_api(participant: dict[str, Any]) -> dict[str, object]:
     return {
-        "id": user.get("public_id") or public_user_id(user.get("id")),
-        "name": user.get("name"),
-        "age": user.get("age"),
-        "sex": user.get("sex"),
-        "projects_count": user.get("projects_count", 0),
-        "recordings_count": user.get("recordings_qty", 0),
-        "created_at": _datetime_for_api(user.get("created_at")),
+        "id": participant.get("public_id") or public_participant_id(participant.get("id")),
+        "name": participant.get("name"),
+        "age": participant.get("age"),
+        "sex": participant.get("sex"),
+        "studies_count": participant.get("studies_count", 0),
+        "recordings_count": participant.get("recordings_qty", 0),
+        "created_at": _datetime_for_api(participant.get("created_at")),
     }
 
 
-def _project_user_assignment_for_api(assignment: dict[str, Any]) -> dict[str, object]:
+def _study_participant_assignment_for_api(assignment: dict[str, Any]) -> dict[str, object]:
     return {
-        "project_id": public_project_id(assignment.get("project_id")),
-        "user_id": public_user_id(assignment.get("user_id")),
+        "study_id": public_study_id(assignment.get("study_id")),
+        "participant_id": public_participant_id(assignment.get("participant_id")),
         "assigned_at": _datetime_for_api(assignment.get("assigned_at")),
     }
 
@@ -1001,8 +1034,8 @@ def _measurement_matches_filters(
     date_from: datetime | None,
     date_to: datetime | None,
     device_id: str | None,
-    user_id: str | None,
-    project_id: str | None,
+    participant_id: str | None,
+    study_id: str | None,
     status: str | None,
 ) -> bool:
     started_at = measurement.get("started_at")
@@ -1020,29 +1053,29 @@ def _measurement_matches_filters(
         return False
     if device_id is not None and measurement.get("device_id") != internal_device_id(device_id):
         return False
-    if user_id is not None and measurement.get("user_id") != public_user_id(user_id):
+    if participant_id is not None and measurement.get("participant_id") != public_participant_id(participant_id):
         return False
-    if project_id is not None and measurement.get("project_id") != public_project_id(project_id):
+    if study_id is not None and measurement.get("study_id") != public_study_id(study_id):
         return False
     if status is not None and measurement.get("status") != status:
         return False
     return True
 
 
-def _get_project_or_404(project_id: str) -> dict[str, Any]:
+def _get_study_or_404(study_id: str) -> dict[str, Any]:
     _require_database()
-    project = recording_repository.get_project(project_id)
-    if project is None:
-        _raise(404, "project_not_found", "Project not found")
-    return project
+    study = recording_repository.get_study(study_id)
+    if study is None:
+        _raise(404, "study_not_found", "Study not found")
+    return study
 
 
-def _get_user_or_404(user_id: str) -> dict[str, Any]:
+def _get_participant_or_404(participant_id: str) -> dict[str, Any]:
     _require_database()
-    user = recording_repository.get_user(user_id)
-    if user is None:
-        _raise(404, "user_not_found", "User not found")
-    return user
+    participant = recording_repository.get_participant(participant_id)
+    if participant is None:
+        _raise(404, "participant_not_found", "Participant not found")
+    return participant
 
 
 def _public_recording_id_from_row(recording: dict[str, Any]) -> str | None:
@@ -1108,6 +1141,7 @@ def _csv_recording_row(
     api_recording = _recording_for_api(dict(recording))
     row = {
         "id": api_recording.get("id"),
+        "name": api_recording.get("name"),
         "measurement_id": api_recording.get("measurement_id"),
         "quality_analysis_id": api_recording.get("quality_analysis_id"),
         "use_for_ml_training": api_recording.get("use_for_ml_training"),
@@ -1118,8 +1152,8 @@ def _csv_recording_row(
         "sample_start_index": api_recording.get("sample_range", {}).get("start_index") if isinstance(api_recording.get("sample_range"), dict) else None,
         "sample_end_index": api_recording.get("sample_range", {}).get("end_index") if isinstance(api_recording.get("sample_range"), dict) else None,
         "samples_count": api_recording.get("samples_count"),
-        "user_id": api_recording.get("user_id"),
-        "project_id": api_recording.get("project_id"),
+        "participant_id": api_recording.get("participant_id"),
+        "study_id": api_recording.get("study_id"),
         "device_id": api_recording.get("device_id"),
         "sample_rate": api_recording.get("sample_rate_hz"),
         "sensor_temp": api_recording.get("sensor_temp_c"),
