@@ -1,0 +1,165 @@
+from dataclasses import dataclass
+import os
+import sys
+from pathlib import Path
+from urllib.parse import quote
+
+
+def _load_dotenv(path: str = ".env") -> None:
+    env_path = Path(path)
+    if not env_path.exists():
+        return
+
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        name, raw_value = line.split("=", 1)
+        name = name.strip()
+        if not name or name in os.environ:
+            continue
+
+        value = raw_value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        os.environ[name] = value
+
+
+_should_load_dotenv = os.getenv("APP_LOAD_DOTENV", "1").strip().lower() not in {"0", "false", "no", "off"}
+# Pytest imports the application modules for unit tests; loading local `.env`
+# during import makes tests environment-dependent.
+if _should_load_dotenv and "pytest" not in sys.modules:
+    _load_dotenv()
+
+
+def _float_env(name: str, default: float) -> float:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return float(raw)
+
+
+def _int_env(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return int(raw)
+
+
+def _bool_env(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _csv_env(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return tuple(item.strip() for item in raw.split(",") if item.strip())
+
+
+def _database_url() -> str | None:
+    explicit_url = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_DSN")
+    if explicit_url:
+        return explicit_url
+
+    component_names = {
+        "POSTGRES_HOST",
+        "POSTGRES_PORT",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_USER",
+        "POSTGRES_DB",
+        "PGHOST",
+        "PGPORT",
+        "PGPASSWORD",
+        "PGUSER",
+        "PGDATABASE",
+    }
+    if not _bool_env("DATABASE_ENABLED", False) and not any(os.getenv(name) for name in component_names):
+        return None
+
+    user = os.getenv("POSTGRES_USER") or os.getenv("PGUSER") or "vitkarino"
+    database = os.getenv("POSTGRES_DB") or os.getenv("PGDATABASE") or "ppg_backend"
+    host = os.getenv("POSTGRES_HOST") or os.getenv("PGHOST") or "localhost"
+    port = os.getenv("POSTGRES_PORT") or os.getenv("PGPORT") or "5432"
+    password = os.getenv("POSTGRES_PASSWORD") or os.getenv("PGPASSWORD")
+
+    auth = quote(user, safe="")
+    if password:
+        auth = f"{auth}:{quote(password, safe='')}"
+    return f"postgresql+psycopg://{auth}@{host}:{port}/{quote(database, safe='')}"
+
+
+@dataclass(frozen=True)
+class AppConfig:
+    host: str = os.getenv("HOST", "0.0.0.0")
+    ws_port: int = _int_env("WS_PORT", 8080)
+    database_url: str | None = _database_url()
+    cors_origins: tuple[str, ...] = _csv_env(
+        "CORS_ORIGINS",
+        (
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:3080",
+            "http://127.0.0.1:3080",
+        ),
+    )
+
+    min_bpm: float = _float_env("MIN_BPM", 40.0)
+    max_bpm: float = _float_env("MAX_BPM", 180.0)
+    bandpass_low_hz: float = _float_env("BANDPASS_LOW_HZ", 0.5)
+    bandpass_high_hz: float = _float_env("BANDPASS_HIGH_HZ", 5.0)
+    filter_order: int = _int_env("FILTER_ORDER", 4)
+    # Reflectance sensors (MAX30102) emit a signal inverted vs the conventional
+    # plethysmogram: systole appears as a fast downstroke instead of an upstroke.
+    # When the diastolic upstroke is this many times slower than the systolic
+    # downstroke, the channel is flipped so the waveform matches reality.
+    auto_invert_reflectance: bool = _bool_env("AUTO_INVERT_REFLECTANCE", True)
+    polarity_rise_fall_ratio: float = _float_env("POLARITY_RISE_FALL_RATIO", 1.5)
+    # Blocking sensor temperature reads leave isolated baseline steps in the raw
+    # signal. The firmware fix (rare reads + dropped settling samples) removes
+    # these at the source. The server-side detector below is opt-in and OFF by
+    # default: on inverted reflectance signals it cannot reliably tell a step from
+    # a sharp systolic edge and may distort the pulse, so it is kept for
+    # experimentation only.
+    remove_dc_steps: bool = _bool_env("REMOVE_DC_STEPS", False)
+    step_detect_sigma: float = _float_env("STEP_DETECT_SIGMA", 6.0)
+
+    min_window_seconds: float = _float_env("MIN_WINDOW_SECONDS", 8.0)
+    stable_spo2_window_seconds: float = _float_env("STABLE_SPO2_WINDOW_SECONDS", 10.0)
+    spo2_warmup_cut_seconds: float = _float_env("SPO2_WARMUP_CUT_SECONDS", 2.0)
+    max_window_seconds: float = _float_env("MAX_WINDOW_SECONDS", 20.0)
+    print_live_metrics: bool = _bool_env("PRINT_LIVE_METRICS", False)
+    min_peaks: int = _int_env("MIN_PEAKS", 4)
+    quality_model_path: str | None = os.getenv("QUALITY_MODEL_PATH")
+    quality_model_type: str = os.getenv("QUALITY_MODEL_TYPE", "random_forest")
+    quality_model_name: str = os.getenv("QUALITY_MODEL_NAME", "ppg_quality_rf")
+    quality_model_version: str = os.getenv("QUALITY_MODEL_VERSION", "1.0.0")
+
+    llm_enabled: bool = _bool_env("LLM_ENABLED", False)
+    llm_provider: str = os.getenv("LLM_PROVIDER", "openai_compatible")
+    llm_base_url: str | None = os.getenv("LLM_BASE_URL")
+    llm_api_key: str | None = os.getenv("LLM_API_KEY")
+    llm_model: str | None = os.getenv("LLM_MODEL")
+    llm_timeout_seconds: float = _float_env("LLM_TIMEOUT_SECONDS", 30.0)
+    llm_temperature: float = _float_env("LLM_TEMPERATURE", 0.2)
+    llm_max_tokens: int = _int_env("LLM_MAX_TOKENS", 500)
+    llm_reasoning_effort: str | None = os.getenv("LLM_REASONING_EFFORT")
+
+    min_ir_dc: float = _float_env("MIN_IR_DC", 50_000.0)
+    min_red_dc: float = _float_env("MIN_RED_DC", 10_000.0)
+    max_sensor_dc: float = _float_env("MAX_SENSOR_DC", 250_000.0)
+    min_perfusion_index: float = _float_env("MIN_PERFUSION_INDEX", 0.05)
+    min_spo2_perfusion_index: float = _float_env("MIN_SPO2_PERFUSION_INDEX", 0.05)
+    max_perfusion_index: float = _float_env("MAX_PERFUSION_INDEX", 20.0)
+
+    spo2_a: float = _float_env("SPO2_A", -45.060)
+    spo2_b: float = _float_env("SPO2_B", 30.354)
+    spo2_c: float = _float_env("SPO2_C", 94.845)
+    spo2_offset: float = _float_env("SPO2_OFFSET", -0.7)
+
+
+settings = AppConfig()
