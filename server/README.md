@@ -100,6 +100,48 @@ Because the baseline inspects the live schema to decide what to create, these tw
 revisions cannot run in offline `--sql` mode and say so explicitly. Revisions
 authored after the baseline are offline-capable as usual.
 
+## Health, readiness, and the one-worker rule
+
+Three endpoints, answering different questions:
+
+| Endpoint | Question | Checks | Failure |
+|---|---|---|---|
+| `GET /api/health/live` | Is the process running? | nothing external | never fails while serving |
+| `GET /api/health/ready` | Can it serve correctly now? | real `SELECT 1`, schema at head | `503 not_ready` |
+| `GET /api/health` | Aggregate, v4 shape | same as readiness | `200` with `status: degraded` |
+
+Liveness deliberately checks nothing: a database outage must not cause an
+orchestrator to kill an otherwise healthy process. Readiness is the probe that
+gates traffic.
+
+An unreachable or unmigrated database does **not** prevent startup. The process
+comes up live but not ready, and `/api/health/ready` names the failing
+dependency, so an operator fixes the dependency instead of also fighting a crash
+loop. Interrupted-session recovery is skipped while not ready.
+
+`GET /api/health` previously reported the database as `connected` whenever
+`DATABASE_URL` was merely set, so it stayed green against a stopped database. It
+now runs the same real check as readiness.
+
+### Exactly one API worker
+
+The API must run with **one** worker. Device connections, measurement sessions,
+sample buffers, and browser subscribers are process-local, so a second worker
+would own a different half of that state — a device could be connected to one
+worker while the request starting its measurement lands on another.
+
+This is enforced, not just documented: startup raises `WorkerCountError` if
+`WEB_CONCURRENCY`, `UVICORN_WORKERS`, or `GUNICORN_WORKERS` is set to anything
+other than `1`. The limit lifts only once live state moves out of the process.
+
+### Recovery of interrupted measurements
+
+Because live state is process-local, a measurement or recording row still marked
+`running` after a restart has no owning process and can never complete. On
+startup — once the schema is confirmed at head — such rows are marked
+`cancelled` with the elapsed duration they reached. That frees the device for a
+new measurement and stops the row from being reported as active forever.
+
 ## API v4.2
 
 Public IDs are prefixed:

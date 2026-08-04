@@ -23,11 +23,15 @@ from sqlalchemy import (
     desc,
     func,
     insert,
+    inspect as sa_inspect,
+    literal,
     select,
+    text,
     update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.ids import (
     STUDY_PREFIX,
@@ -210,6 +214,41 @@ class RecordingRepository:
     def dispose(self) -> None:
         if self._engine is not None:
             self._engine.dispose()
+
+    def ping(self) -> bool:
+        """Execute a trivial query to prove the database is actually reachable.
+
+        Used by the readiness probe. Reuses the pooled engine rather than
+        connecting afresh, so probing frequently stays cheap.
+        """
+        if self._engine is None:
+            return False
+        try:
+            with self._engine.connect() as connection:
+                connection.execute(select(literal(1)))
+            return True
+        except SQLAlchemyError:
+            return False
+
+    def applied_revision(self) -> str | None:
+        """The Alembic revision this database is stamped with, or None.
+
+        Reads `alembic_version` through the existing pool. Returns None when the
+        table is absent, which is exactly the unmigrated case readiness must fail
+        on.
+        """
+        if self._engine is None:
+            return None
+        try:
+            with self._engine.connect() as connection:
+                if not sa_inspect(connection).has_table("alembic_version"):
+                    return None
+                row = connection.execute(
+                    text("SELECT version_num FROM alembic_version")
+                ).first()
+            return str(row[0]) if row is not None else None
+        except SQLAlchemyError:
+            return None
 
     def cancel_interrupted_sessions(self) -> int:
         """Close out measurements and recordings left `running` by a crash.

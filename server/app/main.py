@@ -43,7 +43,8 @@ from app.schemas.measurements import (
     ParticipantPatchRequest,
 )
 from app.schemas.metrics import VitalSigns
-from app.storage.migrations import current_revision, head_revision
+from app.health import HealthService, enforce_single_worker
+from app.storage.migrations import head_revision
 from app.storage.recording_repository import RecordingRepository
 
 logger = logging.getLogger("plethos.api")
@@ -57,28 +58,40 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     separate step before the API starts. Startup only checks that the database is
     already at head and logs loudly when it is not, so a schema mismatch surfaces
     here instead of as confusing query errors later.
-    """
-    if processing_service.database_enabled and settings.database_url:
-        try:
-            applied = current_revision(settings.database_url)
-            expected = head_revision(settings.database_url)
-            if applied != expected:
-                logger.error(
-                    "database schema is not at head: applied=%s expected=%s; "
-                    "run `alembic upgrade head` before serving traffic",
-                    applied,
-                    expected,
-                )
-            else:
-                logger.info("database schema at revision %s", applied)
-        except Exception:  # pragma: no cover - inspection must never block boot
-            logger.exception("could not determine the applied database revision")
 
-        cancelled = processing_service.recover_interrupted_sessions()
-        if cancelled:
-            logger.warning(
-                "cancelled %d measurement/recording rows orphaned by a previous run",
-                cancelled,
+    A database that is unreachable or unmigrated does **not** stop the process
+    from booting. It comes up live but not ready, so `/api/health/ready` reports
+    the reason and the operator can fix the dependency without also fighting a
+    crash loop.
+    """
+    enforce_single_worker()
+
+    if processing_service.database_enabled and settings.database_url:
+        report = health_service.readiness()
+        for dependency in report.dependencies:
+            if not dependency.ok:
+                logger.error(
+                    "dependency %s is not ready: %s", dependency.name, dependency.detail
+                )
+
+        if report.ready:
+            logger.info("database ready at schema revision %s", _expected_revision)
+            # Only safe once the schema is confirmed: recovery writes to the
+            # measurements and recordings tables.
+            try:
+                cancelled = processing_service.recover_interrupted_sessions()
+            except Exception:  # pragma: no cover - must never block boot
+                logger.exception("could not recover interrupted sessions")
+            else:
+                if cancelled:
+                    logger.warning(
+                        "cancelled %d measurement/recording rows orphaned by a "
+                        "previous run",
+                        cancelled,
+                    )
+        else:
+            logger.error(
+                "starting live but NOT ready; skipping interrupted-session recovery"
             )
 
     yield
@@ -104,6 +117,9 @@ app.add_middleware(
 recording_repository = RecordingRepository(settings.database_url)
 processing_service = PPGProcessingService(settings, metrics_store, recording_repository)
 assistant_service = AssistantService(settings)
+# Resolved once: the migration scripts cannot change while the process runs.
+_expected_revision = head_revision()
+health_service = HealthService(recording_repository, expected_revision=_expected_revision)
 
 
 RECORDING_EXPORT_FIELDS = [
@@ -145,11 +161,17 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
 
 @app.get("/api/health")
 def api_health() -> JSONResponse:
-    database_status = "connected" if processing_service.database_enabled else "disconnected"
-    status = "ok" if database_status == "connected" else "degraded"
+    """Aggregate health, in the established v4 shape.
+
+    The database entry now reflects a real query rather than the mere presence of
+    a `DATABASE_URL`, so a stopped database reports `degraded` instead of `ok`.
+    """
+    report = health_service.readiness()
+    database = report.detail_for("database")
+    database_status = "connected" if database is not None and database.ok else "disconnected"
     return _api_success(
         {
-            "status": status,
+            "status": "ok" if report.ready else "degraded",
             "timestamp": _datetime_for_api(datetime.now(UTC)),
             "services": {
                 "api": "ok",
@@ -157,6 +179,55 @@ def api_health() -> JSONResponse:
                 "websocket": "ok",
             },
         }
+    )
+
+
+@app.get("/api/health/live")
+def api_health_live() -> JSONResponse:
+    """Liveness: the process is running. Never touches a dependency.
+
+    A failing database must not make an orchestrator restart a healthy process,
+    so this deliberately checks nothing external.
+    """
+    return _api_success(
+        {"status": "ok", "timestamp": _datetime_for_api(datetime.now(UTC))}
+    )
+
+
+@app.get("/api/health/ready")
+def api_health_ready() -> JSONResponse:
+    """Readiness: this process can serve correctly right now.
+
+    Returns 503 when the database is unreachable or its schema is behind the
+    migrations, so a container that cannot serve is never sent traffic.
+    """
+    report = health_service.readiness()
+    payload = {
+        "status": "ready" if report.ready else "not_ready",
+        "timestamp": _datetime_for_api(datetime.now(UTC)),
+        "dependencies": [
+            {"name": dependency.name, "ok": dependency.ok, "detail": dependency.detail}
+            for dependency in report.dependencies
+        ],
+    }
+    if report.ready:
+        return _api_success(payload)
+    return JSONResponse(
+        content=jsonable_encoder(
+            {
+                "data": payload,
+                "$meta": _meta(
+                    "error",
+                    error={
+                        "http_status": 503,
+                        "code": "not_ready",
+                        "message": "One or more dependencies are not ready",
+                    },
+                ),
+            },
+            custom_encoder=JSON_ENCODERS,
+        ),
+        status_code=503,
     )
 
 

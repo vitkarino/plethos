@@ -26,15 +26,19 @@ ALEMBIC_INI = SERVER_ROOT / "alembic.ini"
 ALEMBIC_DIRECTORY = SERVER_ROOT / "alembic"
 
 
-def alembic_config(database_url: str, *, configure_logging: bool = False) -> Config:
-    """Build an Alembic config bound to ``database_url``.
+def alembic_config(
+    database_url: str | None = None, *, configure_logging: bool = False
+) -> Config:
+    """Build an Alembic config, optionally bound to ``database_url``.
 
     Absolute paths are injected so the config works regardless of the caller's
-    working directory — containers and tests do not run from `server/`.
+    working directory — containers and tests do not run from `server/`. The URL is
+    optional because reading the script history needs no database.
     """
     config = Config(str(ALEMBIC_INI))
     config.set_main_option("script_location", str(ALEMBIC_DIRECTORY))
-    config.attributes["database_url"] = normalize_database_url(database_url)
+    if database_url is not None:
+        config.attributes["database_url"] = normalize_database_url(database_url)
     config.attributes["configure_logging"] = configure_logging
     return config
 
@@ -53,8 +57,11 @@ def downgrade_migrations(database_url: str, revision: str) -> None:
     command.downgrade(alembic_config(database_url), revision)
 
 
-def head_revision(database_url: str) -> str | None:
-    """The newest revision defined in the migration scripts."""
+def head_revision(database_url: str | None = None) -> str | None:
+    """The newest revision defined in the migration scripts.
+
+    Reads only the scripts on disk, so it needs no database connection.
+    """
     return ScriptDirectory.from_config(alembic_config(database_url)).get_current_head()
 
 
