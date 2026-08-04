@@ -1,0 +1,38 @@
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+embedded/pulso_esp32/include/device_config.h
+embedded/pulso_esp32/secrets.ini
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# JavaScript
+node_modules/
+.nuxt/
+.output/
+dist/
+coverage/
+
+# PlatformIO and embedded tooling
+.pio/
+.platformio/
+compile_commands.json
+
+# Local data and model outputs
+data/
+artifacts/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
