@@ -1,0 +1,9 @@
+{
+  "protocol_version": 1,
+  "type": "log",
+  "device_id": "dev_example-device-001",
+  "measurement_id": "mes_018f2b70-example",
+  "level": "warning",
+  "code": "buffer_overflow",
+  "message": "Samples were dropped while transport was unavailable"
+}

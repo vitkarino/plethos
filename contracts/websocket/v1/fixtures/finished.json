@@ -1,0 +1,9 @@
+{
+  "protocol_version": 1,
+  "type": "finished",
+  "device_id": "dev_example-device-001",
+  "measurement_id": "mes_018f2b70-example",
+  "reason": "duration_reached",
+  "samples_acquired": 1500,
+  "dropped_samples": 0
+}

@@ -1,0 +1,11 @@
+{
+  "protocol_version": 1,
+  "type": "hello",
+  "device_id": "dev_example-device-001",
+  "is_simulated": false,
+  "credential": "example-token-not-a-secret",
+  "capabilities": {
+    "max_batch_size": 64,
+    "sample_rate_hz": 100.0
+  }
+}

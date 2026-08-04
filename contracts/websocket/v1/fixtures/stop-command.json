@@ -1,0 +1,6 @@
+{
+  "protocol_version": 1,
+  "type": "stop",
+  "command_id": "cmd_stop-018f2b70",
+  "measurement_id": "mes_018f2b70-example"
+}

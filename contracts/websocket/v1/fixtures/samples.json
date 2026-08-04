@@ -1,0 +1,14 @@
+{
+  "protocol_version": 1,
+  "type": "samples",
+  "device_id": "dev_example-device-001",
+  "measurement_id": "mes_018f2b70-example",
+  "batch_id": "dev_example-device-001:mes_018f2b70-example:0",
+  "sample_rate_hz": 100.0,
+  "sensor_temp_c": 32.1,
+  "dropped_samples": 0,
+  "samples": [
+    {"index": 0, "ir": 91820, "red": 53111},
+    {"index": 1, "ir": 91914, "red": 53165}
+  ]
+}

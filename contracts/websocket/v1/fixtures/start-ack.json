@@ -1,0 +1,7 @@
+{
+  "protocol_version": 1,
+  "type": "start_ack",
+  "device_id": "dev_example-device-001",
+  "command_id": "cmd_start-018f2b70",
+  "measurement_id": "mes_018f2b70-example"
+}

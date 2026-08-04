@@ -1,0 +1,7 @@
+{
+  "protocol_version": 1,
+  "type": "stop_ack",
+  "device_id": "dev_example-device-001",
+  "command_id": "cmd_stop-018f2b70",
+  "measurement_id": "mes_018f2b70-example"
+}
