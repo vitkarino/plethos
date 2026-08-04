@@ -1,0 +1,45 @@
+# Development overrides, applied automatically by `docker compose up`.
+#
+# Production must NOT use this file — run `docker compose -f compose.yaml up -d`
+# instead. Everything here trades isolation for convenience: the database and API
+# become reachable from the host, and the API reloads from mounted source.
+#
+# Host ports bind to 127.0.0.1 explicitly, so nothing here is exposed to the
+# local network even on a laptop with a public interface.
+
+services:
+  postgres:
+    ports:
+      # Inspect with psql/pgAdmin during development only.
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
+
+  api:
+    ports:
+      # Reach the API directly, bypassing Caddy, when debugging.
+      - "127.0.0.1:${API_HOST_PORT:-8080}:8080"
+    # Reload on edit. The image's source is read-only, so the mount is what makes
+    # local changes visible.
+    volumes:
+      - ./server:/app/server:ro
+      - ./contracts:/app/contracts:ro
+    command:
+      [
+        "python",
+        "-m",
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8080",
+        "--reload",
+        # Still exactly one worker: --reload implies a single worker, and live
+        # measurement state is process-local regardless of environment.
+        "--workers",
+        "1",
+      ]
+
+  migrate:
+    # Pick up migrations added since the image was built.
+    volumes:
+      - ./server:/app/server:ro

@@ -1,0 +1,54 @@
+# Public edge for Plethos.
+#
+# Everything reaches the system through this one origin, so the browser uses
+# same-origin HTTPS for REST and WSS for the live measurement stream — no CORS
+# preflights and no mixed-content rules to satisfy.
+#
+# `PLETHOS_SITE_ADDRESS` selects the site:
+#   localhost              -> Caddy's internal CA (default; browsers warn once)
+#   plethos.example.org    -> automatic public certificate via ACME
+{
+	# The admin API can reconfigure the proxy at runtime. Off, so it is not
+	# reachable from inside the Docker network.
+	admin off
+
+	email {$PLETHOS_ACME_EMAIL:admin@localhost}
+}
+
+{$PLETHOS_SITE_ADDRESS:localhost} {
+	log {
+		output stderr
+		format console
+	}
+
+	encode zstd gzip
+
+	# Real client addresses for the API's logs and future rate limiting.
+	header {
+		# Basic hardening; the client sprint owns its own CSP.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# REST API.
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+
+	# Browser live measurement stream and the device transport. Caddy upgrades
+	# WebSocket connections through reverse_proxy without extra configuration.
+	handle /ws/* {
+		reverse_proxy api:8080 {
+			# Live streams must not be buffered or timed out like requests.
+			flush_interval -1
+		}
+	}
+
+	# The Nuxt client is containerised in Sprint 3. Until then the root is
+	# explicitly unavailable rather than silently proxying nowhere.
+	handle {
+		respond "Plethos API is running. The web client is added in Sprint 3; the API is under /api." 503
+	}
+}
