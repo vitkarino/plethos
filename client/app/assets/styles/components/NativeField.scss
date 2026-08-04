@@ -1,0 +1,46 @@
+@use "../core/variables" as *;
+
+.native-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.45em;
+	width: 100%;
+}
+
+.native-field__label {
+	color: $color-text-secondary;
+	font-size: 10pt;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.native-field__select {
+	width: 100%;
+	min-height: 2.625em;
+	padding: 0 0.875em;
+	border: $border-default;
+	border-radius: $radius-control;
+	background: $color-button-bg;
+	color: $color-text-primary;
+	font: inherit;
+	line-height: 1.2;
+	cursor: pointer;
+	color-scheme: dark;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease;
+}
+
+.native-field__select:hover:not(:disabled),
+.native-field__select:focus-visible {
+	border-color: $color-selected;
+	background: $color-button-bg-hover;
+	color: $color-selected;
+	outline: none;
+}
+
+.native-field__select:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}

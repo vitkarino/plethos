@@ -1,0 +1,1 @@
+export const STUDY_DESCRIPTION_MAX_LENGTH = 500
