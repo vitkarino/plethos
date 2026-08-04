@@ -1,0 +1,8 @@
+# Development and test dependencies. Supersets the runtime layer so a single
+# install gives a working test environment.
+#
+# Edit this file, never `dev.txt`. Recompile the pinned lockfile with:
+#   uv pip compile requirements/dev.in -o requirements/dev.txt \
+#     --universal --generate-hashes --python-version 3.13
+-r base.in
+pytest>=8.0.0

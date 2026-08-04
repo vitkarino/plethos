@@ -2,6 +2,36 @@
 
 FastAPI backend for live PPG measurements, persisted recordings, and PPG quality-analysis feature extraction.
 
+## Requirements
+
+The production Python version is pinned to **3.13** (`.python-version`).
+
+Dependencies are declared in layered `.in` files and resolved into pinned,
+hash-verified lockfiles:
+
+| Layer | Input | Lockfile | Contents |
+|---|---|---|---|
+| Runtime | `requirements/base.in` | `requirements/base.txt` | API and analysis runtime |
+| Development | `requirements/dev.in` | `requirements/dev.txt` | Runtime plus test tooling |
+
+Install the layer you need:
+
+```bash
+python3 -m pip install -r requirements/base.txt
+```
+
+`requirements.txt` remains as a thin pointer to the runtime lockfile.
+
+To change a dependency, edit the `.in` file and recompile — never hand-edit a
+lockfile:
+
+```bash
+uv pip compile requirements/base.in -o requirements/base.txt --universal --generate-hashes --python-version 3.13
+```
+
+Lockfiles are resolved `--universal`, so the same pins install on Linux and
+Windows, and they carry hashes so `pip` verifies every downloaded artifact.
+
 ## Run
 
 ```bash
@@ -323,6 +353,15 @@ accuracy should be calibrated with recordings from the target hardware.
 
 ## Test
 
+Install the development layer, then run the suite:
+
 ```bash
-python3 -m unittest discover tests
+python3 -m pip install -r requirements/dev.txt
 ```
+
+```bash
+python3 -m pytest
+```
+
+The suite is plain `unittest`, so `python3 -m unittest discover tests` also
+works; `pytest` is only the runner.

@@ -1,0 +1,19 @@
+# Runtime dependencies for the Plethos FastAPI application.
+#
+# Edit this file, never `base.txt`. Recompile the pinned lockfile with:
+#   uv pip compile requirements/base.in -o requirements/base.txt \
+#     --universal --generate-hashes --python-version 3.13
+#
+# Floors record the oldest version the code is known to work against; the
+# compiled lockfile pins the exact versions that containers install.
+certifi>=2025.0.0
+fastapi>=0.135.0
+joblib>=1.4.0
+numpy>=2.0.0
+psycopg[binary]>=3.2.0
+pydantic>=2.0.0
+scikit-learn>=1.5.0
+scipy>=1.14.0
+sqlalchemy>=2.0.0
+uvicorn[standard]>=0.30.0
+websockets>=14.0

@@ -1,11 +1,6 @@
-fastapi>=0.135.0
-numpy>=2.0.0
-pydantic>=2.0.0
-scipy>=1.14.0
-sqlalchemy>=2.0.0
-psycopg[binary]>=3.2.0
-uvicorn[standard]>=0.30.0
-websockets>=14.0
-joblib>=1.4.0
-scikit-learn>=1.5.0
-certifi>=2025.0.0
+# Compatibility entry point for `pip install -r requirements.txt`.
+#
+# The pinned runtime lockfile lives in `requirements/base.txt`; development and
+# test extras live in `requirements/dev.txt`. Edit the `.in` files and recompile
+# rather than pinning here — see `requirements/base.in` for the exact command.
+-r requirements/base.txt
