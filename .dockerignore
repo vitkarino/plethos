@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+!.env.example
+**/.DS_Store
+**/__pycache__
+**/*.pyc
+**/.pio
+**/.platformio
+**/node_modules
+**/.nuxt
+**/.output
+data
+artifacts
+embedded/pulso_esp32/include/device_config.h
+embedded/pulso_esp32/secrets.ini
