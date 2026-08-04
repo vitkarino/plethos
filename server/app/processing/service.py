@@ -52,9 +52,15 @@ class PPGProcessingService:
     def database_enabled(self) -> bool:
         return self._recording_repository is not None and self._recording_repository.enabled
 
-    def prepare_database(self) -> None:
-        if self._recording_repository is not None and self._recording_repository.enabled:
-            self._recording_repository.create_schema()
+    def recover_interrupted_sessions(self) -> int:
+        """Cancel measurements and recordings orphaned by a previous crash.
+
+        Schema creation is no longer part of startup — Alembic owns it. This is
+        the only remaining boot-time database write.
+        """
+        if self._recording_repository is None or not self._recording_repository.enabled:
+            return 0
+        return self._recording_repository.cancel_interrupted_sessions()
 
     def process_json(self, raw_message: str | bytes) -> VitalSigns:
         return self._process_device_message(raw_message, ingest_recordings=False).metrics

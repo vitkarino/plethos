@@ -45,8 +45,60 @@ If a full DSN is not set, the app can build one from `POSTGRES_HOST`, `POSTGRES_
 by default `http://localhost:3000`, `http://127.0.0.1:3000`, `http://localhost:3080`, and
 `http://127.0.0.1:3080` are allowed.
 
-On startup the app creates or migrates `participants`, `studies`, `study_participants`, `measurements`,
-`recordings`, `recordings_samples`, and `quality_analyses`.
+## Database migrations
+
+The application does **not** create or alter tables. Schema evolution belongs to
+Alembic and runs as a deliberate step before the API starts:
+
+```bash
+python3 -m alembic upgrade head
+```
+
+Startup only verifies that the database is already at head, logs an error if it
+is not, and cancels measurements or recordings left `running` by a previous
+crash. Serving a database that is behind the migrations is treated as an
+operator error, not something the app silently repairs.
+
+The URL is resolved in this order: `-x url=...`, `ALEMBIC_DATABASE_URL`, then the
+application's own `DATABASE_URL` / `POSTGRES_*` settings — so migrations and the
+API always target the same database.
+
+| Command | Effect |
+|---|---|
+| `alembic upgrade head` | Apply every pending migration |
+| `alembic current` | Show the applied revision |
+| `alembic history` | List revisions |
+| `alembic downgrade -1` | Step back one revision |
+
+### Upgrade and downgrade policy
+
+`0001_baseline_schema` captures the schema the pre-Alembic application used to
+build on every boot. It converges two starting points onto one schema:
+
+- an **empty** database — every table is created;
+- a **legacy** database carrying the pre-Alembic schema — `users`, `projects`,
+  and `project_users` are renamed to `participants`, `studies`, and
+  `study_participants`, missing columns are added, and removed columns dropped.
+
+So `alembic upgrade head` is correct for a fresh clone *and* for the existing
+development database, with no manual `alembic stamp`. Every statement is guarded
+by an inspection, so re-running is a no-op.
+
+`0002_backfill_legacy_data` performs the one-time data repairs that startup used
+to redo on every boot: prefixed public IDs, names for unnamed recordings, an
+owning measurement for pre-measurement recordings, and recomputed
+recordings-per-owner counters.
+
+Downgrade policy:
+
+- `0002` has an intentionally empty downgrade — the repairs are one-way, and the
+  pre-repair state (NULL public IDs, orphaned recordings) is not worth restoring.
+- `0001` downgrades by dropping the entire schema. It is **destructive**; back up
+  before running it against a database holding recordings.
+
+Because the baseline inspects the live schema to decide what to create, these two
+revisions cannot run in offline `--sql` mode and say so explicitly. Revisions
+authored after the baseline are offline-capable as usual.
 
 ## API v4.2
 

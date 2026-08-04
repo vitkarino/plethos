@@ -6,6 +6,7 @@
 #
 # Floors record the oldest version the code is known to work against; the
 # compiled lockfile pins the exact versions that containers install.
+alembic>=1.13.0
 certifi>=2025.0.0
 fastapi>=0.135.0
 joblib>=1.4.0

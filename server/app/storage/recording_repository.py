@@ -23,9 +23,7 @@ from sqlalchemy import (
     desc,
     func,
     insert,
-    inspect,
     select,
-    text,
     update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -213,19 +211,46 @@ class RecordingRepository:
         if self._engine is not None:
             self._engine.dispose()
 
-    def create_schema(self) -> None:
-        engine = self._require_engine()
-        with engine.begin() as connection:
-            self._rename_legacy_entity_schema(connection)
-        metadata.create_all(engine)
-        with engine.begin() as connection:
-            self._ensure_schema_columns(connection)
-            self._backfill_public_ids(connection)
-            self._backfill_recording_names(connection)
-            self._backfill_legacy_measurements(connection)
-            self._drop_removed_columns(connection)
-            self._refresh_recording_counts(connection)
-            self._cancel_running_rows(connection)
+    def cancel_interrupted_sessions(self) -> int:
+        """Close out measurements and recordings left `running` by a crash.
+
+        Live measurement state is process-local, so a row still marked `running`
+        after a restart has no owning process and can never complete. Marking it
+        `cancelled` — with the elapsed duration it had reached — keeps the device
+        free for a new measurement and stops the row from being reported as
+        active forever.
+
+        This is runtime recovery, not schema evolution: it runs on startup, while
+        schema changes belong to Alembic. Returns the number of rows closed.
+        """
+        now = datetime.now(UTC)
+        closed = 0
+        with self._require_engine().begin() as connection:
+            for table in (measurements_table, recordings_table):
+                rows = connection.execute(
+                    select(table.c.id, table.c.started_at).where(table.c.status == "running")
+                ).mappings().all()
+                for row in rows:
+                    started_at = row["started_at"]
+                    duration_ms = None
+                    if isinstance(started_at, datetime):
+                        if started_at.tzinfo is None:
+                            started_at = started_at.replace(tzinfo=UTC)
+                        duration_ms = int(
+                            round(max(0.0, (now - started_at).total_seconds()) * 1000)
+                        )
+                    connection.execute(
+                        update(table)
+                        .where(table.c.id == row["id"])
+                        .values(
+                            status="cancelled",
+                            finished_at=now,
+                            duration_ms=duration_ms,
+                            updated_at=now,
+                        )
+                    )
+                    closed += 1
+        return closed
 
     def list_participants(
         self,
@@ -661,243 +686,6 @@ class RecordingRepository:
         return self._engine
 
     @staticmethod
-    def _rename_legacy_entity_schema(connection: Connection) -> None:
-        inspector = inspect(connection)
-        table_names = set(inspector.get_table_names())
-
-        _rename_table(connection, table_names, "users", "participants")
-        _rename_table(connection, table_names, "projects", "studies")
-        _rename_table(connection, table_names, "project_users", "study_participants")
-
-        inspector = inspect(connection)
-        table_names = set(inspector.get_table_names())
-        if "study_participants" in table_names:
-            _rename_column(connection, "study_participants", "project_id", "study_id")
-            _rename_column(connection, "study_participants", "user_id", "participant_id")
-        if "measurements" in table_names:
-            _rename_column(connection, "measurements", "user_id", "participant_id")
-            _rename_column(connection, "measurements", "project_id", "study_id")
-        if "recordings" in table_names:
-            _rename_column(connection, "recordings", "user_name", "participant_name")
-            _rename_column(connection, "recordings", "user_id", "participant_id")
-            _rename_column(connection, "recordings", "project_name", "study_name")
-            _rename_column(connection, "recordings", "project_id", "study_id")
-
-    @staticmethod
-    def _ensure_schema_columns(connection: Connection) -> None:
-        inspector = inspect(connection)
-        table_names = set(inspector.get_table_names())
-        if "participants" in table_names:
-            _ensure_columns(
-                connection,
-                "participants",
-                {
-                    "public_id": "VARCHAR(64)",
-                    "recordings_qty": "INTEGER NOT NULL DEFAULT 0",
-                },
-            )
-        if "studies" in table_names:
-            _ensure_columns(
-                connection,
-                "studies",
-                {
-                    "public_id": "VARCHAR(64)",
-                    "description": "TEXT",
-                    "recordings_qty": "INTEGER NOT NULL DEFAULT 0",
-                },
-            )
-        if "measurements" in table_names:
-            _ensure_columns(
-                connection,
-                "measurements",
-                {
-                    "participant_id": "VARCHAR(64)",
-                    "study_id": "VARCHAR(64)",
-                    "perfusion_index": "FLOAT",
-                },
-            )
-        if "recordings" in table_names:
-            _ensure_columns(
-                connection,
-                "recordings",
-                {
-                    "public_id": "VARCHAR(64)",
-                    "name": "VARCHAR(255)",
-                    "measurement_id": "VARCHAR(36)",
-                    "quality_analysis_id": "VARCHAR(36)",
-                    "use_for_ml_training": "BOOLEAN NOT NULL DEFAULT FALSE",
-                    "participant_name": "VARCHAR(255)",
-                    "participant_id": "VARCHAR(64)",
-                    "study_name": "VARCHAR(255)",
-                    "study_id": "VARCHAR(64)",
-                    "sample_start_index": "BIGINT",
-                    "sample_end_index": "BIGINT",
-                    "samples_count": "BIGINT",
-                },
-            )
-
-    @staticmethod
-    def _backfill_public_ids(connection: Connection) -> None:
-        for row in connection.execute(select(participants_table.c.id, participants_table.c.public_id)).mappings().all():
-            if row["public_id"] != public_participant_id(row["id"]):
-                connection.execute(
-                    update(participants_table)
-                    .where(participants_table.c.id == row["id"])
-                    .values(public_id=public_participant_id(row["id"]))
-                )
-
-        for row in connection.execute(select(studies_table.c.id, studies_table.c.public_id)).mappings().all():
-            if row["public_id"] != public_study_id(row["id"]):
-                connection.execute(
-                    update(studies_table)
-                    .where(studies_table.c.id == row["id"])
-                    .values(public_id=public_study_id(row["id"]))
-                )
-
-        measurement_rows = connection.execute(
-            select(
-                measurements_table.c.id,
-                measurements_table.c.public_id,
-                measurements_table.c.participant_id,
-                measurements_table.c.study_id,
-            )
-        ).mappings().all()
-        for row in measurement_rows:
-            values: dict[str, Any] = {}
-            if not row["public_id"]:
-                values["public_id"] = prefixed_id("mes_", row["id"])
-            if row["participant_id"] is not None:
-                values["participant_id"] = public_participant_id(row["participant_id"])
-            if row["study_id"] is not None:
-                values["study_id"] = public_study_id(row["study_id"])
-            if values:
-                connection.execute(update(measurements_table).where(measurements_table.c.id == row["id"]).values(**values))
-
-        rows = connection.execute(
-            select(
-                recordings_table.c.id,
-                recordings_table.c.public_id,
-                recordings_table.c.participant_id,
-                recordings_table.c.study_id,
-            )
-        ).mappings().all()
-        for row in rows:
-            values: dict[str, Any] = {}
-            if not row["public_id"]:
-                values["public_id"] = public_recording_id(row["id"])
-            if row["participant_id"] is not None:
-                values["participant_id"] = public_participant_id(row["participant_id"])
-            if row["study_id"] is not None:
-                values["study_id"] = public_study_id(row["study_id"])
-            if values:
-                connection.execute(update(recordings_table).where(recordings_table.c.id == row["id"]).values(**values))
-
-    @staticmethod
-    def _backfill_recording_names(connection: Connection) -> None:
-        rows = connection.execute(
-            select(
-                recordings_table.c.id,
-                recordings_table.c.name,
-                recordings_table.c.started_at,
-                recordings_table.c.created_at,
-            ).order_by(recordings_table.c.started_at, recordings_table.c.created_at, recordings_table.c.id)
-        ).mappings().all()
-        for index, row in enumerate(rows, start=1):
-            if row["name"]:
-                continue
-            connection.execute(
-                update(recordings_table)
-                .where(recordings_table.c.id == row["id"])
-                .values(name=f"Запис {index}")
-            )
-
-    @staticmethod
-    def _backfill_legacy_measurements(connection: Connection) -> None:
-        rows = connection.execute(
-            select(recordings_table).where(recordings_table.c.measurement_id.is_(None))
-        ).mappings().all()
-        for row in rows:
-            measurement_id = row["id"]
-            existing = connection.execute(
-                select(measurements_table.c.id).where(measurements_table.c.id == measurement_id)
-            ).first()
-            if existing is None:
-                connection.execute(
-                    insert(measurements_table).values(
-                        id=measurement_id,
-                        public_id=prefixed_id("mes_", measurement_id),
-                        participant_id=row["participant_id"],
-                        study_id=row["study_id"],
-                        device_id=row["device_id"],
-                        active_recording_id=None,
-                        started_at=row["started_at"],
-                        finished_at=row["finished_at"],
-                        duration_ms=row["duration_ms"],
-                        status=row["status"],
-                        signal_type=row["signal_type"],
-                        sample_rate=row["sample_rate"],
-                        sensor_temp=row["sensor_temp"],
-                        bpm=row["bpm"],
-                        spo2=row["spo2"],
-                        perfusion_index=row["perfusion_index"],
-                        ratio=row["ratio"],
-                        signal_quality=row["signal_quality"],
-                        peak_count=row["peak_count"],
-                        created_at=row["created_at"],
-                        updated_at=row["updated_at"],
-                    )
-                )
-            connection.execute(
-                update(recordings_table)
-                .where(recordings_table.c.id == row["id"])
-                .values(measurement_id=measurement_id)
-            )
-
-    @staticmethod
-    def _drop_removed_columns(connection: Connection) -> None:
-        inspector = inspect(connection)
-        table_names = set(inspector.get_table_names())
-        legacy_column = "sensor_" + "confidence"
-        preparer = connection.dialect.identifier_preparer
-        for table_name in ("measurements", "recordings"):
-            if table_name not in table_names:
-                continue
-            column_names = {column["name"] for column in inspector.get_columns(table_name)}
-            if legacy_column not in column_names:
-                continue
-            connection.execute(
-                text(
-                    f"ALTER TABLE {preparer.quote(table_name)} "
-                    f"DROP COLUMN {preparer.quote(legacy_column)}"
-                )
-            )
-
-    @staticmethod
-    def _cancel_running_rows(connection: Connection) -> None:
-        now = datetime.now(UTC)
-        for table in (measurements_table, recordings_table):
-            rows = connection.execute(
-                select(table.c.id, table.c.started_at).where(table.c.status == "running")
-            ).mappings().all()
-            for row in rows:
-                started_at = row["started_at"]
-                duration_ms = None
-                if isinstance(started_at, datetime):
-                    if started_at.tzinfo is None:
-                        started_at = started_at.replace(tzinfo=UTC)
-                    duration_ms = int(round(max(0.0, (now - started_at).total_seconds()) * 1000))
-                connection.execute(
-                    update(table)
-                    .where(table.c.id == row["id"])
-                    .values(
-                        status="cancelled",
-                        finished_at=now,
-                        duration_ms=duration_ms,
-                        updated_at=now,
-                    )
-                )
-
-    @staticmethod
     def _inserted_id(primary_key: tuple[Any, ...]) -> int:
         if not primary_key or primary_key[0] is None:
             raise RuntimeError("database did not return inserted primary key")
@@ -1017,40 +805,18 @@ class RecordingRepository:
         return f"Запис {int(count) + 1}"
 
 
-def _ensure_columns(connection: Connection, table_name: str, columns: dict[str, str]) -> None:
-    existing = {column["name"] for column in inspect(connection).get_columns(table_name)}
-    for column_name, ddl_type in columns.items():
-        if column_name not in existing:
-            connection.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {ddl_type}"))
+def normalize_database_url(database_url: str) -> str:
+    """Force the psycopg3 driver for PostgreSQL URLs.
 
-
-def _rename_table(connection: Connection, table_names: set[str], old_name: str, new_name: str) -> None:
-    if old_name not in table_names or new_name in table_names:
-        return
-    preparer = connection.dialect.identifier_preparer
-    connection.execute(
-        text(f"ALTER TABLE {preparer.quote(old_name)} RENAME TO {preparer.quote(new_name)}")
-    )
-    table_names.remove(old_name)
-    table_names.add(new_name)
-
-
-def _rename_column(connection: Connection, table_name: str, old_name: str, new_name: str) -> None:
-    column_names = {column["name"] for column in inspect(connection).get_columns(table_name)}
-    if old_name not in column_names or new_name in column_names:
-        return
-    preparer = connection.dialect.identifier_preparer
-    connection.execute(
-        text(
-            f"ALTER TABLE {preparer.quote(table_name)} "
-            f"RENAME COLUMN {preparer.quote(old_name)} TO {preparer.quote(new_name)}"
-        )
-    )
-
-
-def _normalize_database_url(database_url: str) -> str:
+    Shared with the Alembic environment so migrations and the application always
+    connect through the same driver.
+    """
     if database_url.startswith("postgresql://"):
         return database_url.replace("postgresql://", "postgresql+psycopg://", 1)
     if database_url.startswith("postgres://"):
         return database_url.replace("postgres://", "postgresql+psycopg://", 1)
     return database_url
+
+
+# Retained for internal callers that predate the public name.
+_normalize_database_url = normalize_database_url

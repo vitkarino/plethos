@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime, time
 import csv
 from io import StringIO
 import json
-from typing import Any, Literal
+import logging
+from typing import Any, AsyncIterator, Literal
 
 from fastapi import Body, FastAPI, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
@@ -41,7 +43,48 @@ from app.schemas.measurements import (
     ParticipantPatchRequest,
 )
 from app.schemas.metrics import VitalSigns
+from app.storage.migrations import current_revision, head_revision
 from app.storage.recording_repository import RecordingRepository
+
+logger = logging.getLogger("plethos.api")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """Verify the schema, recover orphaned sessions, then release resources.
+
+    The application never applies migrations: `alembic upgrade head` runs as a
+    separate step before the API starts. Startup only checks that the database is
+    already at head and logs loudly when it is not, so a schema mismatch surfaces
+    here instead of as confusing query errors later.
+    """
+    if processing_service.database_enabled and settings.database_url:
+        try:
+            applied = current_revision(settings.database_url)
+            expected = head_revision(settings.database_url)
+            if applied != expected:
+                logger.error(
+                    "database schema is not at head: applied=%s expected=%s; "
+                    "run `alembic upgrade head` before serving traffic",
+                    applied,
+                    expected,
+                )
+            else:
+                logger.info("database schema at revision %s", applied)
+        except Exception:  # pragma: no cover - inspection must never block boot
+            logger.exception("could not determine the applied database revision")
+
+        cancelled = processing_service.recover_interrupted_sessions()
+        if cancelled:
+            logger.warning(
+                "cancelled %d measurement/recording rows orphaned by a previous run",
+                cancelled,
+            )
+
+    yield
+
+    recording_repository.dispose()
+
 
 app = FastAPI(
     title="PPG Backend",
@@ -49,6 +92,7 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -86,11 +130,6 @@ RECORDING_EXPORT_FIELDS = [
     "peak_count",
 ]
 SAMPLE_EXPORT_FIELDS = ["sample_index", "raw_ir", "raw_red", "raw_data"]
-
-
-@app.on_event("startup")
-def startup() -> None:
-    processing_service.prepare_database()
 
 
 @app.exception_handler(HTTPException)

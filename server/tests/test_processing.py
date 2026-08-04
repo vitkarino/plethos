@@ -32,6 +32,12 @@ from app.schemas.measurements import (
     ParticipantCreateRequest,
     ParticipantPatchRequest,
 )
+from app.storage.migrations import (
+    current_revision,
+    downgrade_migrations,
+    head_revision,
+    run_migrations,
+)
 from app.storage.recording_repository import RecordingRepository
 
 
@@ -406,8 +412,8 @@ class ApiMutationTests(unittest.TestCase):
         self._old_metrics_store = main_module.metrics_store
         self._tempdir = tempfile.TemporaryDirectory()
         self.database_url = f"sqlite:///{Path(self._tempdir.name) / 'test.db'}"
+        run_migrations(self.database_url)
         self.repository = RecordingRepository(self.database_url)
-        self.repository.create_schema()
         self.metrics_store = MetricsStore()
         self.processing_service = PPGProcessingService(
             AppConfig(database_url=self.database_url),
@@ -737,7 +743,58 @@ class ApiMutationTests(unittest.TestCase):
 
 
 class MigrationTests(unittest.TestCase):
-    def test_create_schema_backfills_public_ids_and_preserves_samples(self) -> None:
+    def test_upgrade_from_empty_database_creates_the_full_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            database_url = f"sqlite:///{Path(tempdir) / 'empty.db'}"
+
+            run_migrations(database_url)
+
+            engine = create_engine(database_url, future=True)
+            table_names = set(inspect(engine).get_table_names())
+            sample_indexes = {
+                index["name"] for index in inspect(engine).get_indexes("recordings_samples")
+            }
+            engine.dispose()
+
+            self.assertEqual(current_revision(database_url), head_revision(database_url))
+            for expected_table in (
+                "participants",
+                "studies",
+                "study_participants",
+                "measurements",
+                "recordings",
+                "recordings_samples",
+                "quality_analyses",
+            ):
+                self.assertIn(expected_table, table_names)
+            self.assertIn("ix_recordings_samples_recording_id", sample_indexes)
+
+    def test_upgrade_is_idempotent_when_rerun(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            database_url = f"sqlite:///{Path(tempdir) / 'rerun.db'}"
+
+            run_migrations(database_url)
+            # A second `alembic upgrade head` must be a no-op rather than an error.
+            run_migrations(database_url)
+
+            self.assertEqual(current_revision(database_url), head_revision(database_url))
+
+    def test_downgrade_to_base_removes_the_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            database_url = f"sqlite:///{Path(tempdir) / 'down.db'}"
+            run_migrations(database_url)
+
+            downgrade_migrations(database_url, "base")
+
+            engine = create_engine(database_url, future=True)
+            table_names = set(inspect(engine).get_table_names())
+            engine.dispose()
+
+            self.assertIsNone(current_revision(database_url))
+            self.assertNotIn("recordings", table_names)
+            self.assertNotIn("quality_analyses", table_names)
+
+    def test_upgrade_adopts_a_legacy_database_and_backfills_public_ids(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:
             database_url = f"sqlite:///{Path(tempdir) / 'legacy.db'}"
             engine = create_engine(database_url, future=True)
@@ -866,9 +923,9 @@ class MigrationTests(unittest.TestCase):
                 )
             engine.dispose()
 
-            repository = RecordingRepository(database_url)
-            repository.create_schema()
+            run_migrations(database_url)
 
+            repository = RecordingRepository(database_url)
             participant = repository.get_participant("par_1")
             study = repository.get_study("std_1")
             recording = repository.get_recording("rec_legacy-rec")
